@@ -1,0 +1,109 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  profiles:
+    active: ${profile}
+    include: oauth
+    group:
+      local:
+        - common
+      dev:
+        - common
+      prod:
+        - common
+
+---
+spring:
+  config:
+    activate:
+      on-profile: common
+  web:
+    locale: ko_KR
+  main:
+    allow-bean-definition-overriding: true
+
+logging:
+  level:
+    org.springframework.cache: DEBUG
+
+management:
+  endpoints:
+    web:
+      base-path: /health_check
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url:
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: info
+    org.springframework.web: debug
+
+    jdbc:
+      sqlonly: off
+      sqltiming: debug
+      audit: off
+      resultset: off
+      resultsettable: debug
+      connection: off
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://aiservice-db.cy5hpggpflkg.ap-northeast-2.rds.amazonaws.com:5432/postgres
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      default_batch_fetch_size: 100
+      ddl-auto: create
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+        default_batch_fetch_size: 100
+    show-sql: true
+
+server:
+  port: 8090
+  servlet:
+    context-path: /
+
+logging:
+  level:
+    root: info
+    org.springframework.web: debug
+    jdbc:
+      sqlonly: off
+      sqltiming: debug
+      audit: off
+      resultset: off
+      resultsettable: debug
+      connection: off
+
+---
+#spring.config.active.on-profile: prod
