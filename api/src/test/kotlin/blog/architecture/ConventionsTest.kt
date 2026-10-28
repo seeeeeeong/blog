@@ -13,13 +13,18 @@ import java.io.File
 
 class ConventionsTest {
     @Test
-    fun `a file is named after the first type it holds`() {
-        Conventions.filesNamedAfterFirstType(Konsist.scopeFromProduction())
+    fun `a file holds one top-level type, named after it`() {
+        Conventions.filesHoldOneType(Konsist.scopeFromProduction())
     }
 
     @Test
     fun `controllers return response types, not a ResponseEntity`() {
         Conventions.controllersReturnResponses(Konsist.scopeFromProduction())
+    }
+
+    @Test
+    fun `controllers, and only controllers, sit in a controller package`() {
+        Conventions.controllersInControllerPackages(Konsist.scopeFromProduction())
     }
 
     @Test
@@ -74,6 +79,20 @@ internal object Conventions {
             }
     }
 
+    /** `blog/post/controller/` holds the feature's controllers and nothing else. */
+    fun controllersInControllerPackages(scope: KoScope) {
+        val isController = { type: KoClassDeclaration -> type.annotations.any { it.name == "RestController" } }
+        val inControllerPackage = { type: KoClassDeclaration -> "${type.packagee?.name}".endsWith(".controller") }
+        scope
+            .classes(includeNested = false)
+            .filter { isController(it) || inControllerPackage(it) }
+            .assertTrue(
+                additionalMessage = "Put a controller in its feature's controller package, and only controllers.",
+            ) {
+                isController(it) && inControllerPackage(it)
+            }
+    }
+
     /**
      * Constructor and @Bean method parameters: `postService: PostService`. A generic one
      * starts with its argument: `handlers: List<Handler>`.
@@ -94,14 +113,10 @@ internal object Conventions {
             }
     }
 
-    /**
-     * Closely related types share a file, the one it is named after first: `Slug.kt` opens
-     * with `Slug`, then `SlugDecision`. In a `dto` package each request or response
-     * has a file of its own.
-     */
-    fun filesNamedAfterFirstType(scope: KoScope) {
+    /** One top-level type per file, named after it; nested types and functions may ride along. */
+    fun filesHoldOneType(scope: KoScope) {
         scope.files.assertTrue(
-            additionalMessage = "Name the file after its first type; in a dto package, give each type its own file.",
+            additionalMessage = "Give each top-level type a file of its own, named after it.",
         ) { file ->
             val types =
                 file
@@ -112,8 +127,7 @@ internal object Conventions {
                             it is KoObjectDeclaration ||
                             it is KoTypeAliasDeclaration
                     }.map { (it as KoNameProvider).name }
-            val dto = ".dto." in ".${file.packagee?.name}."
-            types.isEmpty() || (types.first() == file.name && (!dto || types.size == 1))
+            types.isEmpty() || types == listOf(file.name)
         }
     }
 

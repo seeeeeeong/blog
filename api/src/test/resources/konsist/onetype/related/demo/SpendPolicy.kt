@@ -1,3 +1,5 @@
+// A decision beside its policy on purpose: the fixture the one-type-per-file rule has to catch.
+
 package demo
 
 object SpendPolicy {

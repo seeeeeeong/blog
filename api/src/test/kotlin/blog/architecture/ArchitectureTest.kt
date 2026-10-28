@@ -20,12 +20,22 @@ class ArchitectureTest {
     }
 
     @Test
-    fun `layers depend inward, presentation to service to domain, infrastructure to domain`() {
+    fun `layers depend inward, controller to service to repository to entity`() {
         Rules.layers("blog").checkProduction()
     }
 
     @Test
-    fun `the domain layer holds no web, JDBC or session code`() {
-        Rules.domainFrameworks("blog").checkProduction()
+    fun `every class of a feature sits in one of its layers`() {
+        Rules.featureLayout("blog").checkProduction()
+    }
+
+    @Test
+    fun `a feature reaches another only through its service`() {
+        Rules.featuresKeepApart("blog").checkProduction()
+    }
+
+    @Test
+    fun `an entity holds no web, JDBC or session code`() {
+        Rules.entityFrameworks("blog").checkProduction()
     }
 }

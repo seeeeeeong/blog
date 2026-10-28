@@ -25,9 +25,6 @@ spring:
     url: ${BLOG_DB_URL:jdbc:postgresql://127.0.0.1:55436/blog}
     username: ${BLOG_DB_USER:blog}
     password: ${BLOG_DB_PASSWORD:blog}
-  modulith:
-    # Each module under blog declares itself in ModuleMetadata; ModularityTest finds one that forgot.
-    detection-strategy: explicitly-annotated
   flyway:
     validate-on-migrate: true
   jpa:

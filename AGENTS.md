@@ -31,15 +31,15 @@ Kotlin + Spring Boot 4 (`api`), Next.js (`web`), PostgreSQL 18. 홈 서버에 Cl
 
 ### 구조 (docs 없이도 판단할 수 있게)
 
-- 다른 모듈은 그 모듈이 `@NamedInterface` 로 연 패키지만 쓴다: `service/`, 이벤트 계약 `domain/event/`, 그리고 모듈이 따로 연 값 타입 패키지. 그 밖의 패키지(`domain/` 엔티티, `domain/repository/`, `infrastructure/`, `presentation/`, `dto/` 등) 타입을 직접 쓰면 지적한다. 열린 패키지의 타입을 `service/` 로 복제하라고 하지 않는다.
-- 계층 방향(`presentation → service → domain ← infrastructure`, `dto/` 는 presentation·service 가 쓰고 domain 만 읽는다)을 거스르거나, `domain/` 이 HTTP·JDBC 코드를 쓰면 지적한다. 단 `service → infrastructure` 직접 의존(`JdbcXxx` 등)은 허용한다. 포트를 두지 않으며, 인터페이스는 외부 시스템(`XxxGateway`)에만 둔다.
+- 기능은 `blog/` 바로 아래 패키지(`blog/post`)이고 `controller/`, `service/`, `dto/request/`·`dto/response/`, `repository/`, `entity/` 로 나뉜다. 이 밖의 패키지에 클래스를 두면 지적한다.
+- 한 기능이 다른 기능의 `repository/`·`entity/` 를 직접 쓰면 지적한다. 다른 기능은 그 기능의 `service/` 를 부르고, 그 서비스의 요청·응답 DTO 는 써도 된다.
+- 계층 방향(`controller → service → repository → entity`, `dto/` 는 controller·service 가 쓰고 entity 만 읽는다)을 거스르거나, controller 가 entity·repository 를 직접 쓰거나, `entity/` 가 HTTP·JDBC 코드를 쓰면 지적한다. 포트를 두지 않으며, 인터페이스는 외부 시스템(`XxxGateway`)에만 둔다.
 - 엔티티를 Controller 가 그대로 반환하면 지적한다. `XxxResponse` 로 바꾼다.
-- Controller 가 `ResponseEntity` 를 반환하거나, 에러 body 를 직접 만들거나, 서비스 호출 외의 업무 로직을 가지면 지적한다. 에러는 모듈의 `XxxError` 를 `BlogException` 으로 던진다.
+- Controller 가 `ResponseEntity` 를 반환하거나, 에러 body 를 직접 만들거나, 서비스 호출 외의 업무 로직을 가지면 지적한다. 에러는 `common/exception/BlogError` 한 곳에 두고 `BlogException` 으로 던진다. 기능마다 에러 enum 을 따로 만들면 지적한다.
 - 사용자에게 보이는 에러 메시지에 내부 정보(쿼리, 키, 경로, 스택)가 들어가면 지적한다.
-- 규칙 클래스(`*Policy`, `*Decision`, `*Parser`, `*Prompt`, `*Check`)와 값 객체가 Kotlin, 순수 JDK, 다른 규칙 클래스 외의 것(Spring, JPA, DB, HTTP, 리포지토리 등)에 기대면 지적한다.
+- 규칙 클래스(`*Policy`, `*Decision`, `*Parser`, `*Prompt`, `*Check`)가 Kotlin, 순수 JDK, 다른 규칙 클래스 외의 것(Spring, JPA, DB, HTTP, 리포지토리 등)에 기대면 지적한다.
 - 시각을 `Instant.now()`·`LocalDateTime.now()` 로 직접 얻거나 테스트에서 sleep 하면 지적한다. 주입한 `Clock` 을 쓰고, 테스트는 `MutableClock` 을 움직인다.
-- 이벤트 클래스를 다른 클래스 안에 중첩하거나, `event_publication.event_type` 을 고치는 마이그레이션 없이 이름·패키지를 바꾸면 지적한다. `event_publication` 이 클래스 이름으로 저장해 두어 대기 중인 이벤트가 끊긴다.
-- 테스트가 `@WebMvcTest`, `@ApplicationModuleTest`, `@MockitoBean` 을 쓰면 지적한다. Spring 이 필요한 테스트는 `TestcontainersConfiguration` 을 import 한 `@SpringBootTest` 이고, Controller 테스트는 `RANDOM_PORT` 로 실제 HTTP 를 부른다.
+- 테스트가 `@WebMvcTest`, `@MockitoBean` 을 쓰면 지적한다. Spring 이 필요한 테스트는 `TestcontainersConfiguration` 을 import 한 `@SpringBootTest` 이고, Controller 테스트는 `RANDOM_PORT` 로 실제 HTTP 를 부른다.
 - web 에서 feature 가 다른 feature 나 `app/` 을 import 하거나, 공용 폴더(`components/`, `hooks/`, `lib/`, `utils/`)가 feature 를 import 하면 지적한다. Biome 가 잡지만 새 feature 의 override 가 `biome.json` 에 빠졌는지도 본다.
 
 ### 지적하지 않을 것
@@ -47,4 +47,4 @@ Kotlin + Spring Boot 4 (`api`), Next.js (`web`), PostgreSQL 18. 홈 서버에 Cl
 - 포매팅, import 순서, 줄 길이 (ktlint, Biome 가 CI 에서 본다).
 - 주석이 없다는 것 (위의 가격·한도·타임아웃은 제외). 오히려 코드를 되풀이하는 주석, 주석 처리된 코드, 이슈 링크 없는 `TODO` 를 지적한다.
 - 취향 차이의 이름 변경 제안.
-- 밀접한 타입이 한 파일에 있는 것 (`Slug.kt` 의 `SlugDecision`, `PostEvent.kt` 의 이벤트들). 파일 이름은 첫 타입을 따르고 `ConventionsTest` 가 본다.
+- 파일 이름과 파일당 최상위 타입 수. 한 파일에 최상위 타입 하나, 그 이름을 딴 파일이라는 규칙은 `ConventionsTest` 가 본다.

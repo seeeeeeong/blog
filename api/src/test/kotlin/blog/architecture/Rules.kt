@@ -3,7 +3,10 @@ package blog.architecture
 import com.tngtech.archunit.base.DescribedPredicate
 import com.tngtech.archunit.core.domain.JavaClass
 import com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAnyPackage
+import com.tngtech.archunit.lang.ArchCondition
 import com.tngtech.archunit.lang.ArchRule
+import com.tngtech.archunit.lang.ConditionEvents
+import com.tngtech.archunit.lang.SimpleConditionEvent
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes
 import com.tngtech.archunit.library.Architectures.layeredArchitecture
 
@@ -52,7 +55,7 @@ internal object Rules {
         type.isAnnotatedWith(JvmInline::class.java) || type.enclosingClass.map(::isValueClass).orElse(false)
 
     // A nested class is Outer$AccessPolicy on the JVM; its own name decides. A value class
-    // (Slug, TopicName) holds a rule too.
+    // holds a rule too.
     private fun isRule(type: JavaClass) =
         resideInAnyPackage(*OWN).test(type) &&
             (
@@ -77,78 +80,135 @@ internal object Rules {
             type.isPrimitive || isRule(type) || isPure(type)
         }
 
-    private const val PRESENTATION = "presentation"
+    private const val COMMON = "common"
+    private const val CONTROLLER = "controller"
     private const val SERVICE = "service"
     private const val DTO = "dto"
-    private const val DOMAIN = "domain"
-    private const val INFRASTRUCTURE = "infrastructure"
+    private const val REPOSITORY = "repository"
+    private const val ENTITY = "entity"
+    private val LAYERS = listOf(CONTROLLER, SERVICE, DTO, REPOSITORY, ENTITY)
 
-    // The model may carry its mapping, its Spring Data repository and its module boundary, nothing
-    // that talks HTTP or SQL.
-    private val DOMAIN_FRAMEWORKS =
+    // What a feature keeps to itself; another feature asks its service.
+    private val OWN_LAYERS = setOf(REPOSITORY, ENTITY)
+
+    // An entity may carry its mapping and nothing that talks HTTP or SQL.
+    private val ENTITY_FRAMEWORKS =
         arrayOf(
             "jakarta.persistence..",
             "org.hibernate.annotations..",
             "org.springframework.data..",
-            "org.springframework.modulith",
         )
 
     private fun isPure(type: JavaClass) =
         resideInAnyPackage(*PURE).test(type) && !resideInAnyPackage(*IMPURE).test(type) && type.name !in IMPURE_TYPES
 
-    private fun modules(root: String) = "$root.$DOMAIN.*"
+    /** `blog.post.service` → (`post`, `service`); common code and the root belong to no feature. */
+    private fun placeOf(
+        root: String,
+        packageName: String,
+    ): Pair<String, String?>? {
+        if (!packageName.startsWith("$root.")) return null
+        val segments = packageName.removePrefix("$root.").split('.')
+        val feature = segments.first().takeIf { it != COMMON } ?: return null
+        return feature to segments.getOrNull(1)
+    }
 
-    // Of our own code, only other models and the shared base entity and ids; not common's
-    // error handling, which speaks HTTP.
-    private fun domainProjectPackages(root: String) =
-        arrayOf("${modules(root)}.$DOMAIN..", "$root.common.entity..", "$root.common.util..")
+    private fun inFeature(root: String) =
+        DescribedPredicate.describe<JavaClass>("in a feature under $root") { placeOf(root, it.packageName) != null }
+
+    private fun inLayer(
+        root: String,
+        layer: String,
+    ) = DescribedPredicate.describe<JavaClass>(
+        "in a feature's $layer",
+    ) { placeOf(root, it.packageName)?.second == layer }
 
     /**
-     * presentation → service → domain ← infrastructure in every module under [root]'s domain
-     * package, with dto between presentation and service and reading only the domain.
+     * controller → service → repository → entity in every feature under [root], with dto between
+     * controller and service and reading only entities.
      */
     fun layers(root: String): ArchRule =
         layeredArchitecture()
             .consideringOnlyDependenciesInLayers()
-            // A module brings the layers it needs; a layer no module has yet is not a violation.
+            // A feature brings the layers it needs; a layer no feature has yet is not a violation.
             .withOptionalLayers(true)
-            .layer(PRESENTATION)
-            .definedBy("${modules(root)}.$PRESENTATION..")
+            .layer(CONTROLLER)
+            .definedBy(inLayer(root, CONTROLLER))
             .layer(SERVICE)
-            .definedBy("${modules(root)}.$SERVICE..")
+            .definedBy(inLayer(root, SERVICE))
             .layer(DTO)
-            .definedBy("${modules(root)}.$DTO..")
-            .layer(DOMAIN)
-            .definedBy("${modules(root)}.$DOMAIN..")
-            .layer(INFRASTRUCTURE)
-            .definedBy("${modules(root)}.$INFRASTRUCTURE..")
-            .whereLayer(PRESENTATION)
+            .definedBy(inLayer(root, DTO))
+            .layer(REPOSITORY)
+            .definedBy(inLayer(root, REPOSITORY))
+            .layer(ENTITY)
+            .definedBy(inLayer(root, ENTITY))
+            .whereLayer(CONTROLLER)
             .mayNotBeAccessedByAnyLayer()
             .whereLayer(SERVICE)
-            .mayOnlyBeAccessedByLayers(PRESENTATION)
+            .mayOnlyBeAccessedByLayers(CONTROLLER)
             .whereLayer(DTO)
-            .mayOnlyBeAccessedByLayers(PRESENTATION, SERVICE)
-            .whereLayer(INFRASTRUCTURE)
+            .mayOnlyBeAccessedByLayers(CONTROLLER, SERVICE)
+            .whereLayer(REPOSITORY)
             .mayOnlyBeAccessedByLayers(SERVICE)
-            .whereLayer(DOMAIN)
-            .mayOnlyBeAccessedByLayers(PRESENTATION, SERVICE, DTO, INFRASTRUCTURE)
+            .whereLayer(ENTITY)
+            .mayOnlyBeAccessedByLayers(SERVICE, DTO, REPOSITORY)
 
-    fun domainFrameworks(root: String): ArchRule =
+    /** Every class of a feature sits in one of its layers, where the rules above see it. */
+    fun featureLayout(root: String): ArchRule =
         classes()
-            .that()
-            .resideInAPackage("${modules(root)}.$DOMAIN..")
+            .that(inFeature(root))
+            .should(
+                object : ArchCondition<JavaClass>("sit in one of ${LAYERS.joinToString()}") {
+                    override fun check(
+                        item: JavaClass,
+                        events: ConditionEvents,
+                    ) {
+                        if (placeOf(root, item.packageName)?.second !in LAYERS) {
+                            events.add(SimpleConditionEvent.violated(item, "Class <${item.name}> sits in no layer"))
+                        }
+                    }
+                },
+            )
+
+    /** A feature uses another's repository or entity only through that feature's service. */
+    fun featuresKeepApart(root: String): ArchRule =
+        classes()
+            .that(inFeature(root))
+            .should(
+                object : ArchCondition<JavaClass>(
+                    "use another feature's repository or entity only through its service",
+                ) {
+                    override fun check(
+                        item: JavaClass,
+                        events: ConditionEvents,
+                    ) {
+                        val own = placeOf(root, item.packageName)?.first
+                        item.directDependenciesFromSelf
+                            .filter { dependency ->
+                                val target = dependency.targetClass.let { if (it.isArray) it.baseComponentType else it }
+                                val place = placeOf(root, target.packageName)
+                                place != null && place.first != own && place.second in OWN_LAYERS
+                            }.forEach { events.add(SimpleConditionEvent.violated(it, it.description)) }
+                    }
+                },
+            )
+
+    fun entityFrameworks(root: String): ArchRule =
+        classes()
+            .that(inLayer(root, ENTITY))
             .should()
             .onlyDependOnClassesThat(
                 DescribedPredicate.describe(
-                    "in the pure JDK, Kotlin, JPA, Spring Data, Modulith, a model, or common entity and util",
+                    "in the pure JDK, Kotlin, JPA, Spring Data, an entity, or common entity and util",
                 ) {
                     val type = if (it.isArray) it.baseComponentType else it
                     type.isPrimitive ||
                         isPure(type) ||
-                        resideInAnyPackage(*DOMAIN_FRAMEWORKS).test(type) ||
-                        resideInAnyPackage(*domainProjectPackages(root)).test(type)
+                        resideInAnyPackage(*ENTITY_FRAMEWORKS).test(type) ||
+                        inLayer(root, ENTITY).test(type) ||
+                        resideInAnyPackage("$root.$COMMON.entity..", "$root.$COMMON.util..").test(type)
                 },
-            ).because("the model holds the rules; HTTP, SQL and sessions belong to the layers around it")
+            ).because("an entity holds the rules; HTTP, SQL and sessions belong to the layers around it")
 
     fun pure(): ArchRule =
         classes()
