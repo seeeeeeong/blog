@@ -52,42 +52,26 @@ class ConventionsFixturesTest {
     }
 
     @Test
-    fun `a type in a file of its own passes`() {
-        assertThatCode { Conventions.filesNamedAfterFirstType(scope("onetype/split")) }.doesNotThrowAnyException()
+    fun `a type in a file of its own, with nested types and functions, passes`() {
+        assertThatCode { Conventions.filesHoldOneType(scope("onetype/split")) }.doesNotThrowAnyException()
     }
 
     @Test
-    fun `related types after the one the file is named for pass`() {
-        assertThatCode { Conventions.filesNamedAfterFirstType(scope("onetype/related")) }.doesNotThrowAnyException()
+    fun `a second top-level type is caught, even a closely related one`() {
+        assertThatThrownBy { Conventions.filesHoldOneType(scope("onetype/related")) }
+            .hasMessageContaining("SpendPolicy")
     }
 
     @Test
     fun `a type sitting above the one the file is named for is caught`() {
-        assertThatThrownBy { Conventions.filesNamedAfterFirstType(scope("onetype/grouped")) }
+        assertThatThrownBy { Conventions.filesHoldOneType(scope("onetype/grouped")) }
             .hasMessageContaining("BudgetService")
     }
 
     @Test
     fun `a file named after no type it holds is caught`() {
-        assertThatThrownBy { Conventions.filesNamedAfterFirstType(scope("onetype/misnamed")) }
+        assertThatThrownBy { Conventions.filesHoldOneType(scope("onetype/misnamed")) }
             .hasMessageContaining("Budget")
-    }
-
-    @Test
-    fun `a request or response in a file of its own passes`() {
-        assertThatCode { Conventions.filesNamedAfterFirstType(scope("onetype/dto/split")) }.doesNotThrowAnyException()
-    }
-
-    @Test
-    fun `a dto file grouping a controller's requests and responses is caught`() {
-        assertThatThrownBy { Conventions.filesNamedAfterFirstType(scope("onetype/dto/grouped")) }
-            .hasMessageContaining("BudgetDto")
-    }
-
-    @Test
-    fun `a second type in a dto file named after the first is caught`() {
-        assertThatThrownBy { Conventions.filesNamedAfterFirstType(scope("onetype/dto/paired")) }
-            .hasMessageContaining("UsageResponse")
     }
 
     @Test
@@ -101,6 +85,24 @@ class ConventionsFixturesTest {
     @Test
     fun `a controller returning a response type or nothing passes`() {
         assertThatCode { Conventions.controllersReturnResponses(scope("returns/good")) }.doesNotThrowAnyException()
+    }
+
+    @Test
+    fun `a controller outside a controller package, and a non-controller inside one, are caught`() {
+        assertThatThrownBy { Conventions.controllersInControllerPackages(scope("placement/bad")) }
+            .hasMessageContaining("RefundController")
+            .hasMessageContaining("PriceFormatter")
+            .message()
+            .doesNotContain("ShopController")
+    }
+
+    @Test
+    fun `controllers in a controller package pass`() {
+        assertThatCode {
+            Conventions.controllersInControllerPackages(
+                scope("placement/good"),
+            )
+        }.doesNotThrowAnyException()
     }
 
     @Test

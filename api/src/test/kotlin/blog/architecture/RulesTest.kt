@@ -32,8 +32,8 @@ class RulesTest {
             )
     }
 
-    // "Field <fixtures.layers.domain.shop.domain.Invoice.shopService> has type ..." names the offender first.
-    private val layerOffender = Regex("^\\w+ <fixtures\\.layers\\.domain\\.shop\\.([a-z.]+\\.[A-Z]\\w*)")
+    // "Field <fixtures.layers.shop.entity.Invoice.shopService> has type ..." names the offender first.
+    private val layerOffender = Regex("^\\w+ <fixtures\\.layers\\.([a-z]+\\.[a-z.]+\\.[A-Z]\\w*)")
 
     private fun offendersOf(report: List<String>) =
         report
@@ -41,24 +41,43 @@ class RulesTest {
                 layerOffender.find(it)?.groupValues?.get(1)
             }.toSet()
 
+    private val layered = fixtures("fixtures.layers")
+
     @Test
     fun `the layer rule catches each reach outward or past a layer, and only those`() {
-        val result = Rules.layers("fixtures.layers").evaluate(fixtures("fixtures.layers"))
+        val result = Rules.layers("fixtures.layers").evaluate(layered)
 
         assertThat(offendersOf(result.failureReport.details))
             .containsExactlyInAnyOrder(
-                "domain.Invoice",
-                "service.Report",
-                "presentation.OrderView",
-                "dto.request.RefundRequest",
+                "shop.entity.Invoice",
+                "shop.service.Report",
+                "shop.repository.Restock",
+                "shop.controller.OrderView",
+                "shop.controller.OrderPage",
+                "shop.dto.request.RefundRequest",
             )
     }
 
     @Test
-    fun `the domain dependency rule catches the model holding SQL, a session or a use case, and only those`() {
-        val result = Rules.domainFrameworks("fixtures.layers").evaluate(fixtures("fixtures.layers"))
+    fun `the layout rule catches a class of a feature outside its layers, and only that one`() {
+        val result = Rules.featureLayout("fixtures.layers").evaluate(layered)
+
+        assertThat(offendersOf(result.failureReport.details)).containsExactly("shop.support.Discount")
+    }
+
+    @Test
+    fun `the feature rule catches a reach into another feature's repository or entity, and only those`() {
+        val result = Rules.featuresKeepApart("fixtures.layers").evaluate(layered)
 
         assertThat(offendersOf(result.failureReport.details))
-            .containsExactlyInAnyOrder("domain.Ledger", "domain.Basket", "domain.Invoice")
+            .containsExactlyInAnyOrder("billing.service.Charge", "billing.entity.Payment")
+    }
+
+    @Test
+    fun `the entity dependency rule catches an entity holding SQL, a session or a service, and only those`() {
+        val result = Rules.entityFrameworks("fixtures.layers").evaluate(layered)
+
+        assertThat(offendersOf(result.failureReport.details))
+            .containsExactlyInAnyOrder("shop.entity.Ledger", "shop.entity.Basket", "shop.entity.Invoice")
     }
 }

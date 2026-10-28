@@ -1,5 +1,5 @@
 scopes = [
-  # Application modules join this list as they arrive.
+  # Features join this list as they arrive.
   "api",
   "web",
   "arch",

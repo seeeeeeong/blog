@@ -1,11 +1,12 @@
 # Sinseong Lee
 
 A personal blog of computer science notes. Posts and their revisions are stored in PostgreSQL
-as MDX and grouped by topic; an admin editor agent and a reader's "Ask" run on DeepSeek. It is
+as MDX and grouped by topic; private study notes for a book's sections, a draft from the
+admin's memo and a reader's "Ask" run on DeepSeek. It is
 self-hosted on a home server behind a Cloudflare Tunnel.
 
 `api/` is the Spring Boot app and the only Gradle module, `web/` is Next.js. The design lives in
-local, uncommitted notes under `docs/`; read the relevant note before changing a module.
+local, uncommitted notes under `docs/`; read the relevant note before changing a feature.
 
 **Status: skeleton.** Built one pull request at a time. An architecture rule arrives with the
 code it guards.
@@ -25,66 +26,53 @@ code it guards.
 
 ## Architecture
 
-- **Layout**: `blog/common/` (config, entity, error, util) and one package per bounded context
-  under `blog/domain/` (`blog/domain/post`, `blog/domain/topic`), each in these layers:
+- **Layout**: `blog/common/` (config, entity, exception, util) and one package per feature directly
+  under `blog/` (`blog/post`; later `blog/book`, `blog/ask`), each in these layers:
 
   | Layer | Holds |
   |---|---|
-  | `presentation/` | controllers |
-  | `service/` | services (the transaction boundary), the module's `XxxError`, listeners, types other modules get |
-  | `dto/request/`, `dto/response/` | `XxxRequest`, `XxxResponse` |
-  | `domain/` | entities, value objects, rules, `repository/` (Spring Data), `event/` |
-  | `infrastructure/` | `JdbcXxx` on JdbcClient, files, external clients |
+  | `controller/` | controllers, and nothing else |
+  | `service/` | services, the transaction boundary |
+  | `dto/request/`, `dto/response/` | `XxxRequest`, `XxxResponse`, one per file |
+  | `repository/` | Spring Data repositories, and `JdbcXxx` on JdbcClient |
+  | `entity/` | JPA entities, their enums and converters, other domain types and rules |
 
-  `presentation → service → domain ← infrastructure`, and `service → infrastructure` for what
-  has no interface. `dto/` is used by presentation and service and reads only the domain.
-  `domain/` uses only the JDK, Kotlin, JPA, Spring Data, other models and `common`'s entity and
-  util. `ArchitectureTest` checks both.
-- **Modules**: each `blog/domain/<context>` is a Spring Modulith module, declared in its
-  `ModuleMetadata.kt` (`@ApplicationModule(id = "<context>", allowedDependencies = ...)`;
-  detection is `explicitly-annotated`). Its layers are hidden; `service/` and
-  `domain/event/` are opened as the named interfaces `<context> :: service` and
-  `<context> :: event`; a module may open a package of value types its callers need rather
-  than copy them into `service/`. `common` is an open module; `blog/domain/` is a plain
-  package, not a module. `ModularityTest` verifies the boundaries, lists the modules, and finds
-  any package under `blog/` or `blog/domain/` that forgot to declare itself. A new module adds
-  its scope to `cog.toml`.
+  `controller → service → repository → entity`. `dto/` sits under the feature, not under
+  `controller/`, since services take requests and return responses; controllers and services
+  use it, and it reads only entities. A controller never touches an entity or a repository.
+  `entity/` uses only the JDK, Kotlin, JPA, Spring Data, entities and `common`'s entity and
+  util. Every class of a feature sits in one of these layers. A new feature adds its scope to
+  `cog.toml`.
+- **Features keep apart**: a feature never uses another feature's `repository/` or `entity/`;
+  it calls that feature's service, whose requests and responses it may use. `ArchitectureTest`
+  checks this and the layers with ArchUnit, each rule with a fixture that breaks it.
 - **No ports**: no use-case interfaces; an interface only for an external system, named
-  `XxxGateway` (`LlmGateway` for DeepSeek).
-- **Events** are for side effects another module owns. A past-tense data class in
-  `domain/event/` with an `eventId` (UUIDv7) and `occurredAt`, ids only, never a secret. The
-  listener is `@ApplicationModuleListener(id = "<module>.<source>")`: it runs after commit on
-  its own thread, and `event_publication` redelivers it, so it must be idempotent. The id and
-  the event's class name and fields are stored, so changing them strands waiting events; a
-  move needs a migration rewriting `event_publication.event_type`. The first event brings
-  `spring-modulith-starter-jdbc` and the `event_publication` migration.
-- **Rules** (`XxxPolicy`, `XxxDecision`, `XxxParser`, `XxxPrompt`, `XxxCheck`) sit in `domain/`
+  `XxxGateway` (`LlmGateway` for DeepSeek). Its layer joins the rules when the first one arrives.
+- **Rules** (`XxxPolicy`, `XxxDecision`, `XxxParser`, `XxxPrompt`, `XxxCheck`) sit in `entity/`
   and depend only on Kotlin, the JDK's pure packages and other rule classes; `ArchitectureTest`
   checks it with an allow list.
-- **Value objects** are `@JvmInline value class`es with a private constructor: only `of(raw)`,
-  or a decision's `Accepted`, makes one, so a value in hand is valid. Entity factories and
-  methods take them, never a raw `String`. They are held to the same purity rule as the rule
-  classes.
 - **Persistence**: JPA, with Kotlin JDSL for queries, for what changes in place. JdbcClient
   for append-only tables, which are guarded by triggers and, in JPA, `@Immutable`.
 - **DTOs**: `XxxRequest` / `XxxResponse` data classes in `dto/request/` and `dto/response/`, one
-  per file. The service takes requests and returns responses (`PostResponse.from(post)`); a
-  method another module calls returns a type of its own from `service/`, since `dto/` is
-  hidden. Entities never leave through a controller. Validation annotations name their target
-  (`@field:NotBlank`).
+  per file. The service takes requests and returns responses (`PostResponse.from(post)`).
+  Entities never leave through a controller. Validation annotations name their target
+  (`@field:NotBlank`); a request's format checks (`@field:Pattern` on a slug) arrive with the
+  first write API, and the schema's checks stay the last guard.
 - **Controllers** are thin: one service call, its result returned as is. They return the
   response type, never a `ResponseEntity`; a status other than 200 is `@ResponseStatus`. One
   step per line with a named value, rather than calls nested inside calls.
-- **Errors**: each module has a `service/XxxError` enum implementing `ErrorCode` (status,
-  `module.snake_case` code, Korean message shown as is). The service throws
-  `BlogException(XxxError.Y)`; `GlobalExceptionHandler` answers `{code, message}`. A sealed
+- **Errors**: one enum, `common/exception/BlogError`, implementing `ErrorCode`, holds them all
+  (status, `feature.snake_case` code, Korean message shown as is). The service throws
+  `BlogException(BlogError.Y)`; `GlobalExceptionHandler` answers `{code, message}`. A sealed
   result only where the caller really branches on it.
 - **Paths**: every endpoint is under `/api/`, which the web rewrites to the api.
 - **Injected dependencies** are named after their type: `postService: PostService`.
-- **Entities** are made by a named factory (`Post.draft(...)`) behind a private constructor,
-  held in a variable, then saved on the next line.
+- **Entities** are built with their constructor and named arguments; their state changes only
+  through methods (`post.publish(now)`), every setter `protected set`. One is held in a
+  variable, then saved on the next line.
 - **Parameters**: a function takes four at most; a constructor keeps detekt's default, since a
-  bean's parameters are its collaborators. A call with four or more arguments names them;
+  bean's parameters are its collaborators; an entity's constructor, which mirrors its columns,
+  has no limit. A call with four or more arguments names them;
   detekt catches one that names none. A service method that needs more takes a request or a
   command object.
 - **Transactions** stay short: no model call and no SSE inside one.
@@ -117,10 +105,8 @@ code it guards.
 - Time comes from an injected `java.time.Clock`; detekt forbids `now()` and
   `currentTimeMillis`. Tests move a clock; they never sleep.
 - IDs are UUIDv7 made by the application (`blog.common.util.UuidV7`).
-- Closely related types share a file named after the first of them: `Slug.kt` opens with
-  `Slug`, then `SlugDecision`; a module's events share `XxxEvent.kt`. A request or response
-  has a file of its own. A rule or value object with its own test keeps its own file. Events
-  stay top-level, never nested: their class name is stored.
+- One top-level type per file, named after it: `PostStatus` has `PostStatus.kt`, not a place
+  in `Post.kt`. Nested types and functions may ride along. `ConventionsTest` checks it.
 - Every architecture rule has a fixture that breaks it.
 
 ## Testing
@@ -132,8 +118,8 @@ code it guards.
 - Anything that needs Spring is a `@SpringBootTest` that imports `TestcontainersConfiguration`,
   which gives each context a database of its own in one PostgreSQL container. A controller
   test is `webEnvironment = RANDOM_PORT` and calls the running app over real HTTP. No
-  `@WebMvcTest`, `@ApplicationModuleTest` or `@MockitoBean`; an external system is replaced by
-  a fake `XxxGateway` bean from a `@TestConfiguration`.
+  `@WebMvcTest` or `@MockitoBean`; an external system is replaced by a fake `XxxGateway` bean
+  from a `@TestConfiguration`.
 - An advice with no route of its own may be tested on a standalone MockMvc with a sample
   controller, as `GlobalExceptionHandlerTest` is.
 - Time moves through `MutableClock`; a test that moves it resets it.
@@ -195,7 +181,7 @@ code it guards.
 ## Commands
 
 ```bash
-./gradlew check           # compile, test, ktlint, detekt, Konsist, ArchUnit, Modulith
+./gradlew check           # compile, test, ktlint, detekt, Konsist, ArchUnit
 ./gradlew spotlessApply   # fix Kotlin formatting
 pnpm --dir web check      # web: Biome, type check, Vitest
 pnpm --dir web fix        # web: fix formatting and lint
