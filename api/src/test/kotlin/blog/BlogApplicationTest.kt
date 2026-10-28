@@ -5,9 +5,12 @@ import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
+import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -21,6 +24,7 @@ class BlogApplicationTest(
     @Autowired private val clock: Clock,
     @Autowired private val entityManager: EntityManager,
     @Autowired private val jpql: JpqlRenderContext,
+    @Autowired @Qualifier("requestMappingHandlerMapping") private val routes: RequestMappingHandlerMapping,
 ) {
     private val client = HttpClient.newHttpClient()
 
@@ -51,5 +55,13 @@ class BlogApplicationTest(
 
         assertThat(missing.statusCode()).isEqualTo(404)
         assertThat(missing.body()).contains("\"code\":\"common.not_found\"")
+    }
+
+    @Test
+    fun `every api route only reads, since no one can sign in yet`() {
+        val api = routes.handlerMethods.keys.filter { route -> route.patternValues.any { it.startsWith("/api/") } }
+
+        assertThat(api).isNotEmpty()
+        assertThat(api).allSatisfy { assertThat(it.methodsCondition.methods).containsExactly(RequestMethod.GET) }
     }
 }

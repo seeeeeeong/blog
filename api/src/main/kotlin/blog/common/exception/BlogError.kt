@@ -15,4 +15,5 @@ enum class BlogError(
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "common.method_not_allowed", "지원하지 않는 요청입니다"),
     UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "common.unsupported_media_type", "지원하지 않는 형식입니다"),
     INTERNAL(HttpStatus.INTERNAL_SERVER_ERROR, "common.internal", "잠시 후 다시 시도해 주세요"),
+    POST_NOT_FOUND(HttpStatus.NOT_FOUND, "post.not_found", "글을 찾을 수 없습니다"),
 }
