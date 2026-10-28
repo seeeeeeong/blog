@@ -1,6 +1,7 @@
 scopes = [
   # Features join this list as they arrive.
   "api",
+  "post",
   "web",
   "arch",
   "ci",
