@@ -1,0 +1,47 @@
+version: 2
+
+updates:
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore
+      include: scope
+    ignore:
+      # detekt runs on the Kotlin it was built with; Kotlin moves with detekt.
+      - dependency-name: 'org.jetbrains.kotlin*'
+    groups:
+      build-tooling:
+        patterns: ['org.junit*', 'org.assertj*', 'dev.detekt*', 'com.diffplug.spotless*', 'com.lemonappdev*']
+
+  - package-ecosystem: npm
+    directory: /web
+    schedule:
+      interval: weekly
+    # A week: past pnpm's minimum release age, and past when a bad release is usually pulled.
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+    ignore:
+      # Follows the Node in .nvmrc, not the newest.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+      # TypeScript 7 is the native compiler: its own change, once Next supports it.
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
+    groups:
+      next-react:
+        patterns: ['next', 'react', 'react-dom', '@types/react', '@types/react-dom']
+      build-tooling:
+        patterns: ['@biomejs/*', 'typescript', 'tailwindcss', '@tailwindcss/*', '@types/node']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore
+      include: scope

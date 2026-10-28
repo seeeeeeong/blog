@@ -1,0 +1,12 @@
+scopes = [
+  # Application modules join this list as they arrive.
+  "api",
+  "web",
+  "arch",
+  "ci",
+  "deps",
+  # Dependabot's npm devDependency bumps.
+  "deps-dev",
+  "deploy",
+  "repo",
+]

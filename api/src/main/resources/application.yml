@@ -1,0 +1,36 @@
+server:
+  shutdown: graceful
+  # Loopback: only the tunnel and the web app on the same host should reach it.
+  address: ${BLOG_API_HOST:127.0.0.1}
+  port: ${BLOG_API_PORT:8150}
+  # X-Forwarded-* decide the scheme behind the tunnel. Safe only because nothing but the proxy
+  # reaches the api, which replaces those headers.
+  forward-headers-strategy: framework
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+spring:
+  application:
+    name: blog-api
+  config:
+    import: optional:file:.env[.dotenv]
+  datasource:
+    url: ${BLOG_DB_URL:jdbc:postgresql://127.0.0.1:55436/blog}
+    username: ${BLOG_DB_USER:blog}
+    password: ${BLOG_DB_PASSWORD:blog}
+  modulith:
+    # Each module under blog declares itself in ModuleMetadata; ModularityTest finds one that forgot.
+    detection-strategy: explicitly-annotated
+  flyway:
+    validate-on-migrate: true
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate

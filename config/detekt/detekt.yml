@@ -1,0 +1,60 @@
+complexity:
+  # Flags a call of four or more arguments that names none of them.
+  NamedArguments:
+    active: true
+    allowedArguments: 3
+  # Same limit as Biome.
+  CognitiveComplexMethod:
+    active: true
+    allowedComplexity: 12
+  # Four function parameters at most. Constructors keep the default: a bean's are its collaborators.
+  LongParameterList:
+    allowedFunctionParameters: 4
+    ignoreDefaultParameters: true
+    # An entity's constructor is its table's columns; a @Bean method takes what Spring injects.
+    ignoreAnnotated: ['Entity', 'Bean']
+  TooManyFunctions:
+    ignoreOverridden: true
+
+style:
+  ReturnCount:
+    excludeGuardClauses: true
+  MagicNumber:
+    ignoreNumbers: ['-1', '0', '1', '2', '400', '401', '403', '404', '409', '429', '500', '503']
+    ignoreEnums: true
+  ForbiddenComment:
+    comments:
+      - value: 'TODO'
+        reason: 'Link an issue (https://github.com/seeeeeeong/blog-v2/issues/N) or do it now.'
+      - value: 'FIXME'
+        reason: 'Link an issue (https://github.com/seeeeeeong/blog-v2/issues/N) or fix it now.'
+      - value: 'STOPSHIP'
+        reason: 'Address this before merging.'
+    allowedPatterns: 'github\.com/seeeeeeong/blog-v2/issues/\d+'
+  ForbiddenMethodCall:
+    active: true
+    methods:
+      - value: 'kotlin.io.print'
+        reason: 'Use a logger.'
+      - value: 'kotlin.io.println'
+        reason: 'Use a logger.'
+      - value: 'java.lang.Thread.sleep'
+        reason: 'Inject a Clock and advance it instead of waiting.'
+      - value: 'java.time.Instant.now'
+        reason: 'Read time from the injected Clock: clock.instant().'
+      - value: 'java.time.LocalDateTime.now'
+        reason: 'Read time from the injected Clock.'
+      - value: 'java.time.LocalDate.now'
+        reason: 'Read time from the injected Clock.'
+      - value: 'java.time.OffsetDateTime.now'
+        reason: 'Read time from the injected Clock.'
+      - value: 'java.time.ZonedDateTime.now'
+        reason: 'Read time from the injected Clock.'
+      - value: 'java.lang.System.currentTimeMillis'
+        reason: 'Read time from the injected Clock.'
+      - value: 'java.time.Clock.systemUTC'
+        reason: 'Inject the Clock; only ClockConfig makes the real one.'
+      - value: 'java.time.Clock.systemDefaultZone'
+        reason: 'Inject the Clock; only ClockConfig makes the real one.'
+      - value: 'java.time.Clock.system'
+        reason: 'Inject the Clock; only ClockConfig makes the real one.'

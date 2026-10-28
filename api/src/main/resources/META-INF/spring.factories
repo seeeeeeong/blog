@@ -1,0 +1,1 @@
+org.springframework.boot.env.PropertySourceLoader=blog.common.config.DotenvPropertySourceLoader

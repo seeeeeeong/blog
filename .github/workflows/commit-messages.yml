@@ -1,0 +1,50 @@
+name: Commit messages
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  commit-messages:
+    runs-on: ubuntu-latest
+    steps:
+      # The branch tip, not GitHub's merge commit, whose message is not Conventional.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      # cocogitto-action@v4 installs 6.4.0 and fails in install-only mode.
+      - name: Install cocogitto
+        env:
+          COG_VERSION: 7.0.0
+        run: |
+          curl -sSfL "https://github.com/cocogitto/cocogitto/releases/download/${COG_VERSION}/cocogitto-${COG_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+            | tar -xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/x86_64-unknown-linux-musl" >> "$GITHUB_PATH"
+
+      # cog panics without a git identity, even for a message it only verifies.
+      - run: |
+          git config user.name github-actions
+          git config user.email github-actions[bot]@users.noreply.github.com
+
+      # Through env: a title interpolated into the script would run as shell.
+      - name: Title
+        run: |
+          cog verify "$TITLE"
+          printf '%s\n' "$TITLE" | LC_ALL=C awk 'length > 72 || /[^ -~]/ { print "Not English or over 72 characters"; exit 1 }'
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+
+      - name: Commits
+        run: |
+          cog check "$BASE_SHA..$HEAD_SHA"
+          git log --format=%s "$BASE_SHA..$HEAD_SHA" | LC_ALL=C awk '
+            length > 72 || /[^ -~]/ { print "Not English or over 72 characters: " $0; bad = 1 }
+            END { exit bad }'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
