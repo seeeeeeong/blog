@@ -37,6 +37,13 @@ class StudyNotePromptTest {
     }
 
     @Test
+    fun `the rules keep one voice and keep the book out of the note`() {
+        val system = StudyNotePrompt.of(subject).system
+
+        assertThat(system).contains("(~습니다), the same from the first line to the last", "never mention the book")
+    }
+
+    @Test
     fun `the rules allow only what the blog renders`() {
         val system = StudyNotePrompt.of(subject).system
 
