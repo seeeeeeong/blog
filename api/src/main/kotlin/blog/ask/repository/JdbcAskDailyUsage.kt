@@ -14,7 +14,7 @@ class JdbcAskDailyUsage(
     private val jdbcClient: JdbcClient,
 ) {
     /** Counts a question for [ipHash] on [day] unless it already has [limit]; false when it has. */
-    fun take(
+    fun tryTake(
         ipHash: String,
         day: LocalDate,
         limit: Int,
