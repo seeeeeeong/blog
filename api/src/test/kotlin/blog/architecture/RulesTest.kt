@@ -32,8 +32,8 @@ class RulesTest {
             )
     }
 
-    // "Field <fixtures.layers.shop.entity.Invoice.shopService> has type ..." names the offender first.
-    private val layerOffender = Regex("^\\w+ <fixtures\\.layers\\.([a-z]+\\.[a-z.]+\\.[A-Z]\\w*)")
+    // "Field <fixtures.layers.domain.shop.entity.Invoice.shopService> has type ..." names the offender first.
+    private val layerOffender = Regex("^\\w+ <fixtures\\.layers\\.domain\\.([a-z]+\\.[a-z.]+\\.[A-Z]\\w*)")
 
     private fun offendersOf(report: List<String>) =
         report
@@ -42,6 +42,13 @@ class RulesTest {
             }.toSet()
 
     private val layered = fixtures("fixtures.layers")
+
+    @Test
+    fun `the top level rule catches a class outside common and domain, and only that one`() {
+        val result = Rules.topLevel("fixtures.layers").evaluate(layered)
+
+        assertThat(result.failureReport.details).singleElement().asString().contains("<fixtures.layers.util.Slugs>")
+    }
 
     @Test
     fun `the layer rule catches each reach outward or past a layer, and only those`() {

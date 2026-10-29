@@ -20,6 +20,11 @@ class ArchitectureTest {
     }
 
     @Test
+    fun `every class is the application, common code or a feature under domain`() {
+        Rules.topLevel("blog").checkProduction()
+    }
+
+    @Test
     fun `layers depend inward, controller to service to repository to entity`() {
         Rules.layers("blog").checkProduction()
     }
