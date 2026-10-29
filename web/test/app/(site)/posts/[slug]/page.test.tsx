@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import PostPage, { generateMetadata } from '@/app/posts/[slug]/page'
+import PostPage, { generateMetadata } from '@/app/(site)/posts/[slug]/page'
 import type { Post } from '@/features/posts/api/types'
 
 const POST: Post = {

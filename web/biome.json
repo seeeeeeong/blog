@@ -125,6 +125,32 @@
       }
     },
     {
+      "includes": ["src/features/admin/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@/features/**",
+                      "!@/features/admin/**",
+                      "@/app/**",
+                      "../**",
+                      "./**/../**"
+                    ],
+                    "message": "A feature imports only itself and shared code; compose features in a route."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "includes": ["src/features/cmd/**"],
       "linter": {
         "rules": {
