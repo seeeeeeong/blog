@@ -1,9 +1,11 @@
-import { adminGet, adminWrite } from '@/features/admin/api/client'
+import { AdminApiError, adminGet, adminWrite } from '@/features/admin/api/client'
+import { adminStream, type StreamEvent } from '@/features/admin/api/stream'
 import type {
   AdminBook,
   AdminPost,
   BookEdition,
   BookImportRequest,
+  StudyNote,
 } from '@/features/admin/api/types'
 
 const BOOKS = '/api/admin/books'
@@ -31,7 +33,27 @@ export function placeBookInTopic(id: string, topicSlug: string | null): Promise<
   return adminWrite('PUT', `${bookPath(id)}/topic`, { topicSlug })
 }
 
+const sectionPath = (id: string) => `/api/admin/sections/${encodeURIComponent(id)}`
+
 /** The section's post: a new draft in the book's topic, or the one it already has. */
 export function writeSectionPost(sectionId: string): Promise<AdminPost> {
-  return adminWrite('POST', `/api/admin/sections/${encodeURIComponent(sectionId)}/post`)
+  return adminWrite('POST', `${sectionPath(sectionId)}/post`)
+}
+
+/** The section's latest study note, or null before one is written. */
+export async function getSectionNote(sectionId: string): Promise<StudyNote | null> {
+  try {
+    return await adminGet<StudyNote>(`${sectionPath(sectionId)}/note`)
+  } catch (error) {
+    if (error instanceof AdminApiError && error.code === 'book.note_not_found') return null
+    throw error
+  }
+}
+
+/** A new note from the model, streamed as it writes; once `done`, it is the section's note. */
+export function writeSectionNote(
+  sectionId: string,
+  signal?: AbortSignal,
+): AsyncGenerator<StreamEvent<StudyNote>> {
+  return adminStream(`${sectionPath(sectionId)}/note`, undefined, signal)
 }

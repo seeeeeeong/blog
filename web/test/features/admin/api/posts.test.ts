@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createPost, getPost, publishPost, savePost } from '@/features/admin/api/posts'
+import {
+  createPost,
+  draftFromMemo,
+  getPost,
+  publishPost,
+  savePost,
+} from '@/features/admin/api/posts'
 
 const REQUEST = {
   version: 3,
@@ -41,5 +47,16 @@ describe('admin posts', () => {
       ['/api/admin/posts/0199-a/publish', 'POST'],
     ])
     expect(JSON.parse(fetch.mock.calls[1]?.[1].body)).toEqual(REQUEST)
+  })
+
+  it("streams a draft from the memo at the post's draft endpoint", async () => {
+    fetch.mockResolvedValueOnce(new Response('event: done\ndata: {"bodyMdx":"## TCP"}\n\n'))
+
+    const events = []
+    for await (const event of draftFromMemo('0199-a', '세 번 악수')) events.push(event)
+
+    expect(sent()).toEqual([['/api/admin/posts/0199-a/draft', 'POST']])
+    expect(JSON.parse(fetch.mock.calls[0]?.[1].body)).toEqual({ memo: '세 번 악수' })
+    expect(events).toEqual([{ type: 'done', result: { bodyMdx: '## TCP' } }])
   })
 })

@@ -1,4 +1,9 @@
-import type { AdminBook, AdminBookSection, AdminPostSummary } from '@/features/admin/api/types'
+import type {
+  AdminBook,
+  AdminBookSection,
+  AdminPostSummary,
+  StudyNote,
+} from '@/features/admin/api/types'
 import { leavesOf, type Progress, progressOf } from '@/utils/book'
 import { shortDate } from '@/utils/date'
 
@@ -15,6 +20,21 @@ export function sectionAnchor(id: string): string {
 /** The book's page, scrolled to the section. */
 export function sectionHref(bookId: string, sectionId: string): string {
   return `${bookHref(bookId)}#${sectionAnchor(sectionId)}`
+}
+
+/** The section's study note. */
+export function noteHref(bookId: string, sectionId: string): string {
+  return `${bookHref(bookId)}/sections/${encodeURIComponent(sectionId)}`
+}
+
+/** `3.5 / Study note / OCT 29`, with the day its latest note was written, if it has one. */
+export function noteMeta(
+  section: Pick<AdminBookSection, 'number'>,
+  note: StudyNote | null,
+): string {
+  return [section.number, 'Study note', note && shortDate(note.createdAt)]
+    .filter(Boolean)
+    .join(' / ')
 }
 
 /** Leaves with a post, drafts included, of all the book has. */

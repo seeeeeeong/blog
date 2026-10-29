@@ -80,6 +80,8 @@ export type AdminBookSection = {
   number: string
   title: string
   post: AdminPostSummary | null
+  /** When its latest study note was written, an ISO-8601 instant; null without one. */
+  noteCreatedAt: string | null
   sections: AdminBookSection[]
 }
 
@@ -104,4 +106,25 @@ export type AdminBook = {
 export type BookImportRequest = {
   sourceRef: string
   topicSlug?: string
+}
+
+/** A section's latest study note, private to the admin. */
+export type StudyNote = {
+  id: string
+  sectionId: string
+  bodyMdx: string
+  model: string
+  inputTokens: number
+  outputTokens: number
+  createdAt: string
+}
+
+/** A body the model drafted from the admin's memo; nothing is saved until the editor saves it. */
+export type PostDraft = {
+  bodyMdx: string
+  /** Whether the section's study note was given as reference. */
+  usedNote: boolean
+  model: string
+  inputTokens: number
+  outputTokens: number
 }

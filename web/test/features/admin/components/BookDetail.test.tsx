@@ -24,8 +24,16 @@ const BOOK: AdminBook = {
       number: '1',
       title: '컴퓨터 네트워크와 인터넷',
       post: null,
+      noteCreatedAt: null,
       sections: [
-        { id: '1.1', number: '1.1', title: '인터넷이란 무엇인가', post: null, sections: [] },
+        {
+          id: '1.1',
+          number: '1.1',
+          title: '인터넷이란 무엇인가',
+          post: null,
+          noteCreatedAt: null,
+          sections: [],
+        },
       ],
     },
   ],

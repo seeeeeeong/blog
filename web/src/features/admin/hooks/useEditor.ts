@@ -87,5 +87,5 @@ export function useEditor(loaded: AdminPost) {
     if (outcome === 'conflict') autosave.stop()
   }
 
-  return { state, dirty: isDirty(state), busy, savedAt, notice, edit, save, publish }
+  return { state, dirty: isDirty(state), busy, savedAt, notice, show, edit, save, publish }
 }
