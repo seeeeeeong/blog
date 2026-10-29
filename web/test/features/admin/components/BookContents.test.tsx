@@ -24,11 +24,14 @@ const node = (
   title: string,
   written: AdminPostSummary | null = null,
   sections: AdminBookSection[] = [],
-): AdminBookSection => ({ id, number: id, title, post: written, sections })
+): AdminBookSection => ({ id, number: id, title, post: written, noteCreatedAt: null, sections })
 
 const CHAPTERS = [
   node('1', '컴퓨터 네트워크와 인터넷', null, [
-    node('1.1', '인터넷이란 무엇인가', post('0199-a', '2026-10-21T00:00:00Z')),
+    {
+      ...node('1.1', '인터넷이란 무엇인가', post('0199-a', '2026-10-21T00:00:00Z')),
+      noteCreatedAt: '2026-10-20T00:00:00Z',
+    },
     node('1.2', '네트워크 가장자리', post('0199-b', null)),
     node('1.3', '네트워크 코어'),
   ]),
@@ -36,7 +39,9 @@ const CHAPTERS = [
 ]
 
 const render = (writing: string | null = null) =>
-  renderToStaticMarkup(<BookContents chapters={CHAPTERS} writing={writing} onWrite={() => {}} />)
+  renderToStaticMarkup(
+    <BookContents bookId="0199-book" chapters={CHAPTERS} writing={writing} onWrite={() => {}} />,
+  )
 
 describe('BookContents', () => {
   it('heads each chapter with its number and how many of its sections have a post', () => {
@@ -65,6 +70,18 @@ describe('BookContents', () => {
     expect(out).toContain('<li id="section-1.3">')
     expect(out).toContain('<li id="section-A">')
     expect(out).not.toContain('id="section-1"')
+  })
+
+  it('links each section to its study note, to view or to write', () => {
+    const out = render()
+
+    expect(out).toContain(
+      '<a class="mono mlink" href="/admin/books/0199-book/sections/1.1">View note</a>',
+    )
+    expect(out).toContain(
+      '<a class="mono mlink" href="/admin/books/0199-book/sections/1.3">Write note</a>',
+    )
+    expect(out.match(/>Write note</g)).toHaveLength(3)
   })
 
   it('holds every Write post back while one post is being made', () => {

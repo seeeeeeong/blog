@@ -2,7 +2,7 @@ export const CSRF_COOKIE = 'XSRF-TOKEN'
 
 export const CSRF_HEADER = 'X-XSRF-TOKEN'
 
-const FALLBACK_MESSAGE = '요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요'
+export const FALLBACK_MESSAGE = '요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요'
 
 /** The api's `{code, message}`; [message] is Korean and meant to be shown as is. */
 export class AdminApiError extends Error {
@@ -29,7 +29,8 @@ export function readCookie(cookies: string, name: string): string | undefined {
   return found === undefined ? undefined : decodeURIComponent(found.slice(prefix.length))
 }
 
-async function errorOf(response: Response): Promise<AdminApiError> {
+/** The api's `{code, message}` of a failed response, or the fallback for anything else. */
+export async function errorOf(response: Response): Promise<AdminApiError> {
   try {
     const { code, message } = (await response.json()) as { code?: unknown; message?: unknown }
     if (typeof code === 'string' && typeof message === 'string') {
@@ -53,7 +54,7 @@ async function send<T>(method: string, path: string, headers: HeadersInit, body?
 
 // The api checks the header against the cookie, so the cookie is read before every write: it is
 // replaced at sign-in.
-async function csrfToken(): Promise<string> {
+export async function csrfToken(): Promise<string> {
   const token = readCookie(document.cookie, CSRF_COOKIE)
   if (token) return token
   return (await send<{ token: string }>('GET', '/api/auth/csrf', {})).token

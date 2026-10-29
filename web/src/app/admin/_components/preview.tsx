@@ -18,8 +18,8 @@ async function isAdmin(): Promise<boolean> {
   }
 }
 
-/** The body as readers will see it: the post page's allow list, widgets and renderer. */
-export async function previewPost(source: string) {
+/** MDX as readers would see it: the post page's allow list, widgets and renderer. */
+export async function previewMdx(source: string) {
   if (!(await isAdmin())) return <p className="empty">로그인이 필요합니다.</p>
   const Content = await compileMdx(source, Object.keys(POST_COMPONENTS))
   return <PostBody Content={Content} components={POST_COMPONENTS} />

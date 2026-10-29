@@ -1,8 +1,10 @@
 import { adminGet, adminWrite } from '@/features/admin/api/client'
+import { adminStream, type StreamEvent } from '@/features/admin/api/stream'
 import type {
   AdminPost,
   AdminPostSummary,
   PostCreateRequest,
+  PostDraft,
   PostSaveRequest,
   Topic,
 } from '@/features/admin/api/types'
@@ -35,4 +37,13 @@ export function savePost(id: string, request: PostSaveRequest): Promise<AdminPos
 /** Publishes, or republishes, and keeps a revision of what readers will see. */
 export function publishPost(id: string, request: PostSaveRequest): Promise<AdminPost> {
   return adminWrite('POST', `${postPath(id)}/publish`, request)
+}
+
+/** A draft's body from [memo], streamed as the model writes it; the api saves nothing. */
+export function draftFromMemo(
+  id: string,
+  memo: string,
+  signal?: AbortSignal,
+): AsyncGenerator<StreamEvent<PostDraft>> {
+  return adminStream(`${postPath(id)}/draft`, { memo }, signal)
 }

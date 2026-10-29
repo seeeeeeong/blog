@@ -1,8 +1,9 @@
 'use client'
 
 import { type ReactNode, useRef, useState } from 'react'
-import type { AdminPost, Topic } from '@/features/admin/api/types'
+import type { AdminPost, PostDraft, Topic } from '@/features/admin/api/types'
 import { EditorBar, type EditorMode } from '@/features/admin/components/EditorBar'
+import { MemoDialog } from '@/features/admin/components/MemoDialog'
 import { MetaFields } from '@/features/admin/components/MetaFields'
 import { PageHead } from '@/features/admin/components/PageHead'
 import { PublishDialog } from '@/features/admin/components/PublishDialog'
@@ -11,6 +12,7 @@ import { useEditor } from '@/features/admin/hooks/useEditor'
 import { useUnsavedWarning } from '@/features/admin/hooks/useUnsavedWarning'
 import type { SectionPlace } from '@/features/admin/utils/books'
 import { editorMeta } from '@/features/admin/utils/editor'
+import { draftNotice } from '@/features/admin/utils/memo'
 
 /** Renders MDX through the reader's pipeline on the server, so the preview is the post. */
 export type PreviewAction = (source: string) => Promise<ReactNode>
@@ -32,6 +34,7 @@ export function PostEditor({ post, topics, section = null, previewAction }: Prop
   const [mode, setMode] = useState<EditorMode>('write')
   const [preview, setPreview] = useState<ReactNode>(null)
   const [confirming, setConfirming] = useState(false)
+  const [drafting, setDrafting] = useState(false)
   const previews = useRef(0)
   useUnsavedWarning(dirty)
 
@@ -43,6 +46,14 @@ export function PostEditor({ post, topics, section = null, previewAction }: Prop
     const land = (node: ReactNode) => request === previews.current && setPreview(node)
     setPreview(null)
     void previewAction(state.draft.bodyMdx).then(land, () => land(PREVIEW_FAILED))
+  }
+
+  // The draft goes in as an edit, so autosave keeps it like any other.
+  const applyDraft = (draft: PostDraft) => {
+    setDrafting(false)
+    setMode('write')
+    editor.edit({ bodyMdx: draft.bodyMdx })
+    editor.show(draftNotice(draft))
   }
 
   const confirmPublish = () => {
@@ -86,7 +97,17 @@ export function PostEditor({ post, topics, section = null, previewAction }: Prop
         savedAt={editor.savedAt}
         onSave={() => void editor.save()}
         onPublish={() => setConfirming(true)}
+        onMemo={() => setDrafting(true)}
       />
+      {!published && (
+        <MemoDialog
+          open={drafting}
+          postId={state.post.id}
+          body={state.draft.bodyMdx}
+          onApply={applyDraft}
+          onClose={() => setDrafting(false)}
+        />
+      )}
       <PublishDialog
         open={confirming}
         republish={published}

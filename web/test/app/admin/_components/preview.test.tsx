@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { previewPost } from '@/app/admin/(console)/posts/[id]/_components/preview'
+import { previewMdx } from '@/app/admin/_components/preview'
 import { API_URL } from '@/lib/api-url'
 
 vi.mock('next/headers', () => ({
@@ -34,9 +34,9 @@ beforeEach(() => admin(true))
 
 afterEach(() => vi.unstubAllGlobals())
 
-describe('previewPost', () => {
+describe('previewMdx', () => {
   it("renders the body through the post page's allow list and widgets", async () => {
-    const out = renderToStaticMarkup(await previewPost(BODY))
+    const out = renderToStaticMarkup(await previewMdx(BODY))
 
     expect(out).toContain('<aside class="callout">')
     expect(out).toContain('<div class="widget" id="handshake">')
@@ -46,7 +46,7 @@ describe('previewPost', () => {
   })
 
   it("asks the api whether the browser's session is the admin's", async () => {
-    await previewPost('')
+    await previewMdx('')
 
     expect(fetch).toHaveBeenCalledWith(
       `${API_URL}/api/admin/me`,
@@ -57,7 +57,7 @@ describe('previewPost', () => {
   it('renders nothing of the body for anyone else', async () => {
     admin(false)
 
-    const out = renderToStaticMarkup(await previewPost(BODY))
+    const out = renderToStaticMarkup(await previewMdx(BODY))
 
     expect(out).toBe('<p class="empty">로그인이 필요합니다.</p>')
   })

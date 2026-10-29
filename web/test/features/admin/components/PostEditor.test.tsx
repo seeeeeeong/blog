@@ -64,7 +64,14 @@ describe('PostEditor', () => {
   })
 
   it('links back to the book section the post was written for', () => {
-    const section = { id: '0199-s', number: '3.5', title: 'TCP', post: null, sections: [] }
+    const section = {
+      id: '0199-s',
+      number: '3.5',
+      title: 'TCP',
+      post: null,
+      noteCreatedAt: null,
+      sections: [],
+    }
     const book = {
       id: '0199-book',
       title: '컴퓨터 네트워킹',
@@ -91,9 +98,28 @@ describe('PostEditor', () => {
     expect(out).toContain(
       '<a class="mono mlink" href="/admin/books/0199-book#section-0199-s">컴퓨터 네트워킹 / 3.5</a>',
     )
+    expect(out).toContain(
+      '<a class="mono mlink" href="/admin/books/0199-book/sections/0199-s">View note</a>',
+    )
   })
 
-  it('has no book link for a post written for no section', () => {
+  it('has no book or note link for a post written for no section', () => {
     expect(render(DRAFT)).not.toContain('/admin/books')
+    expect(render(DRAFT)).not.toContain('View note')
+  })
+
+  it('drafts a draft from a memo, behind a dialog that stays closed until asked', () => {
+    const out = render(DRAFT)
+
+    expect(out).toMatch(/<button class="dock__item" type="button">.*From memo<\/button>/)
+    expect(out).toContain('<dialog class="modal modal--wide">')
+    expect(out).not.toContain('<dialog class="modal modal--wide" open')
+  })
+
+  it('has no From memo for a published post', () => {
+    const out = render({ ...DRAFT, status: 'PUBLISHED', publishedAt: '2026-10-21T00:00:00Z' })
+
+    expect(out).not.toContain('From memo')
+    expect(out).not.toContain('메모')
   })
 })

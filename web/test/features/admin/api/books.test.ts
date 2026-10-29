@@ -1,10 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   getBook,
+  getSectionNote,
   importBook,
   listBooks,
   placeBookInTopic,
   searchBooks,
+  writeSectionNote,
   writeSectionPost,
 } from '@/features/admin/api/books'
 import { AdminApiError } from '@/features/admin/api/client'
@@ -65,6 +67,46 @@ describe('admin books', () => {
     await writeSectionPost('0199-s')
 
     expect(sent()).toEqual([['/api/admin/sections/0199-s/post', 'POST']])
+  })
+
+  it("reads a section's latest note, and null before one is written", async () => {
+    fetch.mockResolvedValueOnce(Response.json({ id: '0199-n', bodyMdx: '## TCP' }))
+    fetch.mockResolvedValueOnce(
+      Response.json(
+        { code: 'book.note_not_found', message: '아직 공부 노트가 없습니다' },
+        { status: 404 },
+      ),
+    )
+
+    await expect(getSectionNote('0199-s')).resolves.toEqual({ id: '0199-n', bodyMdx: '## TCP' })
+    await expect(getSectionNote('0199-s')).resolves.toBeNull()
+    expect(sent()).toEqual([
+      ['/api/admin/sections/0199-s/note', 'GET'],
+      ['/api/admin/sections/0199-s/note', 'GET'],
+    ])
+  })
+
+  it('passes on any other failure to read a note', async () => {
+    fetch.mockResolvedValueOnce(
+      Response.json(
+        { code: 'book.section_not_found', message: '목차를 찾을 수 없습니다' },
+        { status: 404 },
+      ),
+    )
+
+    await expect(getSectionNote('0199-s')).rejects.toMatchObject({
+      code: 'book.section_not_found',
+    })
+  })
+
+  it("streams a new note at the section's note endpoint", async () => {
+    fetch.mockResolvedValueOnce(new Response('event: done\ndata: {"id":"0199-n"}\n\n'))
+
+    const events = []
+    for await (const event of writeSectionNote('0199-s')) events.push(event)
+
+    expect(sent()).toEqual([['/api/admin/sections/0199-s/note', 'POST']])
+    expect(events).toEqual([{ type: 'done', result: { id: '0199-n' } }])
   })
 
   it("passes on the api's message, as when YES24 has no key", async () => {

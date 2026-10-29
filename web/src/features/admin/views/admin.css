@@ -482,6 +482,47 @@ select.minput {
   justify-self: start;
 }
 
+.mfield__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.mstream {
+  min-height: 0;
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.modal .mstream,
+.mmemo {
+  min-height: 260px;
+  margin-top: var(--space-4);
+}
+
+.modal .mstream {
+  max-height: min(420px, 55vh);
+  overflow-y: auto;
+}
+
+.mmemo {
+  outline: none;
+  resize: vertical;
+}
+
+.mmemo:focus {
+  border-color: oklch(from var(--accent) l c h / 50%);
+}
+
+.nempty {
+  display: grid;
+  place-items: center;
+  padding: var(--space-10) 0;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-2);
+}
+
 .bsection {
   grid-template-columns: 48px minmax(0, 1fr) auto auto;
 }

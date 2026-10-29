@@ -1,3 +1,4 @@
+import { Icon } from '@/features/admin/components/Icon'
 import { type Busy, saveLabel } from '@/features/admin/utils/editor'
 
 export type EditorMode = 'write' | 'preview'
@@ -16,14 +17,15 @@ type Props = {
   savedAt: Date | null
   onSave: () => void
   onPublish: () => void
+  onMemo: () => void
 }
 
 /**
- * The floating bar at the bottom of the editor. A draft saves in place; a published post changes
- * only by publishing again, so it has no Save.
+ * The floating bar at the bottom of the editor. A draft saves in place and can be drafted from a
+ * memo; a published post changes only by publishing again, so it has neither.
  */
 export function EditorBar(props: Props) {
-  const { mode, onMode, published, dirty, busy, savedAt, onSave, onPublish } = props
+  const { mode, onMode, published, dirty, busy, savedAt, onSave, onPublish, onMemo } = props
   return (
     <div className="ebar">
       <div className="dock__bar">
@@ -31,6 +33,12 @@ export function EditorBar(props: Props) {
           {saveLabel(dirty, busy, savedAt)}
         </span>
         <span className="dock__divider" aria-hidden="true" />
+        {!published && (
+          <button className="dock__item" type="button" onClick={onMemo}>
+            <Icon name="spark" />
+            From memo
+          </button>
+        )}
         {MODES.map((item) => (
           <button
             key={item.mode}

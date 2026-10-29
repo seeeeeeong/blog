@@ -5,6 +5,8 @@ import {
   bookProgress,
   booksMeta,
   editionNote,
+  noteHref,
+  noteMeta,
   placeOf,
   postStatus,
   progressMeta,
@@ -33,7 +35,7 @@ function section(
   written: AdminPostSummary | null = null,
   sections: AdminBookSection[] = [],
 ): AdminBookSection {
-  return { id, number: id, title, post: written, sections }
+  return { id, number: id, title, post: written, noteCreatedAt: null, sections }
 }
 
 /** Two chapters with sections and one without, as the api answers a book. */
@@ -63,6 +65,27 @@ describe('book links', () => {
   it('opens a book, and its page at a section', () => {
     expect(bookHref('0199-book')).toBe('/admin/books/0199-book')
     expect(sectionHref('0199-book', '0199-s')).toBe('/admin/books/0199-book#section-0199-s')
+  })
+
+  it("opens a section's study note", () => {
+    expect(noteHref('0199-book', '0199-s')).toBe('/admin/books/0199-book/sections/0199-s')
+  })
+})
+
+describe('noteMeta', () => {
+  it('gives the section and the day its note was written, if it has one', () => {
+    const note = {
+      id: 'n',
+      sectionId: 's',
+      bodyMdx: '',
+      model: 'm',
+      inputTokens: 1,
+      outputTokens: 1,
+      createdAt: '2026-10-29T00:00:00Z',
+    }
+
+    expect(noteMeta({ number: '3.5' }, note)).toBe('3.5 / Study note / OCT 29')
+    expect(noteMeta({ number: '3.5' }, null)).toBe('3.5 / Study note')
   })
 })
 

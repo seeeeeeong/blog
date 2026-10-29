@@ -1,6 +1,6 @@
 import { type ReactNode, useId } from 'react'
 import type { Topic } from '@/features/admin/api/types'
-import { type SectionPlace, sectionHref } from '@/features/admin/utils/books'
+import { noteHref, type SectionPlace, sectionHref } from '@/features/admin/utils/books'
 import type { Draft } from '@/features/admin/utils/editor'
 
 type Props = {
@@ -67,9 +67,14 @@ export function MetaFields({ draft, topics, section, onEdit }: Props) {
         {section && (
           <div className="meta-item mfield mfield--wide">
             <p className="mfield__label">Book</p>
-            <a className="mono mlink" href={sectionHref(section.book.id, section.section.id)}>
-              {section.book.title} / {section.section.number}
-            </a>
+            <span className="mfield__links">
+              <a className="mono mlink" href={sectionHref(section.book.id, section.section.id)}>
+                {section.book.title} / {section.section.number}
+              </a>
+              <a className="mono mlink" href={noteHref(section.book.id, section.section.id)}>
+                View note
+              </a>
+            </span>
           </div>
         )}
         <Field id={`${id}summary`} label="Summary" wide>

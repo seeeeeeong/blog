@@ -1,9 +1,10 @@
 import type { AdminBookSection } from '@/features/admin/api/types'
-import { bookProgress, postStatus, sectionAnchor } from '@/features/admin/utils/books'
+import { bookProgress, noteHref, postStatus, sectionAnchor } from '@/features/admin/utils/books'
 import { postEditHref } from '@/features/admin/utils/list'
 import { chapterLabel } from '@/utils/book'
 
 type Props = {
+  bookId: string
   chapters: readonly AdminBookSection[]
   /** The section whose post is being made, which holds every Write post back. */
   writing: string | null
@@ -12,8 +13,7 @@ type Props = {
 
 type RowProps = Omit<Props, 'chapters'> & { section: AdminBookSection }
 
-// The actions sit in a cell of their own, so a section can take another beside Write post.
-function SectionRow({ section, writing, onWrite }: RowProps) {
+function SectionRow({ bookId, section, writing, onWrite }: RowProps) {
   const { post } = section
   const status = postStatus(post)
   return (
@@ -25,6 +25,9 @@ function SectionRow({ section, writing, onWrite }: RowProps) {
           {status.label}
         </span>
         <span className="bsection__actions">
+          <a className="mono mlink" href={noteHref(bookId, section.id)}>
+            {section.noteCreatedAt ? 'View note' : 'Write note'}
+          </a>
           {post ? (
             <a className="mono mlink" href={postEditHref(post.id)}>
               Open post
@@ -45,8 +48,8 @@ function SectionRow({ section, writing, onWrite }: RowProps) {
   )
 }
 
-/** The book's chapters and their sections, each with the post written for it. */
-export function BookContents({ chapters, writing, onWrite }: Props) {
+/** The book's chapters and their sections, each with its study note and the post written for it. */
+export function BookContents({ bookId, chapters, writing, onWrite }: Props) {
   return (
     <ul className="group">
       {chapters.map((chapter) => {
@@ -63,6 +66,7 @@ export function BookContents({ chapters, writing, onWrite }: Props) {
               {leaves.map((section) => (
                 <SectionRow
                   key={section.id}
+                  bookId={bookId}
                   section={section}
                   writing={writing}
                   onWrite={onWrite}

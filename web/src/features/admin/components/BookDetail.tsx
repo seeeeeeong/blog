@@ -64,6 +64,7 @@ export function BookDetail({ book: loaded, topics }: Props) {
         onTopic={(topicSlug) => void place(topicSlug)}
       />
       <BookContents
+        bookId={book.id}
         chapters={book.chapters}
         writing={writing}
         onWrite={(sectionId) => void write(sectionId)}
