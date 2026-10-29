@@ -1,5 +1,6 @@
 package blog.post.controller
 
+import blog.Browser
 import blog.Http
 import blog.TestcontainersConfiguration
 import blog.post.Posts
@@ -17,7 +18,7 @@ import java.time.Instant
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestcontainersConfiguration::class)
 class PostControllerTest(
-    @LocalServerPort port: Int,
+    @LocalServerPort private val port: Int,
     @Autowired postRepository: PostRepository,
     @Autowired topicRepository: TopicRepository,
 ) {
@@ -113,12 +114,14 @@ class PostControllerTest(
     }
 
     @Test
-    fun `nothing writes a post over HTTP`() {
+    fun `nothing writes a post over HTTP, even with the CSRF token`() {
         posts.draft("udp")
+        val browser = Browser(port)
+        browser.fetchCsrf()
 
         listOf("POST", "PUT", "PATCH", "DELETE").forEach { method ->
             listOf("/api/posts", "/api/posts/udp").forEach { path ->
-                val answer = http.send(method, path)
+                val answer = browser.send(method, path, body = emptyMap<String, Any>())
 
                 assertThat(answer.status).describedAs("$method $path").isEqualTo(405)
                 assertThat(answer.code).isEqualTo("common.method_not_allowed")

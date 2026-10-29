@@ -26,18 +26,21 @@ code it guards.
 
 ## Architecture
 
-- **Layout**: `blog/common/` (config, entity, exception, util) and one package per feature directly
-  under `blog/` (`blog/post`; later `blog/book`, `blog/ask`), each in these layers:
+- **Layout**: `blog/common/` (config, entity, exception, security, util) and one package per
+  feature directly under `blog/` (`blog/post`, `blog/auth`; later `blog/book`, `blog/ask`), each
+  in these layers:
 
   | Layer | Holds |
   |---|---|
   | `controller/` | controllers, and nothing else |
+  | `security/` | Spring Security's filter chain, OAuth client and handlers (`blog/auth` only) |
   | `service/` | services, the transaction boundary |
   | `dto/request/`, `dto/response/` | `XxxRequest`, `XxxResponse`, one per file |
   | `repository/` | Spring Data repositories, and `JdbcXxx` on JdbcClient |
   | `entity/` | JPA entities, their enums and converters, other domain types and rules |
 
-  `controller → service → repository → entity`. `dto/` sits under the feature, not under
+  `controller → service → repository → entity`; `security/` sits beside `controller/` as the
+  web's other door and reaches only the service and dto. `dto/` sits under the feature, not under
   `controller/`, since services take requests and return responses; controllers and services
   use it, and it reads only entities. A controller never touches an entity or a repository.
   `entity/` uses only the JDK, Kotlin, JPA, Spring Data, entities and `common`'s entity and
@@ -67,7 +70,16 @@ code it guards.
   (status, `feature.snake_case` code, Korean message shown as is). The service throws
   `BlogException(BlogError.Y)`; `GlobalExceptionHandler` answers `{code, message}`. A sealed
   result only where the caller really branches on it.
-- **Paths**: every endpoint is under `/api/`, which the web rewrites to the api.
+- **Paths**: every endpoint is under `/api/`, which the web rewrites to the api. A reader's
+  routes are GET only; only `/api/admin/*` and `/api/auth/*` write, which `BlogApplicationTest`
+  checks.
+- **Admin**: one admin, the owner, signs in with GitHub (`oauth2Login` in `blog/auth/security`);
+  only `BLOG_ADMIN_GITHUB_LOGIN` gets a session, kept in PostgreSQL by Spring Session JDBC.
+  `SecurityConfig` puts everything under `/api/admin/` behind the admin's role (401 without a
+  session, 403 without the role); a controller there needs no check of its own. Every write
+  sends the `XSRF-TOKEN` cookie back as `X-XSRF-TOKEN` (`GET /api/auth/csrf` sets it). The
+  session stores `common/security/SessionAdmin` by class name, so moving it signs the admin
+  out. GitHub's calls stay inside Spring Security's OAuth client, with no gateway.
 - **Injected dependencies** are named after their type: `postService: PostService`.
 - **Entities** are built with their constructor and named arguments; their state changes only
   through methods (`post.publish(now)`), every setter `protected set`. One is held in a
@@ -125,6 +137,8 @@ code it guards.
 - An advice with no route of its own may be tested on a standalone MockMvc with a sample
   controller, as `GlobalExceptionHandlerTest` is.
 - Time moves through `MutableClock`; a test that moves it resets it.
+- An admin test signs in end to end against `FakeGitHub` (GitHub's token and user endpoints on
+  a local port) with a `Browser`, which keeps cookies and sends the CSRF header.
 
 ## Commits and pull requests
 

@@ -16,6 +16,7 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Clock
+import java.util.UUID
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestcontainersConfiguration::class)
@@ -57,11 +58,46 @@ class BlogApplicationTest(
         assertThat(missing.body()).contains("\"code\":\"common.not_found\"")
     }
 
-    @Test
-    fun `every api route only reads, since no one can sign in yet`() {
-        val api = routes.handlerMethods.keys.filter { route -> route.patternValues.any { it.startsWith("/api/") } }
+    private val api
+        get() = routes.handlerMethods.keys.filter { route -> route.patternValues.any { it.startsWith("/api/") } }
 
-        assertThat(api).isNotEmpty()
-        assertThat(api).allSatisfy { assertThat(it.methodsCondition.methods).containsExactly(RequestMethod.GET) }
+    private fun isGuarded(pattern: String) = pattern.startsWith("/api/admin/") || pattern.startsWith("/api/auth/")
+
+    @Test
+    fun `public api routes only read, and only admin and auth routes write`() {
+        val (guarded, public) = api.partition { route -> route.patternValues.all(::isGuarded) }
+
+        assertThat(public).isNotEmpty()
+        assertThat(public).allSatisfy { assertThat(it.methodsCondition.methods).containsExactly(RequestMethod.GET) }
+        assertThat(guarded).allSatisfy { assertThat(it.methodsCondition.methods).isNotEmpty() }
+    }
+
+    @Test
+    fun `every admin route needs the admin's session, and a write the CSRF token before that`() {
+        val admin = api.filter { route -> route.patternValues.all { it.startsWith("/api/admin/") } }
+
+        assertThat(admin).isNotEmpty()
+        admin.forEach { route ->
+            route.patternValues.forEach { pattern ->
+                val path = pattern.replace(Regex("\\{[^}]+}"), UUID.randomUUID().toString())
+                route.methodsCondition.methods.forEach { method -> assertGuarded(method.name, path) }
+            }
+        }
+    }
+
+    private fun assertGuarded(
+        method: String,
+        path: String,
+    ) {
+        val browser = Browser(port)
+        browser.fetchCsrf()
+        if (method != "GET") {
+            val forged = browser.send(method = method, path = path, body = emptyMap<String, Any>(), csrf = false)
+            assertThat(forged.status).describedAs("$method $path without CSRF").isEqualTo(403)
+            assertThat(forged.code).isEqualTo("auth.invalid_csrf")
+        }
+        val anonymous = browser.send(method, path, body = emptyMap<String, Any>().takeIf { method != "GET" })
+        assertThat(anonymous.status).describedAs("$method $path without a session").isEqualTo(401)
+        assertThat(anonymous.code).isEqualTo("common.unauthorized")
     }
 }

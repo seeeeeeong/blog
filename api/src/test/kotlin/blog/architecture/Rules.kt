@@ -82,11 +82,12 @@ internal object Rules {
 
     private const val COMMON = "common"
     private const val CONTROLLER = "controller"
+    private const val SECURITY = "security"
     private const val SERVICE = "service"
     private const val DTO = "dto"
     private const val REPOSITORY = "repository"
     private const val ENTITY = "entity"
-    private val LAYERS = listOf(CONTROLLER, SERVICE, DTO, REPOSITORY, ENTITY)
+    private val LAYERS = listOf(CONTROLLER, SECURITY, SERVICE, DTO, REPOSITORY, ENTITY)
 
     // What a feature keeps to itself; another feature asks its service.
     private val OWN_LAYERS = setOf(REPOSITORY, ENTITY)
@@ -125,7 +126,8 @@ internal object Rules {
 
     /**
      * controller → service → repository → entity in every feature under [root], with dto between
-     * controller and service and reading only entities.
+     * controller and service and reading only entities. security (filters, handlers) sits beside
+     * controller: the web's other door into the service.
      */
     fun layers(root: String): ArchRule =
         layeredArchitecture()
@@ -134,6 +136,8 @@ internal object Rules {
             .withOptionalLayers(true)
             .layer(CONTROLLER)
             .definedBy(inLayer(root, CONTROLLER))
+            .layer(SECURITY)
+            .definedBy(inLayer(root, SECURITY))
             .layer(SERVICE)
             .definedBy(inLayer(root, SERVICE))
             .layer(DTO)
@@ -144,10 +148,12 @@ internal object Rules {
             .definedBy(inLayer(root, ENTITY))
             .whereLayer(CONTROLLER)
             .mayNotBeAccessedByAnyLayer()
+            .whereLayer(SECURITY)
+            .mayNotBeAccessedByAnyLayer()
             .whereLayer(SERVICE)
-            .mayOnlyBeAccessedByLayers(CONTROLLER)
+            .mayOnlyBeAccessedByLayers(CONTROLLER, SECURITY)
             .whereLayer(DTO)
-            .mayOnlyBeAccessedByLayers(CONTROLLER, SERVICE)
+            .mayOnlyBeAccessedByLayers(CONTROLLER, SECURITY, SERVICE)
             .whereLayer(REPOSITORY)
             .mayOnlyBeAccessedByLayers(SERVICE)
             .whereLayer(ENTITY)

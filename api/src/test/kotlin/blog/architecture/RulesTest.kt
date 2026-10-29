@@ -55,6 +55,8 @@ class RulesTest {
                 "shop.controller.OrderView",
                 "shop.controller.OrderPage",
                 "shop.dto.request.RefundRequest",
+                "shop.security.StockGate",
+                "shop.service.Checkout",
             )
     }
 

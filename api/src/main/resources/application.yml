@@ -6,6 +6,19 @@ server:
   # X-Forwarded-* decide the scheme behind the tunnel. Safe only because nothing but the proxy
   # reaches the api, which replaces those headers.
   forward-headers-strategy: framework
+  servlet:
+    session:
+      # An unfinished GitHub sign-in lapses this soon; signing in stretches the session to its cookie's age.
+      timeout: 10m
+      cookie:
+        name: blog_session
+        # The owner signs in again every two weeks.
+        max-age: 14d
+        # Not Strict: GitHub's redirect back is a cross-site navigation that must carry the cookie.
+        same-site: lax
+        http-only: true
+        # The api never sees TLS itself, so it is set, not inferred; off only for local http.
+        secure: ${BLOG_COOKIE_SECURE:true}
 
 management:
   endpoints:
@@ -27,7 +40,23 @@ spring:
     password: ${BLOG_DB_PASSWORD:blog}
   flyway:
     validate-on-migrate: true
+  session:
+    jdbc:
+      # Flyway owns the tables.
+      initialize-schema: never
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: validate
+
+blog:
+  # The origin the browser sees: GitHub sends the owner back here, and sign-in lands on its /admin.
+  public-url: ${BLOG_PUBLIC_URL:http://localhost:3150}
+  auth:
+    admin-github-login: ${BLOG_ADMIN_GITHUB_LOGIN:seeeeeeong}
+    github:
+      # Empty: admin sign-in is off, and everything public still works.
+      client-id: ${BLOG_GITHUB_CLIENT_ID:}
+      client-secret: ${BLOG_GITHUB_CLIENT_SECRET:}
+      url: https://github.com
+      api-url: https://api.github.com
