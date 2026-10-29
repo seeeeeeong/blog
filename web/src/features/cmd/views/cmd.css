@@ -1,0 +1,136 @@
+.cmd {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.cmd__backdrop {
+  position: absolute;
+  inset: 0;
+  background: oklch(from var(--gray-000) l c h / 55%);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  animation: cmd-fade 0.2s ease-out;
+}
+
+.cmd__panel {
+  position: absolute;
+  top: 180px;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  width: min(600px, calc(100vw - 32px));
+  max-height: min(505px, calc(100vh - 220px));
+  overflow: hidden;
+  border: 1px solid oklch(from var(--gray-900) l c h / 15%);
+  border-radius: var(--radius-2);
+  background: oklch(from var(--gray-300) l c h / 75%);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  backdrop-filter: blur(16px) saturate(1.15);
+  box-shadow: 0 24px 64px -16px rgb(0 0 0 / 0.5);
+  transform: translateX(-50%);
+  animation: cmd-in 0.25s var(--ease);
+}
+
+.cmd__input {
+  flex: none;
+  height: 55px;
+  padding: 0 18px;
+  border: 0;
+  border-bottom: 1px solid oklch(from var(--gray-900) l c h / 15%);
+  background: transparent;
+  color: var(--text-primary);
+  font: var(--font-size-1) var(--font-display);
+  outline: none;
+}
+
+.cmd__input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.cmd__list {
+  overflow-y: auto;
+  padding: var(--space-2);
+  overscroll-behavior: contain;
+}
+
+.cmd__list:empty {
+  display: none;
+}
+
+.cmd__group {
+  padding: 10px 12px 8px;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  font-weight: var(--weight-500);
+}
+
+.cmd__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding: 0 12px;
+  border-radius: var(--radius-1);
+  color: var(--text-secondary);
+  font-size: var(--font-size-1);
+  font-weight: var(--weight-500);
+  cursor: pointer;
+}
+
+.cmd__item[aria-selected="true"] {
+  background: oklch(from var(--text-primary) l c h / 5%);
+  color: var(--text-primary);
+}
+
+.cmd__item svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+.cmd__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cmd__hint {
+  color: var(--text-tertiary);
+}
+
+.cmd__empty {
+  margin: 0;
+  padding: var(--space-6) 12px;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-1);
+  text-align: center;
+}
+
+@keyframes cmd-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes cmd-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px) scale(0.98);
+  }
+}
+
+@media (max-width: 560px) {
+  .cmd__panel {
+    top: 96px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cmd__backdrop,
+  .cmd__panel {
+    animation: none;
+  }
+}
