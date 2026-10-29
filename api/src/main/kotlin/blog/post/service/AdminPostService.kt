@@ -45,7 +45,11 @@ class AdminPostService(
         return AdminPostResponse.from(post, topic)
     }
 
-    fun create(request: PostCreateRequest): AdminPostResponse {
+    /** [sectionId] is a book's section the post is written for; `SectionPostService` checks it is free. */
+    fun create(
+        request: PostCreateRequest,
+        sectionId: UUID? = null,
+    ): AdminPostResponse {
         val topic = topic(request.topicSlug)
         val slug = request.slug ?: freeSlug(SlugPolicy.derive(request.title))
         if (postRepository.existsBySlug(slug)) throw BlogException(BlogError.POST_SLUG_TAKEN)
@@ -57,6 +61,7 @@ class AdminPostService(
                 position = postRepository.nextPosition(topic.id),
                 summary = "",
                 bodyMdx = "",
+                sectionId = sectionId,
                 now = clock.instant(),
             )
         postRepository.save(post)

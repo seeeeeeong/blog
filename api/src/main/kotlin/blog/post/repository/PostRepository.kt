@@ -27,6 +27,10 @@ interface PostRepository : JpaRepository<Post, UUID> {
         id: UUID,
     ): Boolean
 
+    fun findBySectionId(sectionId: UUID): Post?
+
+    fun findAllBySectionIdIn(sectionIds: Collection<UUID>): List<Post>
+
     @Query("select coalesce(max(p.position), 0) + 1 from Post p where p.topicId = :topicId")
     fun nextPosition(topicId: UUID): Int
 

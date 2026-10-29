@@ -60,3 +60,12 @@ blog:
       client-secret: ${BLOG_GITHUB_CLIENT_SECRET:}
       url: https://github.com
       api-url: https://api.github.com
+  yes24:
+    base-url: https://apis.yes24.com/v1
+    # The owner's key for YES24's Open API; empty, book search and import answer 503.
+    api-key: ${BLOG_YES24_API_KEY:}
+  book-source:
+    # YES24's basic tier allows a key 10 calls a second and 20,000 a day. Under both, so a second that
+    # falls across two of theirs, or a restart that forgets the day's count, still fits.
+    per-second: 8
+    per-day: 18000

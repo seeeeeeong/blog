@@ -57,6 +57,8 @@ class RulesTest {
                 "shop.dto.request.RefundRequest",
                 "shop.security.StockGate",
                 "shop.service.Checkout",
+                "shop.controller.PriceView",
+                "shop.gateway.StockFeed",
             )
     }
 
@@ -68,11 +70,11 @@ class RulesTest {
     }
 
     @Test
-    fun `the feature rule catches a reach into another feature's repository or entity, and only those`() {
+    fun `the feature rule catches a reach into another feature's repository, entity or gateway, and only those`() {
         val result = Rules.featuresKeepApart("fixtures.layers").evaluate(layered)
 
         assertThat(offendersOf(result.failureReport.details))
-            .containsExactlyInAnyOrder("billing.service.Charge", "billing.entity.Payment")
+            .containsExactlyInAnyOrder("billing.service.Charge", "billing.entity.Payment", "billing.service.Quote")
     }
 
     @Test

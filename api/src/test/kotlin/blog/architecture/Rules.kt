@@ -87,10 +87,11 @@ internal object Rules {
     private const val DTO = "dto"
     private const val REPOSITORY = "repository"
     private const val ENTITY = "entity"
-    private val LAYERS = listOf(CONTROLLER, SECURITY, SERVICE, DTO, REPOSITORY, ENTITY)
+    private const val GATEWAY = "gateway"
+    private val LAYERS = listOf(CONTROLLER, SECURITY, SERVICE, DTO, REPOSITORY, ENTITY, GATEWAY)
 
     // What a feature keeps to itself; another feature asks its service.
-    private val OWN_LAYERS = setOf(REPOSITORY, ENTITY)
+    private val OWN_LAYERS = setOf(REPOSITORY, ENTITY, GATEWAY)
 
     // An entity may carry its mapping and nothing that talks HTTP or SQL.
     private val ENTITY_FRAMEWORKS =
@@ -127,7 +128,8 @@ internal object Rules {
     /**
      * controller → service → repository → entity in every feature under [root], with dto between
      * controller and service and reading only entities. security (filters, handlers) sits beside
-     * controller: the web's other door into the service.
+     * controller: the web's other door into the service. gateway (an external system's client) is
+     * called by the service alone and reaches into no layer.
      */
     fun layers(root: String): ArchRule =
         layeredArchitecture()
@@ -146,6 +148,8 @@ internal object Rules {
             .definedBy(inLayer(root, REPOSITORY))
             .layer(ENTITY)
             .definedBy(inLayer(root, ENTITY))
+            .layer(GATEWAY)
+            .definedBy(inLayer(root, GATEWAY))
             .whereLayer(CONTROLLER)
             .mayNotBeAccessedByAnyLayer()
             .whereLayer(SECURITY)
@@ -158,6 +162,8 @@ internal object Rules {
             .mayOnlyBeAccessedByLayers(SERVICE)
             .whereLayer(ENTITY)
             .mayOnlyBeAccessedByLayers(SERVICE, DTO, REPOSITORY)
+            .whereLayer(GATEWAY)
+            .mayOnlyBeAccessedByLayers(SERVICE)
 
     /** Every class of a feature sits in one of its layers, where the rules above see it. */
     fun featureLayout(root: String): ArchRule =

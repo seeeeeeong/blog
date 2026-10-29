@@ -26,4 +26,18 @@ enum class BlogError(
     POST_SUMMARY_REQUIRED(HttpStatus.BAD_REQUEST, "post.summary_required", "발행하려면 요약을 적어 주세요"),
     POST_EDIT_CONFLICT(HttpStatus.CONFLICT, "post.edit_conflict", "다른 곳에서 먼저 고친 글입니다. 새로고침 후 다시 시도해 주세요"),
     POST_PUBLISHED_LOCKED(HttpStatus.CONFLICT, "post.published_locked", "발행한 글은 다시 발행해야 바뀝니다"),
+    POST_SECTION_TAKEN(HttpStatus.CONFLICT, "post.section_taken", "이 목차에는 이미 글이 있습니다"),
+    BOOK_NOT_FOUND(HttpStatus.NOT_FOUND, "book.not_found", "책을 찾을 수 없습니다"),
+    BOOK_SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "book.section_not_found", "목차를 찾을 수 없습니다"),
+    BOOK_ALREADY_IMPORTED(HttpStatus.CONFLICT, "book.already_imported", "이미 가져온 책입니다"),
+    BOOK_TOPIC_REQUIRED(HttpStatus.CONFLICT, "book.topic_required", "글을 쓰려면 먼저 책의 주제를 정해 주세요"),
+    BOOK_NOT_IN_SOURCE(HttpStatus.NOT_FOUND, "book.not_in_source", "YES24 에서 찾을 수 없는 책입니다"),
+    BOOK_CONTENTS_UNREADABLE(
+        HttpStatus.UNPROCESSABLE_CONTENT,
+        "book.contents_unreadable",
+        "목차를 읽을 수 없는 책입니다. 다른 판을 골라 주세요",
+    ),
+    BOOK_SOURCE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "book.source_unavailable", "YES24 검색이 설정되지 않았습니다"),
+    BOOK_SOURCE_BUSY(HttpStatus.TOO_MANY_REQUESTS, "book.source_busy", "YES24 요청이 많습니다. 잠시 후 다시 시도해 주세요"),
+    BOOK_SOURCE_FAILED(HttpStatus.BAD_GATEWAY, "book.source_failed", "YES24 가 응답하지 않습니다. 잠시 후 다시 시도해 주세요"),
 }

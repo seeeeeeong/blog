@@ -37,7 +37,8 @@ services:
       BLOG_ADMIN_GITHUB_LOGIN: ${BLOG_ADMIN_GITHUB_LOGIN:-seeeeeeong}
       BLOG_GITHUB_CLIENT_ID: ${BLOG_GITHUB_CLIENT_ID:-}
       BLOG_GITHUB_CLIENT_SECRET: ${BLOG_GITHUB_CLIENT_SECRET:-}
-    # db reaches postgres; default reaches GitHub for the admin's sign-in.
+      BLOG_YES24_API_KEY: ${BLOG_YES24_API_KEY:-}
+    # db reaches postgres; default reaches GitHub for the admin's sign-in and YES24 for books.
     networks: [db, default]
     # The JVM sizes its heap from this; see api/Dockerfile.
     mem_limit: 768m

@@ -34,9 +34,9 @@ Kotlin + Spring Boot 4 (`api`), Next.js (`web`), PostgreSQL 18. 홈 서버에 Cl
 
 ### 구조 (docs 없이도 판단할 수 있게)
 
-- 기능은 `blog/` 바로 아래 패키지(`blog/post`, `blog/auth`)이고 `controller/`, `security/`(Spring Security 설정·핸들러, `blog/auth` 만), `service/`, `dto/request/`·`dto/response/`, `repository/`, `entity/` 로 나뉜다. 이 밖의 패키지에 클래스를 두면 지적한다.
-- 한 기능이 다른 기능의 `repository/`·`entity/` 를 직접 쓰면 지적한다. 다른 기능은 그 기능의 `service/` 를 부르고, 그 서비스의 요청·응답 DTO 는 써도 된다.
-- 계층 방향(`controller → service → repository → entity`, `dto/` 는 controller·service 가 쓰고 entity 만 읽는다)을 거스르거나, controller 가 entity·repository 를 직접 쓰거나, `entity/` 가 HTTP·JDBC 코드를 쓰면 지적한다. 포트를 두지 않으며, 인터페이스는 외부 시스템(`XxxGateway`)에만 둔다.
+- 기능은 `blog/` 바로 아래 패키지(`blog/post`, `blog/auth`, `blog/book`)이고 `controller/`, `security/`(Spring Security 설정·핸들러, `blog/auth` 만), `service/`, `dto/request/`·`dto/response/`, `repository/`, `entity/`, `gateway/`(외부 시스템 클라이언트) 로 나뉜다. 이 밖의 패키지에 클래스를 두면 지적한다.
+- 한 기능이 다른 기능의 `repository/`·`entity/`·`gateway/` 를 직접 쓰면 지적한다. 다른 기능은 그 기능의 `service/` 를 부르고, 그 서비스의 요청·응답 DTO 는 써도 된다.
+- 계층 방향(`controller → service → repository → entity`, `dto/` 는 controller·service 가 쓰고 entity 만 읽는다)을 거스르거나, controller 가 entity·repository 를 직접 쓰거나, `entity/` 가 HTTP·JDBC 코드를 쓰면 지적한다. 포트를 두지 않으며, 인터페이스는 외부 시스템(`XxxGateway`)에만 두고, gateway 는 같은 기능의 service 만 부른다.
 - 엔티티를 Controller 가 그대로 반환하면 지적한다. `XxxResponse` 로 바꾼다.
 - Controller 가 `ResponseEntity` 를 반환하거나, 에러 body 를 직접 만들거나, 서비스 호출 외의 업무 로직을 가지면 지적한다. 에러는 `common/exception/BlogError` 한 곳에 두고 `BlogException` 으로 던진다. 기능마다 에러 enum 을 따로 만들면 지적한다.
 - 사용자에게 보이는 에러 메시지에 내부 정보(쿼리, 키, 경로, 스택)가 들어가면 지적한다.

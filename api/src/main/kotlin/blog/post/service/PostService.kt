@@ -10,6 +10,7 @@ import blog.post.repository.TopicRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 /** Posts as a reader sees them: published ones only, a draft is as good as missing. */
 @Service
@@ -22,6 +23,16 @@ class PostService(
         val posts = postRepository.findPublishedNewestFirst()
         val topics = topicRepository.findAll().associateBy { it.id }
         return posts.map { PostSummaryResponse.from(it, topics.getValue(it.topicId)) }
+    }
+
+    /** The published posts written for these book sections, by section; a draft is as good as missing. */
+    fun listPublishedForSections(sectionIds: Collection<UUID>): Map<UUID, PostSummaryResponse> {
+        if (sectionIds.isEmpty()) return emptyMap()
+        val posts = postRepository.findAllBySectionIdIn(sectionIds).filter { it.status == PostStatus.PUBLISHED }
+        val topics = topicRepository.findAll().associateBy { it.id }
+        return posts.associate {
+            checkNotNull(it.sectionId) to PostSummaryResponse.from(it, topics.getValue(it.topicId))
+        }
     }
 
     /** The post and its published neighbours in its topic, which a reader pages through in order. */
