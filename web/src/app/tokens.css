@@ -1,0 +1,159 @@
+/* next/font defines --font-inter, --font-fira-code and --font-departure-mono on <html>. */
+:root {
+  --radius-0: 4px;
+  --radius-1: 8px;
+  --radius-2: 12px;
+  --radius-3: 16px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 40px;
+  --space-8: 48px;
+  --space-10: 64px;
+  --space-11: 80px;
+  --space-12: 96px;
+  --space-13: 128px;
+
+  --font-fallback:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-display: var(--font-inter), "Pretendard Variable", Pretendard, var(--font-fallback);
+  --font-mono: var(--font-departure-mono), var(--font-fira-code), ui-monospace, monospace;
+  --font-code: var(--font-fira-code), ui-monospace, Menlo, monospace;
+  --font-settings: "cv11" 1, "cv05" 1;
+
+  --font-size-1: 14px;
+  --font-size-3: 16px;
+  --font-size-4: 18px;
+  --font-size-5: 20px;
+  --font-size-6: 24px;
+  --font-size-7: 32px;
+
+  --weight-400: 400;
+  --weight-500: 500;
+  --weight-title: 510;
+  --weight-600: 560;
+
+  --content-max: 664px;
+  --gutter: 20px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --base-hue: 262.04;
+  --gray-000: oklch(12.92% 0.005 var(--base-hue));
+  --gray-100: oklch(14.68% 0.01 var(--base-hue));
+  --gray-200: oklch(16.75% 0.011 var(--base-hue));
+  --gray-300: oklch(17.8% 0.012 var(--base-hue));
+  --gray-400: oklch(24.84% 0.018 var(--base-hue));
+  --gray-500: oklch(28.69% 0.023 var(--base-hue));
+  --gray-600: oklch(35.33% 0.028 var(--base-hue));
+  --gray-700: oklch(41.6% 0.035 var(--base-hue));
+  --gray-800: oklch(48.49% 0.042 var(--base-hue));
+  --gray-900: oklch(56.78% 0.05 var(--base-hue));
+  --gray-1000: oklch(66.65% 0.04 var(--base-hue));
+  --gray-1100: oklch(77.16% 0.028 var(--base-hue));
+  --gray-1200: oklch(94.23% 0.006 var(--base-hue));
+  --blue-400: oklch(93.66% 0.027 var(--base-hue));
+  --blue-600: oklch(81.53% 0.078 var(--base-hue));
+  --blue-700: oklch(71.65% 0.122 var(--base-hue));
+  --blue-800: oklch(61.53% 0.1675 var(--base-hue));
+  --blue-900: oklch(53.19% 0.212 var(--base-hue));
+  --blue-1000: oklch(44.51% 0.216 var(--base-hue));
+  --green-900: oklch(86.02% 0.176 170);
+  --orange-900: oklch(70.93% 0.18 60);
+  --orange-1200: oklch(90.99% 0.066 60);
+  --red-1000: oklch(64.51% 0.204 22);
+  --pink-400: oklch(86.75% 0.086 352);
+  --pink-700: oklch(73.12% 0.194 352);
+
+  --accent: var(--blue-800);
+  --background: var(--gray-100);
+  --header: oklch(56.78% 0.05 var(--base-hue) / 30%);
+  --header-border: oklch(77.16% 0.028 var(--base-hue) / 8%);
+  --emphasis: oklch(61.53% 0.1675 var(--base-hue) / 7%);
+  --hyperlink: var(--blue-800);
+  --text-primary: var(--blue-400);
+  --text-secondary: var(--gray-1100);
+  --text-tertiary: var(--gray-1000);
+  --border-color: var(--gray-400);
+  --card-background: var(--gray-200);
+  --inline-code-background: var(--gray-300);
+  --inline-code-text: var(--blue-600);
+  --code-text: var(--blue-600);
+  --widget-background: var(--gray-000);
+  --input-border: var(--gray-600);
+  --shadow: rgba(2, 2, 3, 0.333) 0.5px 1px 1px 0px;
+  --hero-glow: oklch(55% 0.24 262);
+  --hero-grid: oklch(100% 0 0 / 7%);
+
+  --token-comment: var(--gray-1000);
+  --token-keyword: var(--blue-700);
+  --token-function: var(--pink-400);
+  --token-number: var(--orange-900);
+  --token-string: var(--green-900);
+  --token-punctuation: var(--blue-600);
+
+  --accent-orange: var(--orange-900);
+  --accent-teal: var(--green-900);
+  --accent-blue: var(--blue-700);
+  --accent-pink: var(--pink-700);
+
+  --font-heading: var(--font-display);
+  --font-body: var(--font-display);
+  --color-heading: var(--text-primary);
+  --color-subtle: var(--text-tertiary);
+  --color-muted: var(--gray-900);
+  --color-widget-line: var(--gray-500);
+
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --base-hue: 266;
+  --gray-000: oklch(99.5% 0 var(--base-hue));
+  --gray-100: oklch(99.24% 0.008 var(--base-hue));
+  --gray-200: oklch(98.08% 0.008 var(--base-hue));
+  --gray-300: oklch(95.94% 0.004 var(--base-hue));
+  --gray-400: oklch(94.3% 0.005 var(--base-hue));
+  --gray-500: oklch(91.83% 0.008 var(--base-hue));
+  --gray-600: oklch(90.18% 0.009 var(--base-hue));
+  --gray-700: oklch(87.68% 0.012 var(--base-hue));
+  --gray-800: oklch(80.94% 0.019 var(--base-hue));
+  --gray-900: oklch(62.57% 0.038 var(--base-hue));
+  --gray-1000: oklch(50.13% 0.047 var(--base-hue));
+  --gray-1100: oklch(40.47% 0.038 var(--base-hue));
+  --gray-1200: oklch(19.83% 0.01 var(--base-hue));
+  --blue-600: oklch(82% 0.082 var(--base-hue));
+  --blue-700: oklch(73.65% 0.124 var(--base-hue));
+  --blue-800: oklch(64.6% 0.172 var(--base-hue));
+  --blue-900: oklch(55.52% 0.223 var(--base-hue));
+  --blue-1000: oklch(46.51% 0.225 var(--base-hue));
+  --green-900: oklch(55% 0.13 170);
+  --orange-900: oklch(62% 0.17 60);
+  --pink-700: oklch(58% 0.22 352);
+
+  --accent: var(--blue-900);
+  --header: oklch(99.24% 0.008 var(--base-hue) / 60%);
+  --header-border: oklch(40.47% 0.038 var(--base-hue) / 10%);
+  --emphasis: oklch(55.52% 0.223 var(--base-hue) / 5%);
+  --hyperlink: #2480ed;
+  --text-primary: var(--gray-1200);
+  --inline-code-background: var(--gray-200);
+  --inline-code-text: var(--blue-1000);
+  --code-text: var(--gray-1100);
+  --widget-background: var(--gray-000);
+  --input-border: var(--gray-700);
+  --shadow: rgba(196, 199, 207, 0.5) 0.5px 1px 1px 0px;
+  --hero-glow: oklch(73.65% 0.124 var(--base-hue));
+  --hero-grid: oklch(40% 0.04 var(--base-hue) / 7%);
+
+  --token-keyword: var(--blue-1000);
+  --token-function: oklch(55.6% 0.24 352);
+  --token-number: oklch(60.87% 0.153 60);
+  --token-string: oklch(50% 0.12 170);
+  --token-punctuation: var(--blue-900);
+
+  color-scheme: light;
+}

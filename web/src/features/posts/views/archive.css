@@ -1,0 +1,116 @@
+.index {
+  position: relative;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter) var(--space-13);
+  box-sizing: content-box;
+}
+
+.tabs {
+  display: inline-flex;
+  gap: 2px;
+  margin: 0 var(--space-4);
+  padding: 3px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-2);
+  background: var(--card-background);
+}
+
+.tabs a {
+  padding: 5px 12px;
+  border-radius: 9px;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-1);
+  font-weight: var(--weight-500);
+  text-decoration: none;
+  transition:
+    color 0.2s,
+    background-color 0.2s;
+}
+
+.tabs a:hover {
+  color: var(--text-primary);
+}
+
+.tabs a[aria-current="page"] {
+  background: var(--gray-400);
+  color: var(--text-primary);
+  box-shadow: var(--shadow);
+}
+
+.group {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.group__label {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  padding: var(--space-7) var(--space-4) var(--space-5);
+  color: var(--text-primary);
+  font-weight: var(--weight-600);
+}
+
+.group__label .mono {
+  text-transform: none;
+}
+
+.group__label--topic {
+  font-size: var(--font-size-1);
+  letter-spacing: -0.2px;
+}
+
+.group__count {
+  color: var(--text-tertiary);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-weight: var(--weight-500);
+  text-decoration: none;
+  transition:
+    color 0.2s,
+    background-color 0.2s;
+}
+
+.row:hover {
+  background: var(--emphasis);
+  color: var(--accent);
+}
+
+.row:hover .row__meta {
+  color: var(--accent);
+}
+
+.row__meta {
+  color: var(--text-tertiary);
+  transition: color 0.2s;
+}
+
+.row--topic {
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+}
+
+@media (max-width: 420px) {
+  .index {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .row {
+    padding: 14px 12px;
+  }
+
+  .group__label {
+    padding-left: 12px;
+  }
+}
