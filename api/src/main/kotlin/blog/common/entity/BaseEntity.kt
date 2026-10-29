@@ -6,8 +6,9 @@ import jakarta.persistence.Version
 import org.hibernate.Hibernate
 import java.util.UUID
 
+// Open in the source too: detekt analyses without the all-open compiler plugin.
 @MappedSuperclass
-class BaseEntity(
+open class BaseEntity(
     @field:Id
     val id: UUID,
 ) {
