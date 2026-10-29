@@ -26,14 +26,14 @@ code it guards.
 
 ## Architecture
 
-- **Layout**: `blog/common/` (config, entity, exception, security, util, web) and one package per
-  feature directly under `blog/` (`blog/post`, `blog/auth`, `blog/book`, `blog/llm`, `blog/ask`), each
-  in these layers:
+- **Layout**: two packages under `blog/`, beside the application class: `blog/common/` (config,
+  entity, exception, security, util, web) and `blog/domain/`, which holds one package per feature
+  (`domain/post`, `domain/auth`, `domain/book`, `domain/llm`, `domain/ask`), each in these layers:
 
   | Layer | Holds |
   |---|---|
   | `controller/` | controllers, and nothing else |
-  | `security/` | Spring Security's filter chain, OAuth client and handlers (`blog/auth` only) |
+  | `security/` | Spring Security's filter chain, OAuth client and handlers (`domain/auth` only) |
   | `service/` | services, the transaction boundary |
   | `dto/request/`, `dto/response/` | `XxxRequest`, `XxxResponse`, one per file |
   | `repository/` | Spring Data repositories, and `JdbcXxx` on JdbcClient |
@@ -79,7 +79,7 @@ code it guards.
   every write: the page fetches the token first, so another site cannot spend a reader's
   questions. A reader is told apart by Cloudflare's `CF-Connecting-IP` (`common/web/ClientIp`),
   never `X-Forwarded-For`, whose first entry the reader can write, and only as a daily hash.
-- **Admin**: one admin, the owner, signs in with GitHub (`oauth2Login` in `blog/auth/security`);
+- **Admin**: one admin, the owner, signs in with GitHub (`oauth2Login` in `domain/auth/security`);
   only `BLOG_ADMIN_GITHUB_LOGIN` gets a session, kept in PostgreSQL by Spring Session JDBC.
   `SecurityConfig` puts everything under `/api/admin/` behind the admin's role (401 without a
   session, 403 without the role); a controller there needs no check of its own. Every write

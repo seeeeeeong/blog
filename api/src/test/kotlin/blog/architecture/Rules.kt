@@ -81,6 +81,7 @@ internal object Rules {
         }
 
     private const val COMMON = "common"
+    private const val DOMAIN = "domain"
     private const val CONTROLLER = "controller"
     private const val SECURITY = "security"
     private const val SERVICE = "service"
@@ -104,16 +105,21 @@ internal object Rules {
     private fun isPure(type: JavaClass) =
         resideInAnyPackage(*PURE).test(type) && !resideInAnyPackage(*IMPURE).test(type) && type.name !in IMPURE_TYPES
 
-    /** `blog.post.service` → (`post`, `service`); common code and the root belong to no feature. */
+    /** `blog.domain.post.service` → (`post`, `service`); common code and the root belong to no feature. */
     private fun placeOf(
         root: String,
         packageName: String,
     ): Pair<String, String?>? {
-        if (!packageName.startsWith("$root.")) return null
-        val segments = packageName.removePrefix("$root.").split('.')
-        val feature = segments.first().takeIf { it != COMMON } ?: return null
-        return feature to segments.getOrNull(1)
+        val features = "$root.$DOMAIN."
+        if (!packageName.startsWith(features)) return null
+        val segments = packageName.removePrefix(features).split('.')
+        return segments.first() to segments.getOrNull(1)
     }
+
+    private fun inCommon(
+        root: String,
+        packageName: String,
+    ) = packageName == "$root.$COMMON" || packageName.startsWith("$root.$COMMON.")
 
     private fun inFeature(root: String) =
         DescribedPredicate.describe<JavaClass>("in a feature under $root") { placeOf(root, it.packageName) != null }
@@ -164,6 +170,32 @@ internal object Rules {
             .mayOnlyBeAccessedByLayers(SERVICE, DTO, REPOSITORY)
             .whereLayer(GATEWAY)
             .mayOnlyBeAccessedByLayers(SERVICE)
+
+    /** Under [root], a class is the application itself, common code, or a feature's under domain. */
+    fun topLevel(root: String): ArchRule =
+        classes()
+            .that()
+            .resideInAPackage("$root..")
+            .should(
+                object : ArchCondition<JavaClass>("sit in $COMMON or a feature under $DOMAIN") {
+                    override fun check(
+                        item: JavaClass,
+                        events: ConditionEvents,
+                    ) {
+                        val placed =
+                            item.packageName == root || inCommon(root, item.packageName) ||
+                                placeOf(root, item.packageName) != null
+                        if (!placed) {
+                            events.add(
+                                SimpleConditionEvent.violated(
+                                    item,
+                                    "Class <${item.name}> sits outside $COMMON and $DOMAIN",
+                                ),
+                            )
+                        }
+                    }
+                },
+            )
 
     /** Every class of a feature sits in one of its layers, where the rules above see it. */
     fun featureLayout(root: String): ArchRule =
