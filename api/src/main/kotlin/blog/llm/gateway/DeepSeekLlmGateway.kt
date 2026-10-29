@@ -4,44 +4,64 @@ import blog.common.exception.BlogError
 import blog.common.exception.BlogException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.MediaType
-import org.springframework.http.client.JdkClientHttpRequestFactory
 import org.springframework.stereotype.Component
-import org.springframework.web.client.ResourceAccessException
-import org.springframework.web.client.RestClient
 import tools.jackson.core.JacksonException
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.json.JsonMapper
-import java.net.http.HttpClient
+import java.io.BufferedReader
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URI
 import java.time.Duration
 
 /**
- * DeepSeek's OpenAI-compatible chat completions (api-docs.deepseek.com) on the owner's key, one
- * answer whole rather than streamed. Thinking is off: its tokens bill as output and count against
- * the answer's limit. Never logs the key or the text.
+ * DeepSeek's OpenAI-compatible chat completions (api-docs.deepseek.com) on the owner's key,
+ * streamed. Plain HttpURLConnection: its read timeout is an idle timeout between pieces, which a
+ * stream needs and the JDK's HttpClient lacks. Thinking is off: its tokens bill as output and count
+ * against the answer's limit. Never logs the key or the text.
  */
 @Component
 class DeepSeekLlmGateway(
-    @Value("\${blog.deepseek.base-url}") baseUrl: String,
+    @Value("\${blog.deepseek.base-url}") private val baseUrl: String,
     @Value("\${blog.deepseek.api-key}") private val apiKey: String,
     @Value("\${blog.deepseek.model}") private val model: String,
-    @Value("\${blog.deepseek.read-timeout}") readTimeout: Duration,
+    @Value("\${blog.deepseek.idle-timeout}") private val idleTimeout: Duration,
 ) : LlmGateway {
     private val log = LoggerFactory.getLogger(javaClass)
     private val json = JsonMapper()
 
-    private val restClient =
-        RestClient
-            .builder()
-            .baseUrl(baseUrl)
-            .requestFactory(
-                JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(CONNECT_TIMEOUT).build())
-                    .apply { setReadTimeout(readTimeout) },
-            ).build()
+    override val configured: Boolean get() = apiKey.isNotBlank()
 
-    override fun complete(chat: LlmChat): LlmReply {
-        if (apiKey.isBlank()) throw BlogException(BlogError.LLM_UNAVAILABLE)
-        val body =
+    /** What the stream has given so far. */
+    private class Received {
+        val text = StringBuilder()
+        var model: String? = null
+        var finish: String? = null
+        var inputTokens: Int? = null
+        var outputTokens: Int? = null
+    }
+
+    override fun stream(
+        chat: LlmChat,
+        onText: (String) -> Unit,
+    ): LlmReply {
+        if (!configured) throw BlogException(BlogError.LLM_UNAVAILABLE)
+        val connection = connectionFor(bodyOf(chat))
+        try {
+            checkStatus(connection)
+            val received = Received()
+            connection.inputStream.bufferedReader(Charsets.UTF_8).use { read(it, received, onText) }
+            return replyOf(received)
+        } catch (exception: IOException) {
+            // Refused, dropped, or quiet past the idle timeout.
+            throw BlogException(BlogError.LLM_FAILED, exception)
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    private fun bodyOf(chat: LlmChat): ByteArray =
+        json.writeValueAsBytes(
             mapOf(
                 "model" to model,
                 "messages" to
@@ -51,52 +71,96 @@ class DeepSeekLlmGateway(
                     ),
                 "max_tokens" to chat.maxTokens,
                 "thinking" to mapOf("type" to "disabled"),
-                "stream" to false,
-            )
+                "stream" to true,
+                // The last piece then carries the tokens, which the cap is counted in.
+                "stream_options" to mapOf("include_usage" to true),
+            ),
+        )
+
+    private fun connectionFor(body: ByteArray): HttpURLConnection {
+        val connection = URI("$baseUrl/chat/completions").toURL().openConnection() as HttpURLConnection
+        connection.requestMethod = "POST"
+        connection.doOutput = true
+        connection.setFixedLengthStreamingMode(body.size)
+        connection.connectTimeout = CONNECT_TIMEOUT.toMillis().toInt()
+        connection.readTimeout = idleTimeout.toMillis().toInt()
+        connection.setRequestProperty("Authorization", "Bearer $apiKey")
+        connection.setRequestProperty("Content-Type", "application/json")
+        connection.setRequestProperty("Accept", "text/event-stream")
         try {
-            return restClient
-                .post()
-                .uri("/chat/completions")
-                .header("Authorization", "Bearer $apiKey")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(json.writeValueAsBytes(body))
-                .exchange { _, response -> replyOf(response.statusCode.value(), response.body.readAllBytes()) }
-        } catch (exception: ResourceAccessException) {
+            connection.outputStream.use { it.write(body) }
+        } catch (exception: IOException) {
+            connection.disconnect()
             throw BlogException(BlogError.LLM_FAILED, exception)
+        }
+        return connection
+    }
+
+    private fun checkStatus(connection: HttpURLConnection) {
+        val status = connection.responseCode
+        if (status != OK) throw BlogException(errorOf(status))
+    }
+
+    private fun read(
+        reader: BufferedReader,
+        received: Received,
+        onText: (String) -> Unit,
+    ) {
+        for (line in reader.lineSequence()) {
+            // A blank line ends an event; one starting with ':' is a comment, as DeepSeek's keep-alive.
+            val data = line.takeIf { it.startsWith(DATA) }?.removePrefix(DATA)?.trim() ?: continue
+            if (data == DONE) return
+            take(eventOf(data), received, onText)
         }
     }
 
-    private fun replyOf(
-        status: Int,
-        body: ByteArray,
-    ): LlmReply {
-        if (status != OK) throw BlogException(errorOf(status))
-        return replyOf(answerOf(body))
-    }
-
-    private fun answerOf(body: ByteArray): JsonNode =
+    private fun eventOf(data: String): JsonNode =
         try {
-            json.readTree(body)
+            json.readTree(data)
         } catch (exception: JacksonException) {
             throw BlogException(BlogError.LLM_FAILED, exception)
         }
 
-    private fun replyOf(answer: JsonNode): LlmReply {
-        val choice = answer.path("choices").path(0)
-        val text = choice.path("message").path("content")
-        val usage = answer.path("usage")
-        val inputTokens = usage.path("prompt_tokens")
-        val outputTokens = usage.path("completion_tokens")
-        if (!text.isString || !inputTokens.isInt || !outputTokens.isInt) {
-            log.warn("DeepSeek answered 200 without a reply or its usage")
+    private fun take(
+        event: JsonNode,
+        received: Received,
+        onText: (String) -> Unit,
+    ) {
+        event.text("model")?.let { received.model = it }
+        val choice = event.path("choices").path(0)
+        choice
+            .path("delta")
+            .path("content")
+            .takeIf { it.isString }
+            ?.asString()
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { piece ->
+                received.text.append(piece)
+                onText(piece)
+            }
+        choice.text("finish_reason")?.let { received.finish = it }
+        val usage = event.path("usage")
+        val input = usage.path("prompt_tokens")
+        val output = usage.path("completion_tokens")
+        if (input.isInt && output.isInt) {
+            received.inputTokens = input.asInt()
+            received.outputTokens = output.asInt()
+        }
+    }
+
+    private fun replyOf(received: Received): LlmReply {
+        val inputTokens = received.inputTokens
+        val outputTokens = received.outputTokens
+        if (received.finish == null || inputTokens == null || outputTokens == null) {
+            log.warn("DeepSeek's stream ended without its finish or usage")
             throw BlogException(BlogError.LLM_FAILED)
         }
         return LlmReply(
-            text = text.asString(),
-            model = answer.text("model") ?: model,
-            inputTokens = inputTokens.asInt(),
-            outputTokens = outputTokens.asInt(),
-            finished = choice.text("finish_reason") == STOP,
+            text = received.text.toString(),
+            model = received.model ?: model,
+            inputTokens = inputTokens,
+            outputTokens = outputTokens,
+            finished = received.finish == STOP,
         )
     }
 
@@ -118,6 +182,8 @@ class DeepSeekLlmGateway(
     private companion object {
         // A TCP and TLS handshake with a healthy API takes well under a second; three allows a slow link.
         val CONNECT_TIMEOUT: Duration = Duration.ofSeconds(3)
+        const val DATA = "data:"
+        const val DONE = "[DONE]"
         const val STOP = "stop"
         const val OK = 200
         const val UNAUTHORIZED = 401

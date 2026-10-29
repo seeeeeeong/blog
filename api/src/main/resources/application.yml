@@ -74,8 +74,9 @@ blog:
     # The owner's key; empty, study notes and drafts from a memo answer 503.
     api-key: ${BLOG_DEEPSEEK_API_KEY:}
     model: deepseek-flash
-    # An 8,192-token answer arrives whole, after a minute or more at a busy hour.
-    read-timeout: 120s
+    # Between pieces of a stream: DeepSeek sends a keep-alive while a request queues, and many pieces a
+    # second once it writes, so half a minute of silence is a dead stream.
+    idle-timeout: 30s
   llm:
     # Study notes and drafts from a memo together, per calendar month in Korea.
     monthly-cap-usd: 10

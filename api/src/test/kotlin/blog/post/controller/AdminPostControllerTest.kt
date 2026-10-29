@@ -3,6 +3,7 @@ package blog.post.controller
 import blog.Browser
 import blog.TestcontainersConfiguration
 import blog.auth.FakeGitHub
+import blog.common.exception.BlogError
 import blog.llm.FakeLlmGateway
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -171,7 +172,7 @@ class AdminPostControllerTest(
     }
 
     @Test
-    fun `a memo comes back as a body for the draft, which stays as it was until the admin saves`() {
+    fun `a memo streams back as a body for the draft, which stays as it was until the admin saves`() {
         val draft = draft()
         val id = draft.text("id")
 
@@ -179,7 +180,10 @@ class AdminPostControllerTest(
         val kept = admin.get("/api/admin/posts/$id")
 
         assertThat(written.status).isEqualTo(200)
-        val body = checkNotNull(written.body)
+        assertThat(written.contentType).startsWith("text/event-stream")
+        assertThat(written.events.names).containsExactly("text", "text", "text", "done")
+        assertThat(written.events.text).isEqualTo(FakeLlmGateway.REPLY.text)
+        val body = written.events.single("done")
         assertThat(body.text("bodyMdx")).isEqualTo(FakeLlmGateway.REPLY.text)
         assertThat(body.get("usedNote").asBoolean()).isFalse()
         assertThat(body.text("model")).isEqualTo("deepseek-flash")
@@ -187,6 +191,20 @@ class AdminPostControllerTest(
         assertThat(body.get("outputTokens").asInt()).isEqualTo(2_000)
         assertThat(kept.body?.text("bodyMdx")).isEmpty()
         assertThat(kept.body?.get("version")?.asLong()).isEqualTo(draft.get("version").asLong())
+    }
+
+    @Test
+    fun `a model that fails midway ends the stream with an error event`() {
+        val id = draft().text("id")
+        fakeLlmGateway.failingMidway = BlogError.LLM_BUSY
+
+        val failed = admin.post("/api/admin/posts/$id/draft", mapOf("memo" to "메모"))
+
+        assertThat(failed.status).isEqualTo(200)
+        assertThat(failed.events.names).containsExactly("text", "error")
+        val error = failed.events.single("error")
+        assertThat(error.text("code")).isEqualTo("llm.busy")
+        assertThat(error.text("message")).isEqualTo(BlogError.LLM_BUSY.message)
     }
 
     @Test

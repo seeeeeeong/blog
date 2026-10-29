@@ -31,11 +31,24 @@ class LlmService(
 ) {
     private val prices = LlmCostPolicy.Prices(inputPerMillion = inputPerMillion, outputPerMillion = outputPerMillion)
 
-    fun write(request: LlmRequest): LlmResponse {
+    /** Throws what [stream] would refuse with before asking: no key, or the month's cap reached. */
+    fun check() {
+        if (!llmGateway.configured) throw BlogException(BlogError.LLM_UNAVAILABLE)
         // Two calls checked at once may both go out: one admin, so the cap is passed by a call at most.
         val spent = jdbcLlmCalls.spentSince(LlmCostPolicy.monthStart(clock.instant()), CAPPED)
         if (LlmCostPolicy.reached(spent, monthlyCapUsd)) throw BlogException(BlogError.LLM_MONTHLY_CAP_REACHED)
-        val reply = llmGateway.complete(LlmChat(request.system, request.user, request.maxTokens))
+    }
+
+    /**
+     * Hands each piece of the answer to [onText] as the model writes it, then returns the whole. A
+     * piece is provisional: an answer cut off at its limit is recorded but thrown as incomplete.
+     */
+    fun stream(
+        request: LlmRequest,
+        onText: (String) -> Unit,
+    ): LlmResponse {
+        check()
+        val reply = llmGateway.stream(LlmChat(request.system, request.user, request.maxTokens), onText)
         val call =
             LlmCall(
                 purpose = LlmPurpose.valueOf(request.purpose.name),

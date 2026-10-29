@@ -9,6 +9,7 @@ import blog.book.repository.BookSectionRepository
 import blog.book.repository.JdbcStudyNotes
 import blog.common.exception.BlogError
 import blog.common.exception.BlogException
+import blog.common.web.EventStream
 import blog.llm.dto.request.LlmRequest
 import blog.llm.service.LlmService
 import org.springframework.data.repository.findByIdOrNull
@@ -28,8 +29,14 @@ class StudyNoteService(
     private val llmService: LlmService,
     private val clock: Clock,
 ) {
-    /** A new note for the section, which becomes its latest. */
-    fun write(sectionId: UUID): StudyNoteResponse {
+    /**
+     * A new note for the section, streamed to [events] as the model writes it. Only a whole note is
+     * saved, which becomes the section's latest and ends the stream as `done`.
+     */
+    fun write(
+        sectionId: UUID,
+        events: EventStream,
+    ) {
         val prompt = StudyNotePrompt.of(subjectOf(section(sectionId)))
         val request =
             LlmRequest(
@@ -38,18 +45,21 @@ class StudyNoteService(
                 user = prompt.user,
                 maxTokens = StudyNotePrompt.MAX_TOKENS,
             )
-        val written = llmService.write(request)
-        val note =
-            StudyNote(
-                sectionId = sectionId,
-                bodyMdx = written.text,
-                model = written.model,
-                inputTokens = written.inputTokens,
-                outputTokens = written.outputTokens,
-                now = clock.instant(),
-            )
-        jdbcStudyNotes.append(note)
-        return StudyNoteResponse.from(note)
+        llmService.check()
+        events.stream {
+            val written = llmService.stream(request, events::text)
+            val note =
+                StudyNote(
+                    sectionId = sectionId,
+                    bodyMdx = written.text,
+                    model = written.model,
+                    inputTokens = written.inputTokens,
+                    outputTokens = written.outputTokens,
+                    now = clock.instant(),
+                )
+            jdbcStudyNotes.append(note)
+            events.done(StudyNoteResponse.from(note))
+        }
     }
 
     fun get(sectionId: UUID): StudyNoteResponse {

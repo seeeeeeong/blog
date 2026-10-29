@@ -3,6 +3,7 @@ package blog.post.service
 import blog.book.service.StudyNoteService
 import blog.common.exception.BlogError
 import blog.common.exception.BlogException
+import blog.common.web.EventStream
 import blog.llm.dto.request.LlmRequest
 import blog.llm.service.LlmService
 import blog.post.dto.request.PostDraftRequest
@@ -24,10 +25,12 @@ class PostDraftService(
     private val studyNoteService: StudyNoteService,
     private val llmService: LlmService,
 ) {
+    /** Streams the body to [events] as the model writes it, and ends with the whole as `done`. */
     fun draft(
         id: UUID,
         request: PostDraftRequest,
-    ): PostDraftResponse {
+        events: EventStream,
+    ) {
         val post = postRepository.findByIdOrNull(id) ?: throw BlogException(BlogError.POST_NOT_FOUND)
         if (post.status != PostStatus.DRAFT) throw BlogException(BlogError.POST_NOT_DRAFT)
         val note = post.sectionId?.let(studyNoteService::find)
@@ -39,13 +42,18 @@ class PostDraftService(
                 user = prompt.user,
                 maxTokens = PostDraftPrompt.MAX_TOKENS,
             )
-        val written = llmService.write(llmRequest)
-        return PostDraftResponse(
-            bodyMdx = written.text,
-            usedNote = note != null,
-            model = written.model,
-            inputTokens = written.inputTokens,
-            outputTokens = written.outputTokens,
-        )
+        llmService.check()
+        events.stream {
+            val written = llmService.stream(llmRequest, events::text)
+            val draft =
+                PostDraftResponse(
+                    bodyMdx = written.text,
+                    usedNote = note != null,
+                    model = written.model,
+                    inputTokens = written.inputTokens,
+                    outputTokens = written.outputTokens,
+                )
+            events.done(draft)
+        }
     }
 }
