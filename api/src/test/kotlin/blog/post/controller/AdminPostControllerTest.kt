@@ -3,6 +3,7 @@ package blog.post.controller
 import blog.Browser
 import blog.TestcontainersConfiguration
 import blog.auth.FakeGitHub
+import blog.llm.FakeLlmGateway
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -14,10 +15,11 @@ import org.springframework.jdbc.core.simple.JdbcClient
 import tools.jackson.databind.JsonNode
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(TestcontainersConfiguration::class, FakeGitHub.Config::class)
+@Import(TestcontainersConfiguration::class, FakeGitHub.Config::class, FakeLlmGateway.Config::class)
 class AdminPostControllerTest(
     @LocalServerPort private val port: Int,
     @Autowired private val fakeGitHub: FakeGitHub,
+    @Autowired private val fakeLlmGateway: FakeLlmGateway,
     @Autowired private val jdbc: JdbcClient,
 ) {
     private lateinit var admin: Browser
@@ -26,7 +28,8 @@ class AdminPostControllerTest(
     // so it clears the append-only revisions as well; the api itself never does.
     @BeforeEach
     fun signIn() {
-        jdbc.sql("truncate post_revision, post").update()
+        jdbc.sql("truncate llm_call, post_revision, post").update()
+        fakeLlmGateway.reset()
         admin = Browser(port)
         fakeGitHub.signIn(admin)
         admin.fetchCsrf()
@@ -165,5 +168,50 @@ class AdminPostControllerTest(
         assertThat(list.status).isEqualTo(401)
         assertThat(create.status).isEqualTo(401)
         assertThat(create.code).isEqualTo("common.unauthorized")
+    }
+
+    @Test
+    fun `a memo comes back as a body for the draft, which stays as it was until the admin saves`() {
+        val draft = draft()
+        val id = draft.text("id")
+
+        val written = admin.post("/api/admin/posts/$id/draft", mapOf("memo" to "SYN, SYN-ACK, ACK 순서"))
+        val kept = admin.get("/api/admin/posts/$id")
+
+        assertThat(written.status).isEqualTo(200)
+        val body = checkNotNull(written.body)
+        assertThat(body.text("bodyMdx")).isEqualTo(FakeLlmGateway.REPLY.text)
+        assertThat(body.get("usedNote").asBoolean()).isFalse()
+        assertThat(body.text("model")).isEqualTo("deepseek-flash")
+        assertThat(body.get("inputTokens").asInt()).isEqualTo(1_000)
+        assertThat(body.get("outputTokens").asInt()).isEqualTo(2_000)
+        assertThat(kept.body?.text("bodyMdx")).isEmpty()
+        assertThat(kept.body?.get("version")?.asLong()).isEqualTo(draft.get("version").asLong())
+    }
+
+    @Test
+    fun `only a draft is written from a memo`() {
+        val draft = draft()
+        val id = draft.text("id")
+        admin.post("/api/admin/posts/$id/publish", edit(draft))
+
+        val refused = admin.post("/api/admin/posts/$id/draft", mapOf("memo" to "메모"))
+
+        assertThat(refused.status).isEqualTo(409)
+        assertThat(refused.code).isEqualTo("post.not_draft")
+        assertThat(fakeLlmGateway.asked).isEmpty()
+    }
+
+    @Test
+    fun `a blank or overlong memo is invalid input`() {
+        val id = draft().text("id")
+
+        val blank = admin.post("/api/admin/posts/$id/draft", mapOf("memo" to " "))
+        val long = admin.post("/api/admin/posts/$id/draft", mapOf("memo" to "가".repeat(20_001)))
+
+        assertThat(blank.status).isEqualTo(400)
+        assertThat(long.status).isEqualTo(400)
+        assertThat(long.code).isEqualTo("common.invalid_input")
+        assertThat(fakeLlmGateway.asked).isEmpty()
     }
 }

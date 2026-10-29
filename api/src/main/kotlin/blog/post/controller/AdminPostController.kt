@@ -1,10 +1,13 @@
 package blog.post.controller
 
 import blog.post.dto.request.PostCreateRequest
+import blog.post.dto.request.PostDraftRequest
 import blog.post.dto.request.PostSaveRequest
 import blog.post.dto.response.AdminPostResponse
 import blog.post.dto.response.AdminPostSummaryResponse
+import blog.post.dto.response.PostDraftResponse
 import blog.post.service.AdminPostService
+import blog.post.service.PostDraftService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,6 +25,7 @@ import java.util.UUID
 @RequestMapping("/api/admin/posts")
 class AdminPostController(
     private val adminPostService: AdminPostService,
+    private val postDraftService: PostDraftService,
 ) {
     @GetMapping
     fun list(): List<AdminPostSummaryResponse> = adminPostService.list()
@@ -48,4 +52,11 @@ class AdminPostController(
         @PathVariable id: UUID,
         @Valid @RequestBody request: PostSaveRequest,
     ): AdminPostResponse = adminPostService.publish(id, request)
+
+    /** A body for the draft from the admin's memo; the editor puts it in, and nothing is saved here. */
+    @PostMapping("/{id}/draft")
+    fun draft(
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: PostDraftRequest,
+    ): PostDraftResponse = postDraftService.draft(id, request)
 }
