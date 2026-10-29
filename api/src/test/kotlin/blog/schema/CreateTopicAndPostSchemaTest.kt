@@ -163,7 +163,7 @@ class CreateTopicAndPostSchemaTest(
     }
 
     @Test
-    fun `a summary is never empty`() {
-        refused { post(summary = "") }
+    fun `a published post's summary is never empty`() {
+        refused { post(summary = "", status = "PUBLISHED", publishedAt = published) }
     }
 }

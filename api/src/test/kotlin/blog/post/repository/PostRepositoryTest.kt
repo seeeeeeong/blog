@@ -39,8 +39,8 @@ class PostRepositoryTest(
         val publishedAt = Instant.parse("2026-10-05T00:00:00Z")
         val earlier = written("earlier", position = 1, at = Instant.parse("2026-10-01T00:00:00Z"))
         val later = written("later", position = 2, at = Instant.parse("2026-10-02T00:00:00Z"))
-        earlier.publish(publishedAt)
-        later.publish(publishedAt)
+        earlier.publish(earlier.content, publishedAt)
+        later.publish(later.content, publishedAt)
         postRepository.saveAll(listOf(earlier, later))
 
         val newest = postRepository.findPublishedNewestFirst()

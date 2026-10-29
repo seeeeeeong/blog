@@ -6,4 +6,6 @@ import java.util.UUID
 
 interface TopicRepository : JpaRepository<Topic, UUID> {
     fun findAllByOrderByPositionAsc(): List<Topic>
+
+    fun findBySlug(slug: String): Topic?
 }

@@ -61,8 +61,8 @@ code it guards.
 - **DTOs**: `XxxRequest` / `XxxResponse` data classes in `dto/request/` and `dto/response/`, one
   per file. The service takes requests and returns responses (`PostResponse.from(post)`).
   Entities never leave through a controller. Validation annotations name their target
-  (`@field:NotBlank`); a request's format checks (`@field:Pattern` on a slug) arrive with the
-  first write API, and the schema's checks stay the last guard.
+  (`@field:NotBlank`); a request checks its format (`@field:Pattern(regexp = SlugPolicy.PATTERN)`),
+  and the schema's checks stay the last guard.
 - **Controllers** are thin: one service call, its result returned as is. They return the
   response type, never a `ResponseEntity`; a status other than 200 is `@ResponseStatus`. One
   step per line with a named value, rather than calls nested inside calls.
@@ -80,9 +80,12 @@ code it guards.
   sends the `XSRF-TOKEN` cookie back as `X-XSRF-TOKEN` (`GET /api/auth/csrf` sets it). The
   session stores `common/security/SessionAdmin` by class name, so moving it signs the admin
   out. GitHub's calls stay inside Spring Security's OAuth client, with no gateway.
+- **Posts**: a draft is saved in place, sending back the `version` it loaded (a stale one is
+  409). A published post changes only by publishing again, and every publish appends a
+  `post_revision`, so each version a reader saw is kept.
 - **Injected dependencies** are named after their type: `postService: PostService`.
 - **Entities** are built with their constructor and named arguments; their state changes only
-  through methods (`post.publish(now)`), every setter `protected set`. One is held in a
+  through methods (`post.publish(content, now)`), every setter `protected set`. One is held in a
   variable, then saved on the next line.
 - **Parameters**: a function takes four at most; a constructor keeps detekt's default, since a
   bean's parameters are its collaborators; an entity's constructor, which mirrors its columns,
