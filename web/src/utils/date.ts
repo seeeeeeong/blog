@@ -31,6 +31,11 @@ export function isoDay(instant: string): string {
   return `${year}-${month?.padStart(2, '0')}-${day}`
 }
 
+/** `Wed, 21 Oct 2026 01:00:00 GMT`, the RFC 822 date an RSS feed expects. */
+export function rfc822Date(instant: string): string {
+  return new Date(instant).toUTCString()
+}
+
 /** `2026`, the year an instant falls in in Seoul. */
 export function yearOf(instant: string): string {
   return seoulParts(instant).year ?? ''

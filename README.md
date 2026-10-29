@@ -14,6 +14,11 @@ pnpm --dir web install
 pnpm --dir web check
 ```
 
+## Configuration
+
+[`.env.example`](.env.example) lists the settings. The web reads `NEXT_PUBLIC_SITE_URL`, the
+public origin its RSS feed links to, when it is built; it defaults to `http://localhost:3150`.
+
 ## Development
 
 See [CLAUDE.md](CLAUDE.md) for the rules this codebase follows.

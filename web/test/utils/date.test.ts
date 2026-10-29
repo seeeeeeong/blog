@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isoDay, longDate, shortDate, yearOf } from '@/utils/date'
+import { isoDay, longDate, rfc822Date, shortDate, yearOf } from '@/utils/date'
 
 describe('shortDate', () => {
   it('names the month and pads the day', () => {
@@ -35,5 +35,15 @@ describe('isoDay', () => {
   it('writes the day in Seoul as a calendar date', () => {
     expect(isoDay('2026-10-21T01:00:00Z')).toBe('2026-10-21')
     expect(isoDay('2026-03-04T15:00:00Z')).toBe('2026-03-05')
+  })
+})
+
+describe('rfc822Date', () => {
+  it('writes the instant in GMT with the weekday, as RSS dates are', () => {
+    expect(rfc822Date('2026-10-21T01:00:00Z')).toBe('Wed, 21 Oct 2026 01:00:00 GMT')
+  })
+
+  it('keeps the UTC day rather than the day in Seoul', () => {
+    expect(rfc822Date('2026-03-04T15:00:00.123456Z')).toBe('Wed, 04 Mar 2026 15:00:00 GMT')
   })
 })
