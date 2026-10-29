@@ -26,7 +26,7 @@ code it guards.
 
 ## Architecture
 
-- **Layout**: `blog/common/` (config, entity, exception, security, util) and one package per
+- **Layout**: `blog/common/` (config, entity, exception, security, util, web) and one package per
   feature directly under `blog/` (`blog/post`, `blog/auth`, `blog/book`; later `blog/ask`), each
   in these layers:
 
@@ -95,6 +95,11 @@ code it guards.
   detekt catches one that names none. A service method that needs more takes a request or a
   command object.
 - **Transactions** stay short: no model call and no SSE inside one.
+- **Streams**: a model's answer goes out as server-sent events through `common/web/EventStream`,
+  which a controller takes as a parameter and hands to its service, returning nothing. The
+  service checks everything it can first, so a refusal is still a status with `{code, message}`;
+  then `events.stream { }` sends `text` pieces and one `done` with the result, and a failure
+  inside it ends as an `error` event with `{code, message}`.
 
 ## Web
 

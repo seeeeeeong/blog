@@ -1,5 +1,6 @@
 package blog.post.service
 
+import blog.ServerSentEvents
 import blog.TestcontainersConfiguration
 import blog.common.exception.BlogError
 import blog.common.exception.BlogException
@@ -8,6 +9,7 @@ import blog.post.dto.request.PostCreateRequest
 import blog.post.dto.request.PostDraftRequest
 import blog.post.dto.request.PostSaveRequest
 import blog.post.dto.response.AdminPostResponse
+import blog.post.dto.response.PostDraftResponse
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
@@ -76,6 +78,20 @@ class PostDraftServiceTest(
 
     private fun request(title: String = "객체, 설계") = PostCreateRequest(title = title, topicSlug = "spring")
 
+    private fun stream(
+        id: UUID,
+        memo: String,
+    ): ServerSentEvents {
+        val recorder = ServerSentEvents.Recorder()
+        postDraftService.draft(id, PostDraftRequest(memo = memo), recorder.stream)
+        return recorder.events()
+    }
+
+    private fun draft(
+        id: UUID,
+        memo: String,
+    ): PostDraftResponse = stream(id, memo).done(PostDraftResponse::class)
+
     private fun fails(
         error: BlogError,
         call: () -> Unit,
@@ -103,7 +119,7 @@ class PostDraftServiceTest(
     fun `a memo becomes a body for the draft, with the section's note as reference, and nothing is saved`() {
         val post = sectionPostService.create(section(note = "## 노트\n\nISN 을 맞춘다"), request())
 
-        val draft = postDraftService.draft(post.id, PostDraftRequest(memo = "SYN 보내고 SYN-ACK 받고 ACK"))
+        val draft = draft(post.id, "SYN 보내고 SYN-ACK 받고 ACK")
 
         val asked = fakeLlmGateway.asked.single()
         assertThat(asked.user).contains("<title>\n객체, 설계\n</title>", "<memo>\nSYN 보내고 SYN-ACK 받고 ACK\n</memo>")
@@ -126,8 +142,8 @@ class PostDraftServiceTest(
         val free = adminPostService.create(request(title = "free"))
         val bare = sectionPostService.create(section(note = null), request())
 
-        val fromFree = postDraftService.draft(free.id, PostDraftRequest(memo = "메모"))
-        val fromBare = postDraftService.draft(bare.id, PostDraftRequest(memo = "메모"))
+        val fromFree = draft(free.id, "메모")
+        val fromBare = draft(bare.id, "메모")
 
         assertThat(fakeLlmGateway.asked.map { it.user.contains("<note>") }).containsExactly(false, false)
         assertThat(listOf(fromFree.usedNote, fromBare.usedNote)).containsExactly(false, false)
@@ -137,14 +153,24 @@ class PostDraftServiceTest(
     fun `a published post is not drafted, and the model is not asked`() {
         val post = publish(adminPostService.create(request()))
 
-        fails(BlogError.POST_NOT_DRAFT) { postDraftService.draft(post.id, PostDraftRequest(memo = "메모")) }
+        fails(BlogError.POST_NOT_DRAFT) { draft(post.id, "메모") }
         assertThat(fakeLlmGateway.asked).isEmpty()
+    }
+
+    @Test
+    fun `the body streams as the model writes it, then comes whole`() {
+        val post = adminPostService.create(request())
+
+        val events = stream(post.id, "메모")
+
+        assertThat(events.names).containsExactly("text", "text", "text", "done")
+        assertThat(events.text).isEqualTo(events.single("done").get("bodyMdx").asString())
     }
 
     @Test
     fun `an unknown post is not found`() {
         val unknown = UUID.fromString("019a3000-0000-7000-8000-00000000ffff")
 
-        fails(BlogError.POST_NOT_FOUND) { postDraftService.draft(unknown, PostDraftRequest(memo = "메모")) }
+        fails(BlogError.POST_NOT_FOUND) { draft(unknown, "메모") }
     }
 }

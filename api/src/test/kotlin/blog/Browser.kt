@@ -24,8 +24,13 @@ class Browser(
         val body: JsonNode?,
         val setCookies: List<String>,
         val location: String?,
+        val contentType: String = "",
+        val text: String = "",
     ) {
         val code: String? get() = body?.get("code")?.asString()
+
+        /** The body read as server-sent events. */
+        val events: ServerSentEvents get() = ServerSentEvents.parse(text)
 
         fun setCookie(name: String): String? = setCookies.firstOrNull { it.startsWith("$name=") }
     }
@@ -74,17 +79,19 @@ class Browser(
         val response = client.send(request, HttpResponse.BodyHandlers.ofString())
         val setCookies = response.headers().allValues("set-cookie")
         setCookies.forEach(::keep)
-        val isJson =
+        val contentType =
             response
                 .headers()
                 .firstValue("content-type")
                 .orElse("")
-                .contains("json")
+        val isJson = contentType.contains("json")
         return Response(
             status = response.statusCode(),
             body = response.body().takeIf { isJson && it.isNotBlank() }?.let { json.readTree(it) },
             setCookies = setCookies,
             location = response.headers().firstValue("location").orElse(null),
+            contentType = contentType,
+            text = response.body(),
         )
     }
 

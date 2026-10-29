@@ -24,13 +24,14 @@ class DeepSeekLlmGatewayTest {
     private var authorization: String? = null
     private var calls = 0
     private val chat = LlmChat(system = "rules", user = "material", maxTokens = 8_192)
+    private val pieces = mutableListOf<String>()
 
     private fun fixture(name: String): String =
         checkNotNull(javaClass.getResource("/deepseek/$name")) { "No fixture $name" }.readText()
 
     private fun answering(
         apiKey: String = "ds-test-key",
-        readTimeout: Duration = Duration.ofSeconds(5),
+        idleTimeout: Duration = Duration.ofSeconds(5),
         handler: (HttpExchange) -> Unit,
     ): DeepSeekLlmGateway {
         val started =
@@ -51,19 +52,24 @@ class DeepSeekLlmGatewayTest {
             baseUrl = "http://127.0.0.1:${started.address.port}",
             apiKey = apiKey,
             model = "deepseek-flash",
-            readTimeout = readTimeout,
+            idleTimeout = idleTimeout,
         )
     }
 
     private fun HttpExchange.answer(
         status: Int,
         text: String,
+        type: String = "application/json",
     ) {
         val bytes = text.toByteArray()
-        responseHeaders.add("Content-Type", "application/json")
+        responseHeaders.add("Content-Type", type)
         sendResponseHeaders(status, bytes.size.toLong())
         responseBody.use { it.write(bytes) }
     }
+
+    private fun HttpExchange.stream(text: String) = answer(200, text, "text/event-stream")
+
+    private fun DeepSeekLlmGateway.ask(): LlmReply = stream(chat) { pieces += it }
 
     private fun fails(
         error: BlogError,
@@ -80,8 +86,8 @@ class DeepSeekLlmGatewayTest {
     }
 
     @Test
-    fun `a call says its model and limit, turns thinking off, and carries the key`() {
-        answering { it.answer(200, fixture("completion.json")) }.complete(chat)
+    fun `a call streams, says its model and limit, asks for usage, turns thinking off, and carries the key`() {
+        answering { it.stream(fixture("completion.sse")) }.ask()
 
         val sent = json.readTree(body)
         assertThat(path).isEqualTo("/chat/completions")
@@ -89,16 +95,22 @@ class DeepSeekLlmGatewayTest {
         assertThat(sent.get("model").asString()).isEqualTo("deepseek-flash")
         assertThat(sent.get("max_tokens").asInt()).isEqualTo(8_192)
         assertThat(sent.get("thinking").get("type").asString()).isEqualTo("disabled")
-        assertThat(sent.get("stream").asBoolean()).isFalse()
+        assertThat(sent.get("stream").asBoolean()).isTrue()
+        assertThat(sent.get("stream_options").get("include_usage").asBoolean()).isTrue()
         val messages = sent.get("messages").toList().map { it.get("role").asString() to it.get("content").asString() }
         assertThat(messages).containsExactly("system" to "rules", "user" to "material")
     }
 
     @Test
-    fun `an answer comes with the tokens it took`() {
-        val reply = answering { it.answer(200, fixture("completion.json")) }.complete(chat)
+    fun `each piece is handed on as it comes, and the answer comes whole with the tokens it took`() {
+        val reply = answering { it.stream(fixture("completion.sse")) }.ask()
 
-        assertThat(reply.text).startsWith("## 책임 주도 설계\n\n객체는 **책임**을").contains("<Callout label=\"핵심\">")
+        assertThat(pieces).containsExactly(
+            "## 책임 주도 설계\n\n",
+            "객체는 **책임**을 먼저 정합니다.\n\n",
+            "<Callout label=\"핵심\">\n메시지가 객체를 고릅니다.\n</Callout>\n",
+        )
+        assertThat(reply.text).isEqualTo(pieces.joinToString(""))
         assertThat(reply.model).isEqualTo("deepseek-flash")
         assertThat(reply.inputTokens).isEqualTo(412)
         assertThat(reply.outputTokens).isEqualTo(1830)
@@ -106,18 +118,20 @@ class DeepSeekLlmGatewayTest {
     }
 
     @Test
-    fun `an answer cut off at the limit is not finished, but its tokens are known`() {
-        val reply = answering { it.answer(200, fixture("cut-off.json")) }.complete(chat)
+    fun `an answer cut off at the limit is not finished, but its tokens are known from the last piece`() {
+        val reply = answering { it.stream(fixture("cut-off.sse")) }.ask()
 
         assertThat(reply.finished).isFalse()
+        assertThat(reply.text).isEqualTo("## 책임 주도 설계\n\n객체는")
         assertThat(reply.outputTokens).isEqualTo(8_192)
     }
 
     @Test
     fun `without a key nothing is asked`() {
-        val gateway = answering(apiKey = " ") { it.answer(200, fixture("completion.json")) }
+        val gateway = answering(apiKey = " ") { it.stream(fixture("completion.sse")) }
 
-        fails(BlogError.LLM_UNAVAILABLE) { gateway.complete(chat) }
+        assertThat(gateway.configured).isFalse()
+        fails(BlogError.LLM_UNAVAILABLE) { gateway.ask() }
         assertThat(calls).isZero()
     }
 
@@ -127,7 +141,7 @@ class DeepSeekLlmGatewayTest {
             listOf(401, 402, 429, 400, 500, 503).associateWith { status ->
                 stop()
                 val gateway = answering { it.answer(status, fixture("error.json")) }
-                (runCatching { gateway.complete(chat) }.exceptionOrNull() as BlogException).error
+                (runCatching { gateway.ask() }.exceptionOrNull() as BlogException).error
             }
 
         assertThat(errors).containsExactlyEntriesOf(
@@ -143,23 +157,28 @@ class DeepSeekLlmGatewayTest {
     }
 
     @Test
-    fun `a 200 that is not an answer, or has no usage, is a failure`() {
-        fails(BlogError.LLM_FAILED) { answering { it.answer(200, "<html>proxy</html>") }.complete(chat) }
+    fun `a stream that is not DeepSeek's, or ends without its usage, is a failure`() {
+        fails(BlogError.LLM_FAILED) { answering { it.stream("data: <html>proxy</html>\n\n") }.ask() }
         stop()
-        val noUsage = """{"model":"deepseek-flash","choices":[{"message":{"content":"x"},"finish_reason":"stop"}]}"""
-        fails(BlogError.LLM_FAILED) { answering { it.answer(200, noUsage) }.complete(chat) }
+        val noUsage =
+            """
+            data: {"model":"deepseek-flash","choices":[{"index":0,"delta":{"content":"x"},"finish_reason":"stop"}]}
+
+            data: [DONE]
+            """.trimIndent()
+        fails(BlogError.LLM_FAILED) { answering { it.stream(noUsage) }.ask() }
     }
 
     @Test
-    fun `an answer slower than the read timeout is a failure`() {
+    fun `a stream quiet longer than the idle timeout is a failure`() {
         val released = CountDownLatch(1)
         val gateway =
-            answering(readTimeout = Duration.ofMillis(200)) {
+            answering(idleTimeout = Duration.ofMillis(200)) {
                 released.await(5, TimeUnit.SECONDS)
-                it.answer(200, fixture("completion.json"))
+                it.stream(fixture("completion.sse"))
             }
         try {
-            fails(BlogError.LLM_FAILED) { gateway.complete(chat) }
+            fails(BlogError.LLM_FAILED) { gateway.ask() }
         } finally {
             released.countDown()
         }

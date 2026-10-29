@@ -39,6 +39,10 @@ class LlmServiceTest(
     private val request =
         LlmRequest(purpose = LlmRequest.Purpose.NOTE, system = "rules", user = "material", maxTokens = 8_192)
 
+    private val pieces = mutableListOf<String>()
+
+    private fun write() = llmService.stream(request) { pieces += it }
+
     private fun fails(
         error: BlogError,
         call: () -> Unit,
@@ -82,9 +86,10 @@ class LlmServiceTest(
 
     @Test
     fun `an answer is returned and its call recorded with its cost, outside any transaction`() {
-        val answer = llmService.write(request)
+        val answer = write()
 
         assertThat(answer.text).isEqualTo(FakeLlmGateway.REPLY.text)
+        assertThat(pieces).containsExactly("## 책임\n", "\n", "객체는 책임을 가집니다.")
         assertThat(answer.model).isEqualTo("deepseek-flash")
         assertThat(answer.inputTokens).isEqualTo(1_000)
         assertThat(answer.outputTokens).isEqualTo(2_000)
@@ -99,9 +104,9 @@ class LlmServiceTest(
     fun `once the month's calls reach the cap, nothing more is asked`() {
         spent(micros = 9_997_300, at = clock.instant())
 
-        llmService.write(request)
+        write()
 
-        fails(BlogError.LLM_MONTHLY_CAP_REACHED) { llmService.write(request) }
+        fails(BlogError.LLM_MONTHLY_CAP_REACHED) { write() }
         assertThat(fakeLlmGateway.asked).hasSize(1)
         assertThat(calls()).hasSize(2)
     }
@@ -112,10 +117,10 @@ class LlmServiceTest(
         clock.set(Instant.parse("2026-10-31T14:59:00Z"))
         spent(micros = 10_000_000, at = clock.instant())
 
-        fails(BlogError.LLM_MONTHLY_CAP_REACHED) { llmService.write(request) }
+        fails(BlogError.LLM_MONTHLY_CAP_REACHED) { write() }
 
         clock.set(Instant.parse("2026-10-31T15:00:00Z"))
-        assertThat(llmService.write(request).text).isEqualTo(FakeLlmGateway.REPLY.text)
+        assertThat(write().text).isEqualTo(FakeLlmGateway.REPLY.text)
     }
 
     @Test
@@ -124,24 +129,47 @@ class LlmServiceTest(
         spent(micros = 50_000_000, at = Instant.parse("2026-09-30T14:59:59Z"))
         spent(micros = 9_999_999, at = Instant.parse("2026-09-30T15:00:00Z"))
 
-        llmService.write(request)
+        write()
 
-        fails(BlogError.LLM_MONTHLY_CAP_REACHED) { llmService.write(request) }
+        fails(BlogError.LLM_MONTHLY_CAP_REACHED) { write() }
     }
 
     @Test
     fun `an answer cut off at its limit is billed and recorded, but not returned`() {
         fakeLlmGateway.reply = FakeLlmGateway.REPLY.copy(finished = false, outputTokens = 8_192)
 
-        fails(BlogError.LLM_INCOMPLETE) { llmService.write(request) }
+        fails(BlogError.LLM_INCOMPLETE) { write() }
         assertThat(calls().single()[3]).isEqualTo(8_192)
+    }
+
+    @Test
+    fun `a check before asking refuses without a key and at the cap, and asks nothing`() {
+        fakeLlmGateway.configured = false
+
+        fails(BlogError.LLM_UNAVAILABLE) { llmService.check() }
+        fails(BlogError.LLM_UNAVAILABLE) { write() }
+
+        fakeLlmGateway.configured = true
+        llmService.check()
+        spent(micros = 10_000_000, at = clock.instant())
+        fails(BlogError.LLM_MONTHLY_CAP_REACHED) { llmService.check() }
+        assertThat(fakeLlmGateway.asked).isEmpty()
+    }
+
+    @Test
+    fun `a stream that drops midway records nothing and returns nothing`() {
+        fakeLlmGateway.failingMidway = BlogError.LLM_FAILED
+
+        fails(BlogError.LLM_FAILED) { write() }
+        assertThat(pieces).containsExactly("## 책임\n")
+        assertThat(calls()).isEmpty()
     }
 
     @Test
     fun `a call that failed records nothing`() {
         fakeLlmGateway.failing = BlogError.LLM_FAILED
 
-        fails(BlogError.LLM_FAILED) { llmService.write(request) }
+        fails(BlogError.LLM_FAILED) { write() }
         assertThat(calls()).isEmpty()
     }
 }

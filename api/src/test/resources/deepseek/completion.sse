@@ -1,0 +1,14 @@
+data: {"id":"0b6c5b2e-3a0f-4c39-9d3e-6f1d2a4b7c11","object":"chat.completion.chunk","created":1793245200,"model":"deepseek-flash","system_fingerprint":"fp_8802369eaa_prod0623_fp8_kvcache","choices":[{"index":0,"delta":{"role":"assistant","content":""},"logprobs":null,"finish_reason":null}]}
+
+: keep-alive
+
+data: {"id":"0b6c5b2e-3a0f-4c39-9d3e-6f1d2a4b7c11","object":"chat.completion.chunk","created":1793245200,"model":"deepseek-flash","system_fingerprint":"fp_8802369eaa_prod0623_fp8_kvcache","choices":[{"index":0,"delta":{"content":"## 책임 주도 설계\n\n"},"logprobs":null,"finish_reason":null}]}
+
+data: {"id":"0b6c5b2e-3a0f-4c39-9d3e-6f1d2a4b7c11","object":"chat.completion.chunk","created":1793245200,"model":"deepseek-flash","system_fingerprint":"fp_8802369eaa_prod0623_fp8_kvcache","choices":[{"index":0,"delta":{"content":"객체는 **책임**을 먼저 정합니다.\n\n"},"logprobs":null,"finish_reason":null}]}
+
+data: {"id":"0b6c5b2e-3a0f-4c39-9d3e-6f1d2a4b7c11","object":"chat.completion.chunk","created":1793245200,"model":"deepseek-flash","system_fingerprint":"fp_8802369eaa_prod0623_fp8_kvcache","choices":[{"index":0,"delta":{"content":"<Callout label=\"핵심\">\n메시지가 객체를 고릅니다.\n</Callout>\n"},"logprobs":null,"finish_reason":null}]}
+
+data: {"id":"0b6c5b2e-3a0f-4c39-9d3e-6f1d2a4b7c11","object":"chat.completion.chunk","created":1793245200,"model":"deepseek-flash","system_fingerprint":"fp_8802369eaa_prod0623_fp8_kvcache","choices":[{"index":0,"delta":{"content":""},"logprobs":null,"finish_reason":"stop"}],"usage":{"prompt_tokens":412,"completion_tokens":1830,"total_tokens":2242,"prompt_tokens_details":{"cached_tokens":384},"prompt_cache_hit_tokens":384,"prompt_cache_miss_tokens":28}}
+
+data: [DONE]
+

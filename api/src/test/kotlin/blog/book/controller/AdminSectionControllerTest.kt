@@ -114,8 +114,11 @@ class AdminSectionControllerTest(
         val read = admin.get("/api/admin/sections/$section/note")
         val book = checkNotNull(admin.get("/api/admin/books").body).single()
 
-        assertThat(written.status).isEqualTo(201)
-        val note = checkNotNull(written.body)
+        assertThat(written.status).isEqualTo(200)
+        assertThat(written.contentType).startsWith("text/event-stream")
+        assertThat(written.events.text).isEqualTo(FakeLlmGateway.REPLY.text)
+        assertThat(written.events.names.last()).isEqualTo("done")
+        val note = written.events.single("done")
         assertThat(note.text("sectionId")).isEqualTo(section)
         assertThat(note.text("bodyMdx")).isEqualTo(FakeLlmGateway.REPLY.text)
         assertThat(note.text("model")).isEqualTo("deepseek-flash")
@@ -142,11 +145,11 @@ class AdminSectionControllerTest(
     @Test
     fun `without a key, or past the month's cap, no note is written`() {
         val section = firstSection()
-        fakeLlmGateway.failing = BlogError.LLM_UNAVAILABLE
+        fakeLlmGateway.configured = false
 
         val off = admin.post("/api/admin/sections/$section/note")
 
-        fakeLlmGateway.failing = null
+        fakeLlmGateway.configured = true
         jdbc
             .sql(
                 """
@@ -160,6 +163,20 @@ class AdminSectionControllerTest(
         assertThat(off.code).isEqualTo("llm.unavailable")
         assertThat(capped.status).isEqualTo(429)
         assertThat(capped.code).isEqualTo("llm.monthly_cap_reached")
+        assertThat(admin.get("/api/admin/sections/$section/note").status).isEqualTo(404)
+        assertThat(fakeLlmGateway.asked).isEmpty()
+    }
+
+    @Test
+    fun `a model that fails ends the stream with an error event, and no note is saved`() {
+        val section = firstSection()
+        fakeLlmGateway.failing = BlogError.LLM_FAILED
+
+        val failed = admin.post("/api/admin/sections/$section/note")
+
+        assertThat(failed.status).isEqualTo(200)
+        assertThat(failed.events.names).containsExactly("error")
+        assertThat(failed.events.single("error").text("code")).isEqualTo("llm.failed")
         assertThat(admin.get("/api/admin/sections/$section/note").status).isEqualTo(404)
     }
 }

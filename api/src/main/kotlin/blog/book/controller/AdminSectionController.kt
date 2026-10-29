@@ -3,14 +3,13 @@ package blog.book.controller
 import blog.book.dto.response.StudyNoteResponse
 import blog.book.service.AdminBookService
 import blog.book.service.StudyNoteService
+import blog.common.web.EventStream
 import blog.post.dto.response.AdminPostResponse
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
@@ -31,12 +30,14 @@ class AdminSectionController(
         return written.post
     }
 
-    /** A new study note from the model, which becomes the section's note. */
+    /** A new study note from the model, streamed as it writes, which becomes the section's note. */
     @PostMapping("/{id}/note")
-    @ResponseStatus(HttpStatus.CREATED)
     fun writeNote(
         @PathVariable id: UUID,
-    ): StudyNoteResponse = studyNoteService.write(id)
+        events: EventStream,
+    ) {
+        studyNoteService.write(id, events)
+    }
 
     @GetMapping("/{id}/note")
     fun note(
