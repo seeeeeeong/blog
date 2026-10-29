@@ -47,20 +47,48 @@ class TocParserTest {
 
     @Test
     fun `without labels a bare number is a chapter, and English labels read too`() {
-        assertThat(outline("1. 소개\n1.1 설치\n2 설정\nChapter 3 Getting Started\n3.1 Install")).containsExactly(
+        assertThat(outline("1. 소개\n1.1 설치\n2 설정\n2.1 포트")).containsExactly(
             "1 소개",
             "  1.1 설치",
             "2 설정",
-            "3 Getting Started",
-            "  3.1 Install",
+            "  2.1 포트",
         )
+        assertThat(
+            outline("Chapter 3 Getting Started\n3.1 Install"),
+        ).containsExactly("3 Getting Started", "  3.1 Install")
+    }
+
+    @Test
+    fun `before the first labelled chapter, a bare number belongs to the introduction`() {
+        val contents = "들어가며: 프로그래밍 패러다임\n01 패러다임의 시대\n02 프로그래밍 패러다임\n1장: 객체, 설계\n01. 티켓 판매"
+
+        assertThat(outline(contents)).containsExactly("1 객체, 설계", "  1.1 티켓 판매")
     }
 
     @Test
     fun `front matter is left out, back matter too, and an appendix is a chapter`() {
         val contents = "들어가며\n지은이의 말\n1장 대화\n부록 A. 계약에 의한 설계\nA.1 사전 조건\n찾아보기"
 
-        assertThat(outline(contents)).containsExactly("1 대화", "A 계약에 의한 설계", "  A.1 사전 조건")
+        assertThat(outline(contents)).containsExactly("1 대화", "  1.1 대화", "A 계약에 의한 설계", "  A.1 사전 조건")
+    }
+
+    @Test
+    fun `an appendix that is only back matter is left out`() {
+        val contents = "1장 대화\n1.1 질문\n부록D: 참고문헌\n___ 참고문헌"
+
+        assertThat(outline(contents)).containsExactly("1 대화", "  1.1 질문")
+    }
+
+    @Test
+    fun `contents that list chapters alone study each chapter whole`() {
+        val contents = "옮긴이의 글\n\n1장 사용자 수에 따른 규모 확장성\n2장 개략적인 규모 추정\n\n맺음말\n찾아보기"
+
+        assertThat(outline(contents)).containsExactly(
+            "1 사용자 수에 따른 규모 확장성",
+            "  1.1 사용자 수에 따른 규모 확장성",
+            "2 개략적인 규모 추정",
+            "  2.1 개략적인 규모 추정",
+        )
     }
 
     @Test

@@ -3,8 +3,9 @@ package blog.book.entity
 /**
  * A book's contents, one item a line, read into the study path: chapters and their sections. A
  * part only groups chapters and a deeper item belongs to its section's post, so both are left out,
- * as is anything before the first chapter. A chapter whose sections have no numbers gets them in
- * order ("3.1", "3.2"); one with numbered sections keeps those and drops its unnumbered lines.
+ * as is anything before the first chapter and a chapter that is only back matter. A chapter whose
+ * sections have no numbers gets them in order ("3.1", "3.2"); one with numbered sections keeps those
+ * and drops its unnumbered lines; one with none at all is studied whole, as its own one section.
  */
 object TocParser {
     // A post's title, which a section's becomes.
@@ -41,42 +42,45 @@ object TocParser {
 
     /** Empty when no line reads as a chapter. */
     fun parse(contents: String): List<Chapter> {
+        val lines = contents.lines().map { raw -> raw.takeWhile { it.isWhitespace() }.length to textOf(raw) }
+        val labelled = lines.any { (_, text) -> CHAPTER.containsMatchIn(text) }
         val chapters = mutableListOf<Draft>()
-        for (raw in contents.lines()) {
-            val indent = raw.takeWhile { it.isWhitespace() }.length
-            val text = raw.filterNot { it.isISOControl() }.trim()
+        for ((indent, text) in lines) {
             val current = chapters.lastOrNull()
             if (text.isEmpty() || PART.containsMatchIn(text)) continue
-            val chapter = chapterOf(text, indent, current)
+            val chapter = chapterOf(text, indent, labelled)
             when {
                 chapter != null -> chapters += chapter
                 current != null -> current.add(text, indent)
             }
         }
-        return chapters.map(Draft::chapter)
+        return chapters.filterNot { BACK_MATTER.containsMatchIn(it.title) }.map(Draft::chapter)
     }
 
-    // In contents whose chapters say "장" or "Chapter", a bare number ("01. 티켓 판매") is a section.
+    private fun textOf(raw: String) = raw.filterNot { it.isISOControl() }.trim()
+
+    // In contents whose chapters say "장" or "Chapter", a bare number ("01. 티켓 판매") is a section,
+    // or, before the first chapter, an item of the introduction.
     private fun chapterOf(
         text: String,
         indent: Int,
-        current: Draft?,
+        labelled: Boolean,
     ): Draft? {
         val chapter = CHAPTER.find(text)
         val appendix = APPENDIX.find(text)
-        val bare = bareOf(text, indent)?.takeIf { current?.labelled != true }
+        val bare = bareOf(text, indent)?.takeUnless { labelled }
         return when {
             chapter != null -> {
                 val number = chapter.groupValues[1].ifEmpty { chapter.groupValues[2] }
-                Draft(number = plain(number), title = titleOf(text, chapter), labelled = true)
+                Draft(number = plain(number), title = titleOf(text, chapter))
             }
 
             appendix != null -> {
-                Draft(number = appendix.groupValues[1], title = titleOf(text, appendix), labelled = true)
+                Draft(number = appendix.groupValues[1], title = titleOf(text, appendix))
             }
 
             bare != null -> {
-                Draft(number = plain(bare.groupValues[1]), title = titleOf(text, bare), labelled = false)
+                Draft(number = plain(bare.groupValues[1]), title = titleOf(text, bare))
             }
 
             else -> {
@@ -109,7 +113,6 @@ object TocParser {
     private class Draft(
         val number: String,
         val title: String,
-        val labelled: Boolean,
     ) {
         private val numbered = mutableListOf<Section>()
 
@@ -150,7 +153,8 @@ object TocParser {
                         .filter { it.first == top }
                         .mapIndexed { index, (_, title) -> Section("$number.${index + 1}", title) }
                 }
-            return Chapter(number = number, title = title, sections = sections)
+            val studied = sections.ifEmpty { listOf(Section("$number.1", title)) }
+            return Chapter(number = number, title = title, sections = studied)
         }
     }
 }
