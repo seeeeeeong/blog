@@ -70,7 +70,7 @@ class CreateLlmCallSchemaTest(
 
     @Test
     fun `a call has a known purpose`() {
-        assertThatThrownBy { call(purpose = "ASK") }.isInstanceOf(DataIntegrityViolationException::class.java)
+        assertThatThrownBy { call(purpose = "CHAT") }.isInstanceOf(DataIntegrityViolationException::class.java)
     }
 
     @Test

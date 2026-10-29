@@ -34,7 +34,7 @@ class AdminSectionControllerTest(
 
     @BeforeEach
     fun signIn() {
-        jdbc.sql("truncate llm_call, study_note, post_revision, post, book_section, book").update()
+        jdbc.sql("truncate llm_call, study_note, ask_message, post_revision, post, book_section, book").update()
         fakeBookSourceGateway.reset()
         fakeLlmGateway.reset()
         fakeBookSourceGateway.holds("74219491")

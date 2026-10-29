@@ -51,4 +51,15 @@ enum class BlogError(
     LLM_BUSY(HttpStatus.TOO_MANY_REQUESTS, "llm.busy", "AI 요청이 많습니다. 잠시 후 다시 시도해 주세요"),
     LLM_FAILED(HttpStatus.BAD_GATEWAY, "llm.failed", "AI 가 응답하지 않습니다. 잠시 후 다시 시도해 주세요"),
     LLM_INCOMPLETE(HttpStatus.BAD_GATEWAY, "llm.incomplete", "AI 가 글을 끝맺지 못했습니다. 다시 시도해 주세요"),
+    ASK_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "ask.unavailable", "지금은 질문을 받을 수 없습니다"),
+    ASK_MONTHLY_CAP_REACHED(
+        HttpStatus.TOO_MANY_REQUESTS,
+        "ask.monthly_cap_reached",
+        "이번 달 질문을 모두 받았습니다. 다음 달에 다시 물어봐 주세요",
+    ),
+    ASK_DAILY_LIMIT_REACHED(
+        HttpStatus.TOO_MANY_REQUESTS,
+        "ask.daily_limit_reached",
+        "오늘 할 수 있는 질문을 모두 하셨습니다. 내일 다시 물어봐 주세요",
+    ),
 }

@@ -3,6 +3,7 @@ package blog.post.service
 import blog.common.exception.BlogError
 import blog.common.exception.BlogException
 import blog.post.dto.response.PostResponse
+import blog.post.dto.response.PostSourceResponse
 import blog.post.dto.response.PostSummaryResponse
 import blog.post.entity.PostStatus
 import blog.post.repository.PostRepository
@@ -33,6 +34,14 @@ class PostService(
         return posts.associate {
             checkNotNull(it.sectionId) to PostSummaryResponse.from(it, topics.getValue(it.topicId))
         }
+    }
+
+    /** A published post with its id and body, for Ask; a draft is as good as missing. */
+    fun source(slug: String): PostSourceResponse {
+        val post =
+            postRepository.findBySlugAndStatus(slug, PostStatus.PUBLISHED)
+                ?: throw BlogException(BlogError.POST_NOT_FOUND)
+        return PostSourceResponse.from(post)
     }
 
     /** The post and its published neighbours in its topic, which a reader pages through in order. */

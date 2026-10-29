@@ -42,7 +42,7 @@ class PostDraftService(
                 user = prompt.user,
                 maxTokens = PostDraftPrompt.MAX_TOKENS,
             )
-        llmService.check()
+        llmService.check(llmRequest.purpose)
         events.stream {
             val written = llmService.stream(llmRequest, events::text)
             val draft =

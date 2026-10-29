@@ -5,6 +5,7 @@ scopes = [
   "auth",
   "book",
   "llm",
+  "ask",
   "web",
   "arch",
   "ci",

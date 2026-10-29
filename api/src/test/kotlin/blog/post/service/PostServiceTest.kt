@@ -75,6 +75,19 @@ class PostServiceTest(
     }
 
     @Test
+    fun `a published post is Ask's material with its id and body, a draft is not`() {
+        val published = posts.published(slug = "tcp-handshake")
+        posts.draft("udp", position = 2)
+
+        val source = postService.source("tcp-handshake")
+
+        assertThat(source.id).isEqualTo(published.id)
+        assertThat(source.title).isEqualTo("제목 tcp-handshake")
+        assertThat(source.bodyMdx).isEqualTo("# tcp-handshake\n\n본문이다.")
+        notFound { postService.source("udp") }
+    }
+
+    @Test
     fun `a post links the published posts beside it in its topic, skipping drafts`() {
         posts.published(slug = "osi", topic = "network", position = 1)
         posts.draft("udp", topic = "network", position = 2)

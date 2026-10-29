@@ -13,5 +13,6 @@ data class LlmRequest(
     enum class Purpose {
         NOTE,
         MEMO,
+        ASK,
     }
 }

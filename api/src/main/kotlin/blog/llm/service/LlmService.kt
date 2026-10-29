@@ -10,7 +10,7 @@ import blog.llm.entity.LlmPurpose
 import blog.llm.gateway.LlmChat
 import blog.llm.gateway.LlmGateway
 import blog.llm.repository.JdbcLlmCalls
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.Clock
@@ -21,22 +21,50 @@ import java.time.Clock
  * model writes.
  */
 @Service
+@EnableConfigurationProperties(LlmSettings::class)
 class LlmService(
     private val llmGateway: LlmGateway,
     private val jdbcLlmCalls: JdbcLlmCalls,
-    @Value("\${blog.llm.monthly-cap-usd}") private val monthlyCapUsd: BigDecimal,
-    @Value("\${blog.llm.price.input-per-million-usd}") inputPerMillion: BigDecimal,
-    @Value("\${blog.llm.price.output-per-million-usd}") outputPerMillion: BigDecimal,
+    llmSettings: LlmSettings,
     private val clock: Clock,
 ) {
-    private val prices = LlmCostPolicy.Prices(inputPerMillion = inputPerMillion, outputPerMillion = outputPerMillion)
+    /** Purposes that share a monthly cap, and what a caller is told without a key or at the cap. */
+    private data class Budget(
+        val purposes: List<LlmPurpose>,
+        val capUsd: BigDecimal,
+        val unavailable: BlogError,
+        val capReached: BlogError,
+    )
+
+    private val prices =
+        LlmCostPolicy.Prices(
+            inputPerMillion = llmSettings.price.inputPerMillionUsd,
+            outputPerMillion = llmSettings.price.outputPerMillionUsd,
+        )
+
+    private val editor =
+        Budget(
+            purposes = listOf(LlmPurpose.NOTE, LlmPurpose.MEMO),
+            capUsd = llmSettings.monthlyCapUsd,
+            unavailable = BlogError.LLM_UNAVAILABLE,
+            capReached = BlogError.LLM_MONTHLY_CAP_REACHED,
+        )
+
+    private val ask =
+        Budget(
+            purposes = listOf(LlmPurpose.ASK),
+            capUsd = llmSettings.askMonthlyCapUsd,
+            unavailable = BlogError.ASK_UNAVAILABLE,
+            capReached = BlogError.ASK_MONTHLY_CAP_REACHED,
+        )
 
     /** Throws what [stream] would refuse with before asking: no key, or the month's cap reached. */
-    fun check() {
-        if (!llmGateway.configured) throw BlogException(BlogError.LLM_UNAVAILABLE)
-        // Two calls checked at once may both go out: one admin, so the cap is passed by a call at most.
-        val spent = jdbcLlmCalls.spentSince(LlmCostPolicy.monthStart(clock.instant()), CAPPED)
-        if (LlmCostPolicy.reached(spent, monthlyCapUsd)) throw BlogException(BlogError.LLM_MONTHLY_CAP_REACHED)
+    fun check(purpose: LlmRequest.Purpose) {
+        val budget = if (purpose == LlmRequest.Purpose.ASK) ask else editor
+        if (!llmGateway.configured) throw BlogException(budget.unavailable)
+        // Calls checked at once may all go out, so a cap is passed by what those few cost, a cent or so each.
+        val spent = jdbcLlmCalls.spentSince(LlmCostPolicy.monthStart(clock.instant()), budget.purposes)
+        if (LlmCostPolicy.reached(spent, budget.capUsd)) throw BlogException(budget.capReached)
     }
 
     /**
@@ -47,7 +75,7 @@ class LlmService(
         request: LlmRequest,
         onText: (String) -> Unit,
     ): LlmResponse {
-        check()
+        check(request.purpose)
         val reply = llmGateway.stream(LlmChat(request.system, request.user, request.maxTokens), onText)
         val call =
             LlmCall(
@@ -66,10 +94,5 @@ class LlmService(
             inputTokens = reply.inputTokens,
             outputTokens = reply.outputTokens,
         )
-    }
-
-    private companion object {
-        // A study note and a draft from a memo share one cap.
-        val CAPPED = listOf(LlmPurpose.NOTE, LlmPurpose.MEMO)
     }
 }

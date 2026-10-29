@@ -45,7 +45,7 @@ class StudyNoteService(
                 user = prompt.user,
                 maxTokens = StudyNotePrompt.MAX_TOKENS,
             )
-        llmService.check()
+        llmService.check(request.purpose)
         events.stream {
             val written = llmService.stream(request, events::text)
             val note =
