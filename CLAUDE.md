@@ -51,8 +51,10 @@ code it guards.
 - **Rules** (`XxxPolicy`, `XxxDecision`, `XxxParser`, `XxxPrompt`, `XxxCheck`) sit in `entity/`
   and depend only on Kotlin, the JDK's pure packages and other rule classes; `ArchitectureTest`
   checks it with an allow list.
-- **Persistence**: JPA, with Kotlin JDSL for queries, for what changes in place. JdbcClient
-  for append-only tables, which are guarded by triggers and, in JPA, `@Immutable`.
+- **Persistence**: JPA for what changes in place. A simple lookup is a Spring Data derived
+  query (`findBySlugAndStatus`); one whose name would grow long or that needs an explicit
+  order is a `@Query`; Kotlin JDSL only for a query built at run time. JdbcClient for
+  append-only tables, which are guarded by triggers and, in JPA, `@Immutable`.
 - **DTOs**: `XxxRequest` / `XxxResponse` data classes in `dto/request/` and `dto/response/`, one
   per file. The service takes requests and returns responses (`PostResponse.from(post)`).
   Entities never leave through a controller. Validation annotations name their target
