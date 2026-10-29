@@ -13,9 +13,10 @@ export class ApiError extends Error {
   }
 }
 
-/** A read from a server component, straight to the api. */
-export async function apiGet<T>(path: string): Promise<T> {
+/** A read from the server, straight to the api; [headers] can carry the browser's cookie on. */
+export async function apiGet<T>(path: string, headers?: HeadersInit): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
+    headers,
     cache: 'no-store',
     signal: AbortSignal.timeout(TIMEOUT_MS),
   })

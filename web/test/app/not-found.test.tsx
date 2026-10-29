@@ -1,12 +1,16 @@
-import { renderToStaticMarkup } from 'react-dom/server'
+import type { ReactElement } from 'react'
 import { describe, expect, it } from 'vitest'
+import { Missing } from '@/app/_components/Missing'
+import { SiteChrome } from '@/app/_components/SiteChrome'
 import NotFound from '@/app/not-found'
 
-describe('NotFound', () => {
-  it('says the post is not there and leads back to the index', () => {
-    const out = renderToStaticMarkup(<NotFound />)
+type Wrapped = ReactElement<{ children: ReactElement }>
 
-    expect(out).toContain('<h1>찾는 글이 없습니다</h1>')
-    expect(out).toContain('<a class="missing__home" href="/">목록으로</a>')
+describe('NotFound', () => {
+  it('wraps the missing page in the reader dock and footer', () => {
+    const page = NotFound() as Wrapped
+
+    expect(page.type).toBe(SiteChrome)
+    expect(page.props.children.type).toBe(Missing)
   })
 })

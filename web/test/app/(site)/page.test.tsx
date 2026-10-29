@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import Home from '@/app/page'
+import Home from '@/app/(site)/page'
 import type { PostSummary, Topic } from '@/features/posts/api/types'
 
 const TOPICS: Topic[] = [
