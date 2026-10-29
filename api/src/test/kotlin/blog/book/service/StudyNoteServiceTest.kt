@@ -51,7 +51,7 @@ class StudyNoteServiceTest(
     // Truncate fires no row trigger, so it clears the append-only rows as well; the api itself never does.
     @AfterEach
     fun clear() {
-        jdbc.sql("truncate llm_call, study_note, post_revision, post, book_section, book").update()
+        jdbc.sql("truncate llm_call, study_note, ask_message, post_revision, post, book_section, book").update()
         fakeBookSourceGateway.reset()
         fakeLlmGateway.reset()
         clock.reset()

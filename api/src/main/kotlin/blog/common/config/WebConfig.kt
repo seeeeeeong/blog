@@ -1,5 +1,6 @@
 package blog.common.config
 
+import blog.common.web.ClientIpResolver
 import blog.common.web.EventStreamResolver
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
@@ -12,5 +13,6 @@ class WebConfig(
 ) : WebMvcConfigurer {
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers += EventStreamResolver(jsonMapper)
+        resolvers += ClientIpResolver()
     }
 }

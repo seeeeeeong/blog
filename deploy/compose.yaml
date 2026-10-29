@@ -39,6 +39,7 @@ services:
       BLOG_GITHUB_CLIENT_SECRET: ${BLOG_GITHUB_CLIENT_SECRET:-}
       BLOG_YES24_API_KEY: ${BLOG_YES24_API_KEY:-}
       BLOG_DEEPSEEK_API_KEY: ${BLOG_DEEPSEEK_API_KEY:-}
+      BLOG_ASK_IP_SALT: ${BLOG_ASK_IP_SALT:-}
     # db reaches postgres; default reaches GitHub for the admin's sign-in, YES24 for books and DeepSeek.
     networks: [db, default]
     # The JVM sizes its heap from this; see api/Dockerfile.

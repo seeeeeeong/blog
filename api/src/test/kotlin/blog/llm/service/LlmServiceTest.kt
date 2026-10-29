@@ -146,14 +146,29 @@ class LlmServiceTest(
     fun `a check before asking refuses without a key and at the cap, and asks nothing`() {
         fakeLlmGateway.configured = false
 
-        fails(BlogError.LLM_UNAVAILABLE) { llmService.check() }
+        fails(BlogError.LLM_UNAVAILABLE) { llmService.check(LlmRequest.Purpose.MEMO) }
         fails(BlogError.LLM_UNAVAILABLE) { write() }
 
         fakeLlmGateway.configured = true
-        llmService.check()
+        llmService.check(LlmRequest.Purpose.MEMO)
         spent(micros = 10_000_000, at = clock.instant())
-        fails(BlogError.LLM_MONTHLY_CAP_REACHED) { llmService.check() }
+        fails(BlogError.LLM_MONTHLY_CAP_REACHED) { llmService.check(LlmRequest.Purpose.MEMO) }
         assertThat(fakeLlmGateway.asked).isEmpty()
+    }
+
+    @Test
+    fun `Ask has a cap of its own, apart from the editor's, and its own errors`() {
+        val ask = request.copy(purpose = LlmRequest.Purpose.ASK)
+        spent(micros = 10_000_000, at = clock.instant(), purpose = "NOTE")
+
+        fails(BlogError.LLM_MONTHLY_CAP_REACHED) { write() }
+        llmService.stream(ask) {}
+        spent(micros = 29_999_999, at = clock.instant(), purpose = "ASK")
+
+        fails(BlogError.ASK_MONTHLY_CAP_REACHED) { llmService.check(LlmRequest.Purpose.ASK) }
+        fakeLlmGateway.configured = false
+        fails(BlogError.ASK_UNAVAILABLE) { llmService.check(LlmRequest.Purpose.ASK) }
+        assertThat(calls().map { it[0] }).containsExactlyInAnyOrder("NOTE", "ASK", "ASK")
     }
 
     @Test

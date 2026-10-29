@@ -71,7 +71,7 @@ blog:
     per-day: 18000
   deepseek:
     base-url: https://api.deepseek.com
-    # The owner's key; empty, study notes and drafts from a memo answer 503.
+    # The owner's key; empty, study notes, drafts from a memo and Ask answer 503.
     api-key: ${BLOG_DEEPSEEK_API_KEY:}
     model: deepseek-flash
     # Between pieces of a stream: DeepSeek sends a keep-alive while a request queues, and many pieces a
@@ -80,8 +80,14 @@ blog:
   llm:
     # Study notes and drafts from a memo together, per calendar month in Korea.
     monthly-cap-usd: 10
+    # Readers' questions, apart from the owner's: at the cap Ask closes until the month ends.
+    ask-monthly-cap-usd: 30
     # deepseek-flash at peak, from api-docs.deepseek.com/quick_start/pricing on 2026-10-29; every input
     # token priced as a cache miss, so the estimate is never below the bill.
     price:
       input-per-million-usd: 0.30
       output-per-million-usd: 1.20
+  ask:
+    # The key a reader's address is hashed with, mixed with the day, for the daily count. Empty, a random
+    # key is made at start, so a restart starts the day's counts over.
+    ip-salt: ${BLOG_ASK_IP_SALT:}

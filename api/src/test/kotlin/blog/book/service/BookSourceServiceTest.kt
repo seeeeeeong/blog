@@ -28,7 +28,7 @@ class BookSourceServiceTest(
     @BeforeEach
     @AfterEach
     fun clear() {
-        jdbc.sql("truncate study_note, post_revision, post, book_section, book").update()
+        jdbc.sql("truncate study_note, ask_message, post_revision, post, book_section, book").update()
         fakeBookSourceGateway.reset()
     }
 

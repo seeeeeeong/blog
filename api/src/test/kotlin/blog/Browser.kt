@@ -19,6 +19,9 @@ class Browser(
     private val client = HttpClient.newHttpClient()
     private val cookies = linkedMapOf<String, String>()
 
+    /** Sent with every request, as a proxy in front would add them. */
+    val headers = linkedMapOf<String, String>()
+
     data class Response(
         val status: Int,
         val body: JsonNode?,
@@ -73,6 +76,7 @@ class Browser(
                     body?.let { HttpRequest.BodyPublishers.ofString(json.writeValueAsString(it)) }
                         ?: HttpRequest.BodyPublishers.noBody(),
                 ).header("Content-Type", "application/json")
+                .apply { headers.forEach { (name, value) -> header(name, value) } }
                 .apply { if (cookies.isNotEmpty()) header("Cookie", cookies.entries.joinToString("; ")) }
                 .apply { if (csrf && method != "GET") cookies["XSRF-TOKEN"]?.let { header("X-XSRF-TOKEN", it) } }
                 .build()

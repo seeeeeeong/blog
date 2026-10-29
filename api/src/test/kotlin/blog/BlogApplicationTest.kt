@@ -63,13 +63,30 @@ class BlogApplicationTest(
 
     private fun isGuarded(pattern: String) = pattern.startsWith("/api/admin/") || pattern.startsWith("/api/auth/")
 
-    @Test
-    fun `public api routes only read, and only admin and auth routes write`() {
-        val (guarded, public) = api.partition { route -> route.patternValues.all(::isGuarded) }
+    // A reader's one write: a question, which carries the page's CSRF token like any other write.
+    private val readerWrites = setOf("/api/ask")
 
-        assertThat(public).isNotEmpty()
-        assertThat(public).allSatisfy { assertThat(it.methodsCondition.methods).containsExactly(RequestMethod.GET) }
+    @Test
+    fun `public api routes only read, and only admin, auth and a reader's question write`() {
+        val (guarded, public) = api.partition { route -> route.patternValues.all(::isGuarded) }
+        val (writes, reads) = public.partition { route -> route.patternValues.all { it in readerWrites } }
+
+        assertThat(reads).isNotEmpty()
+        assertThat(reads).allSatisfy { assertThat(it.methodsCondition.methods).containsExactly(RequestMethod.GET) }
+        assertThat(writes.flatMap { it.patternValues }).containsExactlyInAnyOrderElementsOf(readerWrites)
+        assertThat(writes).allSatisfy { assertThat(it.methodsCondition.methods).containsExactly(RequestMethod.POST) }
         assertThat(guarded).allSatisfy { assertThat(it.methodsCondition.methods).isNotEmpty() }
+    }
+
+    @Test
+    fun `a reader's question, like every write, needs the CSRF token`() {
+        val browser = Browser(port)
+        browser.fetchCsrf()
+
+        val forged = browser.send(method = "POST", path = "/api/ask", body = mapOf("question" to "질문"), csrf = false)
+
+        assertThat(forged.status).isEqualTo(403)
+        assertThat(forged.code).isEqualTo("auth.invalid_csrf")
     }
 
     @Test

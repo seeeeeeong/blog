@@ -29,7 +29,7 @@ class AdminPostControllerTest(
     // so it clears the append-only revisions as well; the api itself never does.
     @BeforeEach
     fun signIn() {
-        jdbc.sql("truncate llm_call, post_revision, post").update()
+        jdbc.sql("truncate llm_call, ask_message, post_revision, post").update()
         fakeLlmGateway.reset()
         admin = Browser(port)
         fakeGitHub.signIn(admin)
