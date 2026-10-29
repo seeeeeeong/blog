@@ -75,6 +75,33 @@ class PostServiceTest(
     }
 
     @Test
+    fun `a post links the published posts beside it in its topic, skipping drafts`() {
+        posts.published(slug = "osi", topic = "network", position = 1)
+        posts.draft("udp", topic = "network", position = 2)
+        posts.published(slug = "tcp-handshake", topic = "network", position = 3)
+        posts.published(slug = "http", topic = "network", position = 4)
+        posts.published(slug = "process", topic = "os", position = 2)
+
+        val post = postService.get("tcp-handshake")
+
+        assertThat(post.previous?.slug).isEqualTo("osi")
+        assertThat(post.previous?.number).isEqualTo("2.1")
+        assertThat(post.next?.slug).isEqualTo("http")
+        assertThat(post.next?.title).isEqualTo("제목 http")
+    }
+
+    @Test
+    fun `a post alone in its topic has no neighbours`() {
+        posts.published(slug = "tcp-handshake", topic = "network", position = 1)
+        posts.published(slug = "process", topic = "os", position = 2)
+
+        val post = postService.get("tcp-handshake")
+
+        assertThat(post.previous).isNull()
+        assertThat(post.next).isNull()
+    }
+
+    @Test
     fun `a draft is not found, as an unknown slug is`() {
         posts.draft("udp")
 
