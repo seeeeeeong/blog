@@ -16,8 +16,8 @@ in the same way, so changing `SITE_URL` takes a new build of `main`.
    Engine and the compose plugin.
 2. **Files**: create `/opt/blog` and copy `compose.yaml` and `backup.sh` into it. Copy
    `.env.example` to `/opt/blog/.env`, fill it in and `chmod 600` it.
-3. **Images**: after the first push to `main`, make both packages public on GitHub
-   (Package settings, Change visibility), or `docker login ghcr.io` with a `read:packages` token.
+3. **Images**: the packages stay private. The deploy job logs in with its own token; to pull by
+   hand, `docker login ghcr.io` with a `read:packages` token first.
 4. **Tunnel**: create a Cloudflare Tunnel, put its token in `TUNNEL_TOKEN`, and route the public
    hostname to `http://web:3150`.
 5. **Sign-in**: a GitHub OAuth App whose callback is `<BLOG_PUBLIC_URL>/api/auth/github/callback`.
