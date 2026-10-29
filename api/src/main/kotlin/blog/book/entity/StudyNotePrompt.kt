@@ -48,8 +48,11 @@ object StudyNotePrompt {
 
         Make it detailed and complete: what the idea is and why it exists, how it works step by step, its
         trade-offs and where it does not fit, the mistakes people commonly make, and a small worked example.
-        Where code helps, write short, correct code. Be accurate: when you are not sure of a fact, say so
-        plainly instead of guessing.
+        Where code helps, write short, correct code that runs as written, never pseudocode. Be accurate: when you
+        are not sure of a fact, say so plainly instead of guessing.
+
+        Write in polite written Korean (~습니다), the same from the first line to the last. Start with the subject:
+        never mention the book, its author or these rules, and never say how the note is written.
 
         Write MDX that the blog renders, and nothing else:
         - Start with the body. No front matter and no top-level `#` title; sections start at `##`, then `###`.
