@@ -23,7 +23,7 @@ class BookSourceService(
     private val topicService: TopicService,
 ) {
     fun search(request: BookSearchRequest): List<BookEditionResponse> {
-        val books = ask { bookSourceGateway.search(request.q.trim()) }
+        val books = throttled { bookSourceGateway.search(request.q.trim()) }
         val imported = bookRepository.findAllBySourceRefIn(books.map { it.ref }).map { it.sourceRef }.toSet()
         return books.map { editionOf(it, imported = it.ref in imported) }
     }
@@ -33,7 +33,7 @@ class BookSourceService(
         if (bookRepository.existsBySourceRef(request.sourceRef)) throw BlogException(BlogError.BOOK_ALREADY_IMPORTED)
         val topicId = request.topicSlug?.let(topicService::idOf)
         val book =
-            ask { bookSourceGateway.find(request.sourceRef) } ?: throw BlogException(BlogError.BOOK_NOT_IN_SOURCE)
+            throttled { bookSourceGateway.find(request.sourceRef) } ?: throw BlogException(BlogError.BOOK_NOT_IN_SOURCE)
         return adminBookService.create(book, chaptersOf(book), topicId)
     }
 
@@ -43,8 +43,8 @@ class BookSourceService(
             .orEmpty()
             .ifEmpty { throw BlogException(BlogError.BOOK_CONTENTS_UNREADABLE) }
 
-    private fun <T> ask(call: () -> T): T {
-        if (!bookSourceThrottle.ask()) throw BlogException(BlogError.BOOK_SOURCE_BUSY)
+    private fun <T> throttled(call: () -> T): T {
+        if (!bookSourceThrottle.tryAcquire()) throw BlogException(BlogError.BOOK_SOURCE_BUSY)
         return call()
     }
 

@@ -64,7 +64,7 @@ class AskService(
     ) {
         val material = materialOf(request)
         llmService.check(LlmRequest.Purpose.ASK)
-        take(clientIp)
+        takeQuestion(clientIp)
         val conversationId = request.conversationId ?: UuidV7.at(clock.instant())
         val question =
             AskMessage(
@@ -108,10 +108,10 @@ class AskService(
         )
     }
 
-    private fun take(clientIp: ClientIp) {
+    private fun takeQuestion(clientIp: ClientIp) {
         val day = AskLimitPolicy.dayOf(clock.instant())
         val ipHash = AskLimitPolicy.ipHash(ipKey, clientIp.address, day)
-        if (!jdbcAskDailyUsage.take(ipHash, day, AskLimitPolicy.DAILY_QUESTIONS)) {
+        if (!jdbcAskDailyUsage.tryTake(ipHash, day, AskLimitPolicy.DAILY_QUESTIONS)) {
             throw BlogException(BlogError.ASK_DAILY_LIMIT_REACHED)
         }
     }

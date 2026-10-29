@@ -24,11 +24,11 @@ class BookSourceThrottle(
     private var day: LocalDate? = null
     private var askedToday = 0
 
-    /** Whether one more call may go out now; an allowed one is counted, a refused one is not. */
-    fun ask(): Boolean =
+    /** Takes a place for one more call now, if there is one; a refused call takes none. */
+    fun tryAcquire(): Boolean =
         synchronized(lock) {
             val now = clock.instant()
-            while (lastSecond.isNotEmpty() && !lastSecond.first().isAfter(now.minus(SECOND))) lastSecond.removeFirst()
+            while (lastSecond.isNotEmpty() && lastSecond.first() <= now.minus(SECOND)) lastSecond.removeFirst()
             val today = LocalDate.ofInstant(now, SOURCE_ZONE)
             if (today != day) {
                 day = today
