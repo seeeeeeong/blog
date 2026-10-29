@@ -9,6 +9,7 @@ import { Dock } from '@/app/_components/Dock'
 import { SiteFooter } from '@/app/_components/SiteFooter'
 import { loadArchive } from '@/features/posts/api/archive'
 import { newestOf, postHref } from '@/features/posts/utils/archive'
+import { FEED_PATH, SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '@/lib/site'
 import { THEME_SCRIPT } from '@/lib/theme'
 
 const inter = Inter({
@@ -31,8 +32,12 @@ const departureMono = localFont({
 const FONT_VARIABLES = [inter, firaCode, departureMono].map((font) => font.variable).join(' ')
 
 export const metadata: Metadata = {
-  title: { default: 'Sinseong Lee', template: '%s · Sinseong Lee' },
-  description: 'CS를 공부하며 정리한 글',
+  metadataBase: new URL(SITE_URL),
+  title: { default: SITE_TITLE, template: `%s · ${SITE_TITLE}` },
+  description: SITE_DESCRIPTION,
+  alternates: {
+    types: { 'application/rss+xml': [{ url: FEED_PATH, title: SITE_TITLE }] },
+  },
 }
 
 // The theme script sets data-theme on <html> before React hydrates it.

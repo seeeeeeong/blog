@@ -23,7 +23,7 @@ export function postHref(slug: string): string {
   return `/posts/${slug}`
 }
 
-function newestFirst(posts: readonly PostSummary[]): PostSummary[] {
+export function newestFirst(posts: readonly PostSummary[]): PostSummary[] {
   return [...posts].sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
 }
 
