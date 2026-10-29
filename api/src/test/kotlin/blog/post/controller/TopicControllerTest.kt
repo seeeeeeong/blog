@@ -1,5 +1,6 @@
 package blog.post.controller
 
+import blog.Browser
 import blog.Http
 import blog.TestcontainersConfiguration
 import org.assertj.core.api.Assertions.assertThat
@@ -11,7 +12,7 @@ import org.springframework.context.annotation.Import
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestcontainersConfiguration::class)
 class TopicControllerTest(
-    @LocalServerPort port: Int,
+    @LocalServerPort private val port: Int,
 ) {
     private val http = Http(port)
 
@@ -28,9 +29,14 @@ class TopicControllerTest(
     }
 
     @Test
-    fun `nothing writes a topic over HTTP`() {
+    fun `nothing writes a topic over HTTP, even with the CSRF token`() {
+        val browser = Browser(port)
+        browser.fetchCsrf()
+
         listOf("POST", "PUT", "PATCH", "DELETE").forEach { method ->
-            assertThat(http.send(method, "/api/topics").status).describedAs(method).isEqualTo(405)
+            val answer = browser.send(method, "/api/topics", body = emptyMap<String, Any>())
+
+            assertThat(answer.status).describedAs(method).isEqualTo(405)
         }
     }
 }

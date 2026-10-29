@@ -26,12 +26,14 @@ Kotlin + Spring Boot 4 (`api`), Next.js (`web`), PostgreSQL 18. 홈 서버에 Cl
 ### 보안
 
 - `.env` 값, API 키, OAuth 시크릿, 터널 토큰, 비밀번호가 코드·테스트·로그·예외 메시지·응답에 들어가면 P0.
-- 관리자 전용 API 에 권한 검사가 빠지면 P1.
+- 관리자 전용 API 에 권한 검사가 빠지면 P1. 관리자 라우트는 `/api/admin/` 아래에 두어 `SecurityConfig` 의 관리자 검사를 받는다. 그 밖에 쓰기(POST·PUT·PATCH·DELETE) 라우트를 만들거나 `SecurityConfig` 에서 `/api/admin/` 검사를 느슨하게 하면 P1.
+- CSRF 를 끄거나 `ignoringRequestMatchers` 로 경로를 빼면 지적한다. 쓰기는 `XSRF-TOKEN` 쿠키를 `X-XSRF-TOKEN` 헤더로 돌려보낸다.
+- 세션에 `SessionAdmin` 말고 GitHub 액세스 토큰이나 프로필 전체를 담으면 지적한다. 관리자가 아닌 계정에 세션이 남는 경로도 지적한다.
 - 저장된 MDX 와 LLM 이 만든 글을 신뢰하지 않는 입력으로 다루는지 본다(raw HTML, 링크 스킴, 임의 컴포넌트).
 
 ### 구조 (docs 없이도 판단할 수 있게)
 
-- 기능은 `blog/` 바로 아래 패키지(`blog/post`)이고 `controller/`, `service/`, `dto/request/`·`dto/response/`, `repository/`, `entity/` 로 나뉜다. 이 밖의 패키지에 클래스를 두면 지적한다.
+- 기능은 `blog/` 바로 아래 패키지(`blog/post`, `blog/auth`)이고 `controller/`, `security/`(Spring Security 설정·핸들러, `blog/auth` 만), `service/`, `dto/request/`·`dto/response/`, `repository/`, `entity/` 로 나뉜다. 이 밖의 패키지에 클래스를 두면 지적한다.
 - 한 기능이 다른 기능의 `repository/`·`entity/` 를 직접 쓰면 지적한다. 다른 기능은 그 기능의 `service/` 를 부르고, 그 서비스의 요청·응답 DTO 는 써도 된다.
 - 계층 방향(`controller → service → repository → entity`, `dto/` 는 controller·service 가 쓰고 entity 만 읽는다)을 거스르거나, controller 가 entity·repository 를 직접 쓰거나, `entity/` 가 HTTP·JDBC 코드를 쓰면 지적한다. 포트를 두지 않으며, 인터페이스는 외부 시스템(`XxxGateway`)에만 둔다.
 - 엔티티를 Controller 가 그대로 반환하면 지적한다. `XxxResponse` 로 바꾼다.

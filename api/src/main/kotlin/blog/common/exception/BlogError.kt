@@ -15,5 +15,9 @@ enum class BlogError(
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "common.method_not_allowed", "지원하지 않는 요청입니다"),
     UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "common.unsupported_media_type", "지원하지 않는 형식입니다"),
     INTERNAL(HttpStatus.INTERNAL_SERVER_ERROR, "common.internal", "잠시 후 다시 시도해 주세요"),
+    AUTH_NOT_ADMIN(HttpStatus.FORBIDDEN, "auth.not_admin", "관리자 계정으로만 로그인할 수 있습니다"),
+    AUTH_LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "auth.login_failed", "GitHub 로그인에 실패했습니다. 다시 시도해 주세요"),
+    AUTH_LOGIN_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "auth.login_unavailable", "관리자 로그인이 설정되지 않았습니다"),
+    AUTH_INVALID_CSRF(HttpStatus.FORBIDDEN, "auth.invalid_csrf", "요청을 확인할 수 없습니다. 새로고침 후 다시 시도해 주세요"),
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "post.not_found", "글을 찾을 수 없습니다"),
 }
