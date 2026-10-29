@@ -72,6 +72,24 @@ class PostControllerTest(
     }
 
     @Test
+    fun `a post names its previous and next post in the topic, or null at either end`() {
+        posts.published(slug = "osi", topic = "network", position = 1, at = Instant.parse("2026-09-01T00:00:00Z"))
+        posts.published(slug = "tcp-handshake", topic = "network", position = 2)
+        posts.draft("udp", topic = "network", position = 3)
+
+        val post = http.get("/api/posts/tcp-handshake")
+
+        val previous = post.body.get("previous")
+        assertThat(previous.get("slug").asString()).isEqualTo("osi")
+        assertThat(previous.get("title").asString()).isEqualTo("제목 osi")
+        assertThat(previous.get("number").asString()).isEqualTo("2.1")
+        assertThat(previous.get("publishedAt").asString()).isEqualTo("2026-09-01T00:00:00Z")
+        assertThat(previous.get("topic").get("slug").asString()).isEqualTo("network")
+        assertThat(previous.has("bodyMdx")).isFalse()
+        assertThat(post.body.get("next").isNull).isTrue()
+    }
+
+    @Test
     fun `a draft is neither listed nor read`() {
         posts.published(slug = "tcp-handshake", topic = "network", position = 1)
         posts.draft("udp", topic = "network", position = 2)

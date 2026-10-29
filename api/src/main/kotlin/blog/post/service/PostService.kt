@@ -19,16 +19,24 @@ class PostService(
     private val topicRepository: TopicRepository,
 ) {
     fun list(): List<PostSummaryResponse> {
-        val posts = postRepository.findAllByStatusOrderByPublishedAtDescIdDesc(PostStatus.PUBLISHED)
+        val posts = postRepository.findPublishedNewestFirst()
         val topics = topicRepository.findAll().associateBy { it.id }
         return posts.map { PostSummaryResponse.from(it, topics.getValue(it.topicId)) }
     }
 
+    /** The post and its published neighbours in its topic, which a reader pages through in order. */
     fun get(slug: String): PostResponse {
         val post =
             postRepository.findBySlugAndStatus(slug, PostStatus.PUBLISHED)
                 ?: throw BlogException(BlogError.POST_NOT_FOUND)
         val topic = checkNotNull(topicRepository.findByIdOrNull(post.topicId)) { "A post's topic is kept" }
-        return PostResponse.from(post, topic)
+        val previous = postRepository.findPublishedBefore(post.topicId, post.position)
+        val next = postRepository.findPublishedAfter(post.topicId, post.position)
+        return PostResponse.from(
+            post = post,
+            topic = topic,
+            previous = previous?.let { PostSummaryResponse.from(it, topic) },
+            next = next?.let { PostSummaryResponse.from(it, topic) },
+        )
     }
 }
