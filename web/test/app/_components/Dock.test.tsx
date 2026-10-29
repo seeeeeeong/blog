@@ -13,11 +13,21 @@ describe('Dock', () => {
     expect(out).toContain('aria-label="라이트 모드로 전환"')
   })
 
+  it('opens the command palette from Cmd, after Latest and before the theme', () => {
+    const out = renderToStaticMarkup(<Dock latestHref="/posts/tcp-handshake" />)
+
+    expect(out).toContain(
+      '<button class="dock__item" type="button" aria-haspopup="dialog" aria-expanded="false">Cmd</button>',
+    )
+    expect(out.indexOf('>Latest<')).toBeLessThan(out.indexOf('>Cmd<'))
+    expect(out.indexOf('>Cmd<')).toBeLessThan(out.indexOf('theme-toggle'))
+  })
+
   it('has no Latest link without a post, and no buttons that do nothing yet', () => {
     const out = renderToStaticMarkup(<Dock />)
 
     expect(out).not.toContain('Latest')
-    for (const later of ['Books', 'Cmd', 'Ask']) expect(out).not.toContain(later)
-    expect(out.match(/<button/g)).toHaveLength(1)
+    for (const later of ['Books', 'Ask']) expect(out).not.toContain(later)
+    expect(out.match(/<button/g)).toHaveLength(2)
   })
 })
