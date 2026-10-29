@@ -22,6 +22,7 @@ Kotlin + Spring Boot 4 (`api`), Next.js (`web`), PostgreSQL 18. 홈 서버에 Cl
 - 트랜잭션 안에서 LLM 호출이나 SSE 송출을 하면 지적한다.
 - JPA 와 JdbcClient 가 한 트랜잭션에 섞일 때 flush 없이 JdbcClient 가 JPA 가 쓴 행을 읽으면 지적한다.
 - 머지된 Flyway 마이그레이션을 수정하면 P1. 새 마이그레이션에는 `<Name>SchemaTest` 가 있어야 한다.
+- 발행된 글을 다시 발행하지 않고 바꾸는 경로를 만들거나, 발행이 `post_revision` 을 남기지 않으면 지적한다.
 
 ### 보안
 

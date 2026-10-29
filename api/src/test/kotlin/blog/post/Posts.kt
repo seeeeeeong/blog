@@ -5,7 +5,7 @@ import blog.post.repository.PostRepository
 import blog.post.repository.TopicRepository
 import java.time.Instant
 
-/** Posts put straight into the store, as an editor will once there is one. */
+/** Posts put straight into the store, skipping the admin's api and its revisions. */
 class Posts(
     private val postRepository: PostRepository,
     private val topicRepository: TopicRepository,
@@ -28,7 +28,7 @@ class Posts(
         at: Instant = Instant.parse("2026-10-01T00:00:00Z"),
     ): Post {
         val post = write(slug = slug, topic = topic, position = position, at = at)
-        post.publish(at)
+        post.publish(post.content, at)
         postRepository.save(post)
         return post
     }

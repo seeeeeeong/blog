@@ -12,6 +12,24 @@ interface PostRepository : JpaRepository<Post, UUID> {
         status: PostStatus,
     ): Post?
 
+    fun findAllByOrderByUpdatedAtDesc(): List<Post>
+
+    fun existsBySlug(slug: String): Boolean
+
+    fun existsBySlugAndIdNot(
+        slug: String,
+        id: UUID,
+    ): Boolean
+
+    fun existsByTopicIdAndPositionAndIdNot(
+        topicId: UUID,
+        position: Int,
+        id: UUID,
+    ): Boolean
+
+    @Query("select coalesce(max(p.position), 0) + 1 from Post p where p.topicId = :topicId")
+    fun nextPosition(topicId: UUID): Int
+
     // The id breaks a tie: it is a UUIDv7, so a later post sorts later.
     @Query(
         """

@@ -20,4 +20,10 @@ enum class BlogError(
     AUTH_LOGIN_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "auth.login_unavailable", "관리자 로그인이 설정되지 않았습니다"),
     AUTH_INVALID_CSRF(HttpStatus.FORBIDDEN, "auth.invalid_csrf", "요청을 확인할 수 없습니다. 새로고침 후 다시 시도해 주세요"),
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "post.not_found", "글을 찾을 수 없습니다"),
+    POST_TOPIC_NOT_FOUND(HttpStatus.BAD_REQUEST, "post.topic_not_found", "주제를 찾을 수 없습니다"),
+    POST_SLUG_TAKEN(HttpStatus.CONFLICT, "post.slug_taken", "다른 글이 이미 쓰는 주소입니다"),
+    POST_POSITION_TAKEN(HttpStatus.CONFLICT, "post.position_taken", "주제 안에서 다른 글이 이미 쓰는 순서입니다"),
+    POST_SUMMARY_REQUIRED(HttpStatus.BAD_REQUEST, "post.summary_required", "발행하려면 요약을 적어 주세요"),
+    POST_EDIT_CONFLICT(HttpStatus.CONFLICT, "post.edit_conflict", "다른 곳에서 먼저 고친 글입니다. 새로고침 후 다시 시도해 주세요"),
+    POST_PUBLISHED_LOCKED(HttpStatus.CONFLICT, "post.published_locked", "발행한 글은 다시 발행해야 바뀝니다"),
 }
