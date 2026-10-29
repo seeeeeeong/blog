@@ -49,6 +49,7 @@ class Posts(
             position = position,
             summary = "요약 $slug",
             bodyMdx = "# $slug\n\n본문이다.",
+            sectionId = null,
             now = at,
         )
     }

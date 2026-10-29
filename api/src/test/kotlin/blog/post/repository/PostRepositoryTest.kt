@@ -88,6 +88,7 @@ class PostRepositoryTest(
         position = position,
         summary = "요약 $slug",
         bodyMdx = "본문이다.",
+        sectionId = null,
         now = at,
     )
 }

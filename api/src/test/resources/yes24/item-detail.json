@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "message": null,
+  "errorCode": null,
+  "data": {
+    "items": [
+      {
+        "itemId": 74219491,
+        "title": " 오브젝트  ",
+        "author": "조영호 저",
+        "goodsType": "도서",
+        "publisher": "위키북스",
+        "isbn13": "978-89-98139-76-6",
+        "publishDate": "20190617",
+        "link": "https://www.yes24.com/product/goods/74219491",
+        "cover": "https://image.yes24.com/goods/74219491/L",
+        "contentDetail": {
+          "bookIntroduction": "<p>역할, 책임, 협력을 향해</p>",
+          "tableOfContents": "들어가며<br>\r\n<STRONG>▣ 01장: 객체, 설계</STRONG> <br>\r\n01. 티켓 판매 애플리케이션 구현하기<br>\r\n___소극장<br>\r\n02. 무엇이 문제인가&nbsp;<br>\r\n<br>\r\n<STRONG>▣ 02장: 객체지향 프로그래밍</STRONG><br>\r\n01. 영화 예매 시스템<br>\r\n02. 객체지향 &amp; 협력<br>\r\n<br>\r\n부록 A. 계약에 의한 설계<br>\r\n찾아보기"
+        }
+      }
+    ]
+  }
+}

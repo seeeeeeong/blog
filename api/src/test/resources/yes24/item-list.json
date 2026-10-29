@@ -1,0 +1,49 @@
+{
+  "success": true,
+  "message": null,
+  "errorCode": null,
+  "data": {
+    "items": [
+      {
+        "itemId": 74219491,
+        "title": "오브젝트",
+        "author": "조영호 저",
+        "goodsType": "도서",
+        "publisher": "위키북스",
+        "isbn13": "9788998139766",
+        "publishDate": "2019-06-17",
+        "link": "https://www.yes24.com/product/goods/74219491",
+        "cover": "https://image.yes24.com/goods/74219491/L",
+        "contentDetail": {
+          "tableOfContents": "▣ 01장: 객체, 설계<br>01. 티켓 판매 애플리케이션 구현하기"
+        }
+      },
+      {
+        "itemId": 90000001,
+        "title": "오브젝트 + 객체지향의 사실과 오해 세트",
+        "author": "조영호 저",
+        "goodsType": "도서",
+        "publisher": "위키북스",
+        "isbn13": "",
+        "publishDate": "20200101",
+        "cover": "https://image.yes24.com/goods/90000001/L",
+        "contentDetail": {
+          "tableOfContents": null
+        }
+      },
+      {
+        "itemId": 90000002,
+        "title": "오브젝트 (eBook)",
+        "author": null,
+        "goodsType": "eBook",
+        "publisher": "위키북스",
+        "isbn13": "9791158391409",
+        "publishDate": "2019년 6월",
+        "cover": "http://image.yes24.com/goods/90000002/L",
+        "contentDetail": {
+          "tableOfContents": null
+        }
+      }
+    ]
+  }
+}

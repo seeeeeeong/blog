@@ -27,7 +27,7 @@ code it guards.
 ## Architecture
 
 - **Layout**: `blog/common/` (config, entity, exception, security, util) and one package per
-  feature directly under `blog/` (`blog/post`, `blog/auth`; later `blog/book`, `blog/ask`), each
+  feature directly under `blog/` (`blog/post`, `blog/auth`, `blog/book`; later `blog/ask`), each
   in these layers:
 
   | Layer | Holds |
@@ -38,6 +38,7 @@ code it guards.
   | `dto/request/`, `dto/response/` | `XxxRequest`, `XxxResponse`, one per file |
   | `repository/` | Spring Data repositories, and `JdbcXxx` on JdbcClient |
   | `entity/` | JPA entities, their enums and converters, other domain types and rules |
+  | `gateway/` | an external system's `XxxGateway`, its client and the types it returns |
 
   `controller → service → repository → entity`; `security/` sits beside `controller/` as the
   web's other door and reaches only the service and dto. `dto/` sits under the feature, not under
@@ -50,7 +51,8 @@ code it guards.
   it calls that feature's service, whose requests and responses it may use. `ArchitectureTest`
   checks this and the layers with ArchUnit, each rule with a fixture that breaks it.
 - **No ports**: no use-case interfaces; an interface only for an external system, named
-  `XxxGateway` (`LlmGateway` for DeepSeek). Its layer joins the rules when the first one arrives.
+  `XxxGateway` (`BookSourceGateway` for YES24) in the feature's `gateway/`, which only its service
+  calls and which reaches into no other layer.
 - **Rules** (`XxxPolicy`, `XxxDecision`, `XxxParser`, `XxxPrompt`, `XxxCheck`) sit in `entity/`
   and depend only on Kotlin, the JDK's pure packages and other rule classes; `ArchitectureTest`
   checks it with an allow list.
