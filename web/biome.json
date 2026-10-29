@@ -149,6 +149,32 @@
           }
         }
       }
+    },
+    {
+      "includes": ["src/features/widgets/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@/features/**",
+                      "!@/features/widgets/**",
+                      "@/app/**",
+                      "../**",
+                      "./**/../**"
+                    ],
+                    "message": "A feature imports only itself and shared code; compose features in a route."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }

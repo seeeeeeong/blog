@@ -19,6 +19,18 @@ export function shortDate(instant: string): string {
   return `${MONTHS[Number(month) - 1]} ${day}`
 }
 
+/** `OCT 21, 2026`, the day an instant falls on in Seoul, with its year. */
+export function longDate(instant: string): string {
+  const { year } = seoulParts(instant)
+  return `${shortDate(instant)}, ${year}`
+}
+
+/** `2026-10-21`, the day an instant falls on in Seoul, for a `<time>` element. */
+export function isoDay(instant: string): string {
+  const { year, month, day } = seoulParts(instant)
+  return `${year}-${month?.padStart(2, '0')}-${day}`
+}
+
 /** `2026`, the year an instant falls in in Seoul. */
 export function yearOf(instant: string): string {
   return seoulParts(instant).year ?? ''
