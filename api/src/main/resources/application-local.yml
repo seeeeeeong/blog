@@ -1,0 +1,4 @@
+# SPRING_PROFILES_ACTIVE=local: sample posts so the home is not empty on a fresh database.
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/seed
