@@ -1,14 +1,12 @@
 package blog.book.dto.response
 
 import blog.book.entity.Book
-import blog.book.entity.BookSection
-import blog.post.dto.response.AdminPostSummaryResponse
 import blog.post.dto.response.TopicResponse
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-/** A book as the admin sees it: its contents, and the post written for each section, drafts too. */
+/** A book as the admin sees it: its contents, the post written for each section, drafts too, and its notes. */
 data class AdminBookResponse(
     val id: UUID,
     val title: String,
@@ -24,11 +22,11 @@ data class AdminBookResponse(
     val chapters: List<AdminBookSectionResponse>,
 ) {
     companion object {
+        /** [chapters] as [AdminBookSectionResponse.treeOf] builds them. */
         fun from(
             book: Book,
             topic: TopicResponse?,
-            sections: List<BookSection>,
-            posts: Map<UUID, AdminPostSummaryResponse>,
+            chapters: List<AdminBookSectionResponse>,
         ) = AdminBookResponse(
             id = book.id,
             title = book.title,
@@ -41,7 +39,7 @@ data class AdminBookResponse(
             coverUrl = book.coverUrl,
             topic = topic,
             createdAt = book.createdAt,
-            chapters = AdminBookSectionResponse.treeOf(sections, posts),
+            chapters = chapters,
         )
     }
 }

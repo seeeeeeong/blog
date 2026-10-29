@@ -27,7 +27,7 @@ class AdminBookControllerTest(
 
     @BeforeEach
     fun signIn() {
-        jdbc.sql("truncate post_revision, post, book_section, book").update()
+        jdbc.sql("truncate study_note, post_revision, post, book_section, book").update()
         fakeBookSourceGateway.reset()
         fakeBookSourceGateway.holds("74219491")
         admin = Browser(port)

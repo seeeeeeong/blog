@@ -15,7 +15,10 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.transaction.annotation.Transactional
+import java.sql.Timestamp
+import java.time.Instant
 import java.util.UUID
 
 @SpringBootTest
@@ -25,6 +28,7 @@ class AdminBookServiceTest(
     @Autowired private val adminBookService: AdminBookService,
     @Autowired private val bookSourceService: BookSourceService,
     @Autowired private val fakeBookSourceGateway: FakeBookSourceGateway,
+    @Autowired private val jdbc: JdbcClient,
 ) {
     @BeforeEach
     fun reset() {
@@ -117,5 +121,36 @@ class AdminBookServiceTest(
     fun `an unknown book or section is not found`() {
         fails(BlogError.BOOK_NOT_FOUND) { adminBookService.get(UUID.randomUUID()) }
         fails(BlogError.BOOK_SECTION_NOT_FOUND) { adminBookService.writePost(UUID.randomUUID()) }
+    }
+
+    private fun note(
+        section: UUID,
+        at: Instant,
+    ) {
+        jdbc
+            .sql(
+                """
+                insert into study_note (id, section_id, body_mdx, model, input_tokens, output_tokens, created_at)
+                values (:id, :sectionId, '## 노트', 'deepseek-flash', 1, 1, :at)
+                """.trimIndent(),
+            ).param("id", UUID.randomUUID())
+            .param("sectionId", section)
+            .param("at", Timestamp.from(at))
+            .update()
+    }
+
+    @Test
+    fun `the book shows when each section's latest study note was written`() {
+        val book = imported()
+        val section = book.section("1.1").id
+        note(section, Instant.parse("2026-10-20T00:00:00Z"))
+        note(section, Instant.parse("2026-10-21T00:00:00Z"))
+
+        val shown = adminBookService.get(book.id)
+        val listed = adminBookService.list().single { it.id == book.id }
+
+        assertThat(shown.section("1.1").noteCreatedAt).isEqualTo(Instant.parse("2026-10-21T00:00:00Z"))
+        assertThat(shown.section("1.2").noteCreatedAt).isNull()
+        assertThat(listed.section("1.1").noteCreatedAt).isEqualTo(Instant.parse("2026-10-21T00:00:00Z"))
     }
 }
