@@ -36,7 +36,7 @@ updates:
       next-react:
         patterns: ['next', 'react', 'react-dom', '@types/react', '@types/react-dom']
       build-tooling:
-        patterns: ['@biomejs/*', 'typescript', 'tailwindcss', '@tailwindcss/*', '@types/node']
+        patterns: ['@biomejs/*', 'typescript', '@types/node']
 
   - package-ecosystem: github-actions
     directory: /

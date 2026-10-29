@@ -9,6 +9,8 @@ permissions:
 
 jobs:
   commit-messages:
+    # Dependabot writes its own subjects, which run past 72 characters for grouped updates.
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       # The branch tip, not GitHub's merge commit, whose message is not Conventional.
