@@ -13,6 +13,7 @@ const DRAFT: AdminPost = {
   title: 'TCP 3-way handshake',
   status: 'DRAFT',
   topic: network,
+  sectionId: null,
   position: 1,
   number: '2.1',
   summary: '세 번의 교환',
@@ -60,5 +61,39 @@ describe('PostEditor', () => {
     expect(out).toContain('Published OCT 21 / 2.1 network')
     expect(out).not.toContain('Save draft')
     expect(out).toContain('disabled="">Republish</button>')
+  })
+
+  it('links back to the book section the post was written for', () => {
+    const section = { id: '0199-s', number: '3.5', title: 'TCP', post: null, sections: [] }
+    const book = {
+      id: '0199-book',
+      title: '컴퓨터 네트워킹',
+      authors: null,
+      publisher: null,
+      isbn13: '9791159773486',
+      publishedOn: null,
+      sourceRef: '108512345',
+      sourceUrl: 'https://www.yes24.com/product/goods/108512345',
+      coverUrl: null,
+      topic: network,
+      createdAt: '2026-10-20T00:00:00Z',
+      chapters: [section],
+    }
+    const out = renderToStaticMarkup(
+      <PostEditor
+        post={{ ...DRAFT, sectionId: '0199-s' }}
+        topics={[network]}
+        section={{ book, section }}
+        previewAction={preview}
+      />,
+    )
+
+    expect(out).toContain(
+      '<a class="mono mlink" href="/admin/books/0199-book#section-0199-s">컴퓨터 네트워킹 / 3.5</a>',
+    )
+  })
+
+  it('has no book link for a post written for no section', () => {
+    expect(render(DRAFT)).not.toContain('/admin/books')
   })
 })

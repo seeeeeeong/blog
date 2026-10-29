@@ -49,6 +49,7 @@ describe('visibleItems', () => {
       ['Tools', 'Search posts...'],
       ['Navigation', 'Index'],
       ['Navigation', 'Topics'],
+      ['Navigation', 'Books'],
       ['Navigation', 'Latest'],
       ['Navigation', 'RSS'],
       ['Links', 'GitHub'],
@@ -56,6 +57,10 @@ describe('visibleItems', () => {
     expect(items.find((item) => item.label === 'Latest')?.action).toEqual({
       type: 'route',
       href: '/posts/tcp-handshake',
+    })
+    expect(items.find((item) => item.label === 'Books')?.action).toEqual({
+      type: 'route',
+      href: '/books',
     })
     expect(items.find((item) => item.label === 'RSS')?.action).toEqual({
       type: 'page',

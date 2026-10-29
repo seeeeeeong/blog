@@ -445,6 +445,132 @@ select.minput {
   }
 }
 
+.atoolbar--end {
+  justify-content: flex-end;
+}
+
+.blist {
+  margin-top: var(--space-8);
+}
+
+.apage > .meta-card {
+  margin-bottom: var(--space-8);
+}
+
+.mlink {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  text-decoration: none;
+  text-transform: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.mlink:hover {
+  text-decoration: underline;
+}
+
+.mlink:disabled {
+  opacity: 0.5;
+  cursor: default;
+  text-decoration: none;
+}
+
+.mfield .mlink {
+  justify-self: start;
+}
+
+.bsection {
+  grid-template-columns: 48px minmax(0, 1fr) auto auto;
+}
+
+.bsection:hover {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.bsection:hover .row__meta {
+  color: var(--text-tertiary);
+}
+
+.bsection .is-draft,
+.bsection:hover .is-draft {
+  color: var(--accent);
+}
+
+.bsection__actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+:target > .bsection {
+  background: var(--emphasis);
+}
+
+.modal--wide {
+  width: min(620px, calc(100vw - 32px));
+}
+
+.bsearch {
+  display: flex;
+  gap: 8px;
+  margin-top: var(--space-4);
+}
+
+.bresults {
+  max-height: min(360px, 45vh);
+  margin-top: var(--space-3);
+  overflow-y: auto;
+}
+
+.bedition {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.bedition .row {
+  width: 100%;
+  border: 0;
+  border-radius: var(--radius-1);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.bedition .row[aria-pressed="true"] {
+  background: var(--emphasis);
+  color: var(--accent);
+}
+
+.bedition .row:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.bedition .row:disabled:hover {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.bedition .row:disabled:hover .row__meta {
+  color: var(--text-tertiary);
+}
+
+.bedition .mlink {
+  padding-right: var(--space-2);
+}
+
+.modal .bnone {
+  margin-top: var(--space-4);
+  color: var(--text-tertiary);
+}
+
 @media (max-width: 760px) {
   .ebar {
     right: 8px;
