@@ -18,5 +18,14 @@ export type PostSummary = {
   publishedAt: string
 }
 
+/** A published post as `GET /api/posts/{slug}` answers it, with its neighbours in its topic. */
+export type Post = PostSummary & {
+  bodyMdx: string
+  /** The published post before it in its topic, by position; null for the topic's first. */
+  previous: PostSummary | null
+  /** The published post after it in its topic, by position; null for the topic's last. */
+  next: PostSummary | null
+}
+
 /** What the archive lists: the published posts and every topic. */
 export type ArchiveData = { posts: PostSummary[]; topics: Topic[] }
