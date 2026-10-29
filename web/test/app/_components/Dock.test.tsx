@@ -25,11 +25,20 @@ describe('Dock', () => {
     expect(out.indexOf('>Cmd<')).toBeLessThan(out.indexOf('theme-toggle'))
   })
 
-  it('has no Latest link without a post, and no buttons that do nothing yet', () => {
+  it('opens the Ask panel from Ask, after Cmd', () => {
+    const out = renderToStaticMarkup(<Dock latestHref="/posts/tcp-handshake" />)
+
+    expect(out).toContain(
+      '<button class="dock__item" type="button" aria-controls="ask-panel" aria-expanded="false">Ask</button>',
+    )
+    expect(out.indexOf('>Cmd<')).toBeLessThan(out.indexOf('>Ask<'))
+    expect(out.indexOf('>Ask<')).toBeLessThan(out.indexOf('theme-toggle'))
+  })
+
+  it('has no Latest link without a post', () => {
     const out = renderToStaticMarkup(<Dock />)
 
     expect(out).not.toContain('Latest')
-    expect(out).not.toContain('Ask')
-    expect(out.match(/<button/g)).toHaveLength(2)
+    expect(out.match(/<button/g)).toHaveLength(3)
   })
 })

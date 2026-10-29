@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ThemeToggle } from '@/app/_components/ThemeToggle'
 import { Logo } from '@/components/ui/Logo'
+import { ASK_PANEL_ID } from '@/features/ask/components/AskPanel'
+import { toggleAsk, useAskMode } from '@/features/ask/hooks/useAskMode'
 import { openCmd, useCmdOpen } from '@/features/cmd/hooks/useCmdOpen'
 import { useArchiveView } from '@/features/posts/hooks/useArchiveView'
 
@@ -21,12 +23,13 @@ const inBooks = (pathname: string | null) =>
 /**
  * The floating bar at the top of every page. Index and Topics are plain links: Next keeps a
  * fragment-only change to itself, and the archive follows the browser's `hashchange`. Cmd opens
- * the palette the layout mounts beside the dock.
+ * the palette the layout mounts beside the dock, and Ask its panel.
  */
 export function Dock({ latestHref }: Props) {
   const pathname = usePathname()
   const view = useArchiveView()
   const cmdOpen = useCmdOpen()
+  const askMode = useAskMode()
   const home = pathname === '/'
   return (
     <header className="dock">
@@ -62,6 +65,15 @@ export function Dock({ latestHref }: Props) {
             onClick={openCmd}
           >
             Cmd
+          </button>
+          <button
+            className="dock__item"
+            type="button"
+            aria-controls={ASK_PANEL_ID}
+            aria-expanded={askMode === 'open'}
+            onClick={toggleAsk}
+          >
+            Ask
           </button>
         </div>
         <ThemeToggle />
