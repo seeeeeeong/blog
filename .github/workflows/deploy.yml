@@ -1,0 +1,41 @@
+name: Deploy
+
+# The server pulls what CI pushed to GHCR; it never builds.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Skipped until the server's runner exists and DEPLOY_ENABLED is set. Only a green push to
+    # main deploys: a fork's pull request may name its branch main too.
+    if: >-
+      vars.DEPLOY_ENABLED == 'true' && (
+        github.event_name == 'workflow_dispatch' || (
+          github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.event == 'push' &&
+          github.event.workflow_run.head_repository.full_name == github.repository
+        )
+      )
+    runs-on: [self-hosted, blog]
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: /opt/blog
+    steps:
+      - run: docker compose pull --quiet
+
+      # Waits for every healthcheck, so a broken image fails the run.
+      - run: docker compose up --detach --remove-orphans --wait --wait-timeout 300
+
+      - run: docker image prune --force
