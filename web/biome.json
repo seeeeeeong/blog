@@ -151,6 +151,32 @@
       }
     },
     {
+      "includes": ["src/features/books/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@/features/**",
+                      "!@/features/books/**",
+                      "@/app/**",
+                      "../**",
+                      "./**/../**"
+                    ],
+                    "message": "A feature imports only itself and shared code; compose features in a route."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "includes": ["src/features/cmd/**"],
       "linter": {
         "rules": {

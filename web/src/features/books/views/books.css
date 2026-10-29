@@ -1,0 +1,141 @@
+.bglow {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 320px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bglow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(var(--hero-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(90deg, var(--hero-grid) 1px, transparent 1px) 0 0 / 32px 32px;
+  -webkit-mask-image: radial-gradient(60% 90% at 50% 0%, #000 20%, transparent 75%);
+  mask-image: radial-gradient(60% 90% at 50% 0%, #000 20%, transparent 75%);
+}
+
+.bglow::after {
+  content: "";
+  position: absolute;
+  inset: -40% 10% 0;
+  background: radial-gradient(50% 60% at 50% 0%, var(--hero-glow), transparent 75%);
+  opacity: 0.45;
+}
+
+.bpage {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 168px var(--gutter) var(--space-13);
+  box-sizing: content-box;
+}
+
+.bhead {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  margin-bottom: var(--space-8);
+  text-align: center;
+}
+
+.bhead h1 {
+  margin: 0;
+  font-size: var(--font-size-6);
+  font-weight: var(--weight-title);
+  line-height: 1.2;
+  letter-spacing: -0.022em;
+}
+
+.bhead__meta {
+  margin: 0;
+  color: var(--text-tertiary);
+  text-transform: none;
+}
+
+.bback {
+  display: inline-block;
+  margin: 0 var(--space-4) var(--space-5);
+  color: var(--text-tertiary);
+  text-decoration: none;
+  text-transform: none;
+}
+
+.bback:hover {
+  color: var(--accent);
+}
+
+.brow__title {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.brow__by {
+  color: var(--text-tertiary);
+  text-transform: none;
+}
+
+.bstat {
+  display: grid;
+  gap: 10px;
+  margin: 0 var(--space-4) var(--space-4);
+  color: var(--text-tertiary);
+}
+
+.bstat__line {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.bstat .mono {
+  text-transform: none;
+}
+
+.bstat__source {
+  color: var(--text-tertiary);
+  text-decoration: none;
+}
+
+.bstat__source:hover {
+  color: var(--accent);
+}
+
+.bprogress {
+  height: 2px;
+  border-radius: 1px;
+  background: oklch(from var(--border-color) l c h / 80%);
+  overflow: hidden;
+}
+
+.bprogress span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.row--pending {
+  color: var(--text-tertiary);
+  opacity: 0.55;
+}
+
+.row--pending:hover {
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+.row--pending:hover .row__meta {
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 480px) {
+  .bpage {
+    padding-top: 120px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}

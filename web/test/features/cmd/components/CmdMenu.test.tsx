@@ -51,9 +51,9 @@ describe('CmdMenu', () => {
       expect(out).toContain(`role="group" aria-label="${group}"`)
     expect(out).toContain('id="cmd-option-2" role="option" aria-selected="true"')
     expect(out).toContain('id="cmd-option-0" role="option" aria-selected="false"')
-    expect(out.match(/role="option"/g)).toHaveLength(6)
+    expect(out.match(/role="option"/g)).toHaveLength(7)
     expect(out).toContain('<span class="cmd__hint">github.com/seeeeeeong</span>')
-    for (const later of ['Ask', 'Books', 'theme']) expect(out).not.toContain(later)
+    for (const later of ['Ask', 'theme']) expect(out).not.toContain(later)
   })
 
   it('lists only the posts, with their dates, when searching posts', () => {

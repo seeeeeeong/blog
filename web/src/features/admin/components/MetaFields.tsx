@@ -1,10 +1,12 @@
 import { type ReactNode, useId } from 'react'
 import type { Topic } from '@/features/admin/api/types'
+import { type SectionPlace, sectionHref } from '@/features/admin/utils/books'
 import type { Draft } from '@/features/admin/utils/editor'
 
 type Props = {
   draft: Draft
   topics: readonly Topic[]
+  section: SectionPlace | null
   onEdit: (patch: Partial<Draft>) => void
 }
 
@@ -22,7 +24,7 @@ function Field({ id, label, wide, children }: FieldProps) {
 }
 
 /** The post's metadata in the footer's card: where it lives, its place in the topic, its summary. */
-export function MetaFields({ draft, topics, onEdit }: Props) {
+export function MetaFields({ draft, topics, section, onEdit }: Props) {
   const id = useId()
   return (
     <div className="meta-card emeta">
@@ -62,6 +64,14 @@ export function MetaFields({ draft, topics, onEdit }: Props) {
             onChange={(event) => onEdit({ position: event.target.valueAsNumber || 0 })}
           />
         </Field>
+        {section && (
+          <div className="meta-item mfield mfield--wide">
+            <p className="mfield__label">Book</p>
+            <a className="mono mlink" href={sectionHref(section.book.id, section.section.id)}>
+              {section.book.title} / {section.section.number}
+            </a>
+          </div>
+        )}
         <Field id={`${id}summary`} label="Summary" wide>
           <textarea
             id={`${id}summary`}
