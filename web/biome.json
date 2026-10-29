@@ -22,11 +22,6 @@
       "trailingCommas": "all"
     }
   },
-  "css": {
-    "parser": {
-      "tailwindDirectives": true
-    }
-  },
   "linter": {
     "enabled": true,
     "rules": {
@@ -121,6 +116,32 @@
                   {
                     "group": ["@/features/**", "@/app/**", "../**", "./**/../**"],
                     "message": "A feature imports only itself and shared code; give each feature an override after this one that allows itself."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/features/posts/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@/features/**",
+                      "!@/features/posts/**",
+                      "@/app/**",
+                      "../**",
+                      "./**/../**"
+                    ],
+                    "message": "A feature imports only itself and shared code; compose features in a route."
                   }
                 ]
               }

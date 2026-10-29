@@ -1,7 +1,13 @@
-export default function Home() {
+import { Hero } from '@/app/_components/Hero'
+import { loadArchive } from '@/features/posts/api/archive'
+import { Archive } from '@/features/posts/views/Archive'
+
+export default async function Home() {
+  const archive = await loadArchive()
   return (
-    <main>
-      <h1>Sinseong Lee</h1>
-    </main>
+    <>
+      <Hero />
+      <Archive archive={archive} />
+    </>
   )
 }

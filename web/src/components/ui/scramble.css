@@ -1,0 +1,14 @@
+.scramble-pending {
+  opacity: 0;
+}
+
+.scramble__noise {
+  color: var(--text-primary);
+  opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scramble-pending {
+    opacity: 1;
+  }
+}
