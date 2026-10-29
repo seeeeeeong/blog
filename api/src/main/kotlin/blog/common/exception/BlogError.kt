@@ -40,4 +40,14 @@ enum class BlogError(
     BOOK_SOURCE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "book.source_unavailable", "YES24 검색이 설정되지 않았습니다"),
     BOOK_SOURCE_BUSY(HttpStatus.TOO_MANY_REQUESTS, "book.source_busy", "YES24 요청이 많습니다. 잠시 후 다시 시도해 주세요"),
     BOOK_SOURCE_FAILED(HttpStatus.BAD_GATEWAY, "book.source_failed", "YES24 가 응답하지 않습니다. 잠시 후 다시 시도해 주세요"),
+    BOOK_NOTE_NOT_FOUND(HttpStatus.NOT_FOUND, "book.note_not_found", "아직 공부 노트가 없습니다"),
+    LLM_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "llm.unavailable", "AI 글쓰기가 설정되지 않았습니다"),
+    LLM_MONTHLY_CAP_REACHED(
+        HttpStatus.TOO_MANY_REQUESTS,
+        "llm.monthly_cap_reached",
+        "이번 달 AI 사용 한도에 도달했습니다. 다음 달에 다시 시도해 주세요",
+    ),
+    LLM_BUSY(HttpStatus.TOO_MANY_REQUESTS, "llm.busy", "AI 요청이 많습니다. 잠시 후 다시 시도해 주세요"),
+    LLM_FAILED(HttpStatus.BAD_GATEWAY, "llm.failed", "AI 가 응답하지 않습니다. 잠시 후 다시 시도해 주세요"),
+    LLM_INCOMPLETE(HttpStatus.BAD_GATEWAY, "llm.incomplete", "AI 가 글을 끝맺지 못했습니다. 다시 시도해 주세요"),
 }

@@ -2,6 +2,7 @@ package blog.book.service
 
 import blog.book.dto.request.BookTopicRequest
 import blog.book.dto.response.AdminBookResponse
+import blog.book.dto.response.AdminBookSectionResponse
 import blog.book.dto.response.SectionPostResponse
 import blog.book.entity.Book
 import blog.book.entity.BookSection
@@ -9,6 +10,7 @@ import blog.book.entity.TocParser
 import blog.book.gateway.SourcedBook
 import blog.book.repository.BookRepository
 import blog.book.repository.BookSectionRepository
+import blog.book.repository.JdbcStudyNotes
 import blog.common.exception.BlogError
 import blog.common.exception.BlogException
 import blog.post.dto.request.PostCreateRequest
@@ -27,6 +29,7 @@ import java.util.UUID
 class AdminBookService(
     private val bookRepository: BookRepository,
     private val bookSectionRepository: BookSectionRepository,
+    private val jdbcStudyNotes: JdbcStudyNotes,
     private val sectionPostService: SectionPostService,
     private val topicService: TopicService,
     private val clock: Clock,
@@ -37,15 +40,12 @@ class AdminBookService(
         if (books.isEmpty()) return emptyList()
         val sections = bookSectionRepository.findAllByBookIdIn(books.map { it.id })
         val posts = sectionPostService.list(sections.map { it.id })
+        val notes = jdbcStudyNotes.latestDates(sections.map { it.id })
         val topics = topicService.listById()
         val byBook = sections.groupBy { it.bookId }
         return books.map {
-            AdminBookResponse.from(
-                book = it,
-                topic = it.topicId?.let(topics::get),
-                sections = byBook[it.id].orEmpty(),
-                posts = posts,
-            )
+            val chapters = AdminBookSectionResponse.treeOf(byBook[it.id].orEmpty(), posts, notes)
+            AdminBookResponse.from(book = it, topic = it.topicId?.let(topics::get), chapters = chapters)
         }
     }
 
@@ -108,8 +108,10 @@ class AdminBookService(
     private fun responseOf(book: Book): AdminBookResponse {
         val sections = bookSectionRepository.findAllByBookId(book.id)
         val posts = sectionPostService.list(sections.map { it.id })
+        val notes = jdbcStudyNotes.latestDates(sections.map { it.id })
         val topic = book.topicId?.let { topicService.listById()[it] }
-        return AdminBookResponse.from(book = book, topic = topic, sections = sections, posts = posts)
+        val chapters = AdminBookSectionResponse.treeOf(sections, posts, notes)
+        return AdminBookResponse.from(book = book, topic = topic, chapters = chapters)
     }
 
     private fun find(id: UUID): Book =
