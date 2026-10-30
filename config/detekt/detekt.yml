@@ -25,12 +25,12 @@ style:
   ForbiddenComment:
     comments:
       - value: 'TODO'
-        reason: 'Link an issue (https://github.com/seeeeeeong/blog-v2/issues/N) or do it now.'
+        reason: 'Link an issue (https://github.com/seeeeeeong/blog/issues/N) or do it now.'
       - value: 'FIXME'
-        reason: 'Link an issue (https://github.com/seeeeeeong/blog-v2/issues/N) or fix it now.'
+        reason: 'Link an issue (https://github.com/seeeeeeong/blog/issues/N) or fix it now.'
       - value: 'STOPSHIP'
         reason: 'Address this before merging.'
-    allowedPatterns: 'github\.com/seeeeeeong/blog-v2/issues/\d+'
+    allowedPatterns: 'github\.com/seeeeeeong/blog/issues/\d+'
   ForbiddenMethodCall:
     active: true
     methods:

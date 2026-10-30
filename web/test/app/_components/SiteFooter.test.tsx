@@ -7,7 +7,7 @@ describe('SiteFooter', () => {
     const out = renderToStaticMarkup(<SiteFooter lastUpdated="2026-10-21T01:00:00Z" />)
 
     expect(out).toContain('Metadata')
-    expect(out).toContain('href="https://github.com/seeeeeeong/blog-v2"')
+    expect(out).toContain('href="https://github.com/seeeeeeong/blog"')
     expect(out).toContain('>local</span>')
     expect(out).toContain('>OCT 21</span>')
     expect(out).toContain('Sinseong Lee</p>')

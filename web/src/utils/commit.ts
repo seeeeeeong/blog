@@ -1,4 +1,4 @@
-export const SOURCE_URL = 'https://github.com/seeeeeeong/blog-v2'
+export const SOURCE_URL = 'https://github.com/seeeeeeong/blog'
 
 export type Commit = { label: string; href: string }
 

@@ -1,8 +1,8 @@
 # Deploy
 
 The blog runs on the home server in an unprivileged LXC as one compose project in `/opt/blog`:
-PostgreSQL, the api, the web and cloudflared. CI builds `ghcr.io/seeeeeeong/blog-v2-api` and
-`ghcr.io/seeeeeeong/blog-v2-web` on every push to `main` (tags `main` and the commit SHA);
+PostgreSQL, the api, the web and cloudflared. CI builds `ghcr.io/seeeeeeong/blog-api` and
+`ghcr.io/seeeeeeong/blog-web` on every push to `main` (tags `main` and the commit SHA);
 `deploy.yml` then has the server pull and restart. **Never build an image on the server.**
 
 Only the tunnel reaches the site. No port is published; the browser sees the web alone, and

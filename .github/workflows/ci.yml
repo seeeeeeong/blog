@@ -102,8 +102,8 @@ jobs:
           platforms: linux/amd64
           push: ${{ github.event_name == 'push' }}
           tags: |
-            ghcr.io/seeeeeeong/blog-v2-api:main
-            ghcr.io/seeeeeeong/blog-v2-api:${{ github.sha }}
+            ghcr.io/seeeeeeong/blog-api:main
+            ghcr.io/seeeeeeong/blog-api:${{ github.sha }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
@@ -134,8 +134,8 @@ jobs:
           platforms: linux/amd64
           push: ${{ github.event_name == 'push' }}
           tags: |
-            ghcr.io/seeeeeeong/blog-v2-web:main
-            ghcr.io/seeeeeeong/blog-v2-web:${{ github.sha }}
+            ghcr.io/seeeeeeong/blog-web:main
+            ghcr.io/seeeeeeong/blog-web:${{ github.sha }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}

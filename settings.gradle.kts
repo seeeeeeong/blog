@@ -16,6 +16,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "blog-v2"
+rootProject.name = "blog"
 
 include("api")

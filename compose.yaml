@@ -1,3 +1,6 @@
+# Fixed, so the volume keeps its name wherever the repository is cloned.
+name: blog
+
 services:
   postgres:
     image: postgres:18-alpine
