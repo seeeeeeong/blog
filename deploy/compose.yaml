@@ -21,7 +21,7 @@ services:
       retries: 10
 
   api:
-    image: ghcr.io/seeeeeeong/blog-v2-api:${BLOG_TAG:-main}
+    image: ghcr.io/seeeeeeong/blog-api:${BLOG_TAG:-main}
     restart: unless-stopped
     depends_on:
       postgres:
@@ -55,7 +55,7 @@ services:
       start_period: 90s
 
   web:
-    image: ghcr.io/seeeeeeong/blog-v2-web:${BLOG_TAG:-main}
+    image: ghcr.io/seeeeeeong/blog-web:${BLOG_TAG:-main}
     restart: unless-stopped
     depends_on:
       api:

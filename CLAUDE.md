@@ -124,7 +124,7 @@ code it guards.
   timeout, a cache setting, a trap. One line where possible.
 - No "what", no history, no sources, nothing the code or a config key already says.
 - No commented-out code. No `TODO`/`FIXME` without an issue link
-  (`https://github.com/seeeeeeong/blog-v2/issues/N`); detekt rejects one without.
+  (`https://github.com/seeeeeeong/blog/issues/N`); detekt rejects one without.
 - Code, identifiers, comments, commits, pull request titles and the README are English.
   Design docs and pull request descriptions are Korean.
 
