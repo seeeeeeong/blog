@@ -71,9 +71,11 @@ describe('BookIndex', () => {
     expect(out).toContain('aria-label="책 검색"')
   })
 
-  it('says so when no book is imported yet', () => {
+  it('keeps the toolbar and lists nothing when no book is imported yet', () => {
     const out = renderToStaticMarkup(<BookIndex books={[]} topics={[network]} />)
 
-    expect(out).toContain('아직 가져온 책이 없습니다.')
+    expect(out).toContain('Add book')
+    expect(out).not.toContain('class="group blist"')
+    expect(out).not.toContain('class="empty"')
   })
 })
