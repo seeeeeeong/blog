@@ -39,9 +39,7 @@ export function BookList({ books }: { books: readonly BookSummary[] | null }) {
           <h1>Books</h1>
           <p className="mono bhead__meta">{booksMeta(books)}</p>
         </header>
-        {books.length === 0 ? (
-          <p className="empty">아직 올린 책이 없습니다.</p>
-        ) : (
+        {books.length > 0 && (
           <ul className="group">
             {books.map((book) => (
               <BookRow key={book.id} book={book} />

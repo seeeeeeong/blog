@@ -18,11 +18,7 @@ export function Archive({ archive }: { archive: ArchiveData | null }) {
     )
   }
   if (archive.posts.length === 0) {
-    return (
-      <main className="index">
-        <p className="empty">아직 올린 글이 없습니다.</p>
-      </main>
-    )
+    return <main className="index" />
   }
   return (
     <main className="index">

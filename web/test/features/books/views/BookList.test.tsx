@@ -31,8 +31,15 @@ describe('BookList', () => {
     expect(out).toContain('3 / 41')
   })
 
-  it('says so when there is no book yet, or the api is down', () => {
-    expect(renderToStaticMarkup(<BookList books={[]} />)).toContain('아직 올린 책이 없습니다.')
+  it('shows only the heading when there is no book yet', () => {
+    const out = renderToStaticMarkup(<BookList books={[]} />)
+
+    expect(out).toContain('<h1>Books</h1>')
+    expect(out).not.toContain('class="group"')
+    expect(out).not.toContain('class="empty"')
+  })
+
+  it('says so when the api is down', () => {
     expect(renderToStaticMarkup(<BookList books={null} />)).toContain(
       '책 목록을 불러오지 못했습니다.',
     )

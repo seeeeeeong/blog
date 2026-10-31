@@ -49,11 +49,10 @@ describe('Archive', () => {
     expect(out).toContain('<span class="scramble-pending">tcp-handshake title</span>')
   })
 
-  it('says when there are no posts yet', () => {
+  it('renders an empty page when there are no posts yet', () => {
     const out = renderToStaticMarkup(<Archive archive={{ posts: [], topics: TOPICS }} />)
 
-    expect(out).toContain('아직 올린 글이 없습니다.')
-    expect(out).not.toContain('class="tabs"')
+    expect(out).toBe('<main class="index"></main>')
   })
 
   it('says when the posts could not be read', () => {
