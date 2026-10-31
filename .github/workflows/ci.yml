@@ -153,8 +153,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-      # The token may only run workflows in homelab; the workflow checks the stack and the tag itself.
+      # The token may only run workflows in homelab, so it cannot look up the default branch the
+      # way `gh workflow run` does; the REST call names it. The workflow checks the stack and tag.
       - env:
           GH_TOKEN: ${{ secrets.HOMELAB_DEPLOY_TOKEN }}
           TAG: ${{ github.sha }}
-        run: gh workflow run deploy.yml --repo seeeeeeong/homelab -f stack=blog -f "tag=$TAG"
+        run: >-
+          gh api --method POST repos/seeeeeeong/homelab/actions/workflows/deploy.yml/dispatches
+          -f ref=main -f inputs[stack]=blog -f "inputs[tag]=$TAG"
