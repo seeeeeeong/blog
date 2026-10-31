@@ -37,9 +37,7 @@ export function BookIndex({ books, topics }: Props) {
           Add book
         </button>
       </div>
-      {books.length === 0 ? (
-        <p className="empty">아직 가져온 책이 없습니다.</p>
-      ) : (
+      {books.length > 0 && (
         <ul className="group blist">
           {books.map((book) => (
             <BookRow key={book.id} book={book} />

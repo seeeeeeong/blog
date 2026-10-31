@@ -25,11 +25,7 @@ export function PostIndex({ posts, topics }: Props) {
           New post
         </button>
       </div>
-      {posts.length === 0 ? (
-        <p className="empty">아직 쓴 글이 없습니다.</p>
-      ) : (
-        <PostGroups groups={groupPosts(posts, filter)} />
-      )}
+      {posts.length > 0 && <PostGroups groups={groupPosts(posts, filter)} />}
       <NewPostDialog open={composing} topics={topics} onClose={() => setComposing(false)} />
     </main>
   )

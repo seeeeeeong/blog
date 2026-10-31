@@ -56,9 +56,10 @@ describe('PostIndex', () => {
     expect(out).toContain('<option value="network">네트워크</option>')
   })
 
-  it('says so when there is no post yet', () => {
+  it('keeps the toolbar and lists nothing when there is no post yet', () => {
     const out = renderToStaticMarkup(<PostIndex posts={[]} topics={[network]} />)
 
-    expect(out).toContain('아직 쓴 글이 없습니다.')
+    expect(out).toContain('New post')
+    expect(out).not.toContain('class="empty"')
   })
 })
