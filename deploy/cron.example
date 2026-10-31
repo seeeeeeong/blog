@@ -1,5 +1,0 @@
-# /etc/cron.d/blog-backup: the database every day at 04:45, in the container's local time.
-SHELL=/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-
-45 4 * * * root /opt/blog/backup.sh >>/var/log/blog-backup.log 2>&1
