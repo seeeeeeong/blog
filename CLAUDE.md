@@ -20,7 +20,8 @@ code it guards.
   internal names or screenshots from work projects.
 - **Never edit a merged Flyway migration.** A change is a new migration.
 - **Never build an image on the home server.** GitHub Actions builds them; the server only
-  pulls and runs.
+  pulls and runs. After pushing them, CI runs the Deploy workflow of the private
+  `seeeeeeong/homelab` repository, where the stack's compose file and its secrets live.
 - Never start a dev server from a shell (`pnpm dev`, `bootRun`). process-compose owns them;
   see the global instructions.
 
