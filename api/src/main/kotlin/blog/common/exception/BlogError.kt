@@ -26,7 +26,7 @@ enum class BlogError(
     POST_SUMMARY_REQUIRED(HttpStatus.BAD_REQUEST, "post.summary_required", "발행하려면 요약을 적어 주세요"),
     POST_EDIT_CONFLICT(HttpStatus.CONFLICT, "post.edit_conflict", "다른 곳에서 먼저 고친 글입니다. 새로고침 후 다시 시도해 주세요"),
     POST_PUBLISHED_LOCKED(HttpStatus.CONFLICT, "post.published_locked", "발행한 글은 다시 발행해야 바뀝니다"),
-    POST_NOT_DRAFT(HttpStatus.CONFLICT, "post.not_draft", "메모로 쓰기는 초안에서만 할 수 있습니다"),
+    POST_NOT_DRAFT(HttpStatus.CONFLICT, "post.not_draft", "AI 글쓰기는 초안에서만 할 수 있습니다"),
     LLM_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "llm.unavailable", "AI 글쓰기가 설정되지 않았습니다"),
     LLM_MONTHLY_CAP_REACHED(
         HttpStatus.TOO_MANY_REQUESTS,

@@ -18,6 +18,7 @@ type Props = {
   onSave: () => void
   onPublish: () => void
   onMemo: () => void
+  onRewrite: () => void
 }
 
 /**
@@ -25,7 +26,8 @@ type Props = {
  * memo; a published post changes only by publishing again, so it has neither.
  */
 export function EditorBar(props: Props) {
-  const { mode, onMode, published, dirty, busy, savedAt, onSave, onPublish, onMemo } = props
+  const { mode, onMode, published, dirty, busy, savedAt, onSave, onPublish, onMemo, onRewrite } =
+    props
   return (
     <div className="ebar">
       <div className="dock__bar">
@@ -34,10 +36,15 @@ export function EditorBar(props: Props) {
         </span>
         <span className="dock__divider" aria-hidden="true" />
         {!published && (
-          <button className="dock__item" type="button" onClick={onMemo}>
-            <Icon name="spark" />
-            From memo
-          </button>
+          <>
+            <button className="dock__item" type="button" onClick={onMemo}>
+              <Icon name="spark" />
+              From memo
+            </button>
+            <button className="dock__item" type="button" onClick={onRewrite}>
+              Rewrite
+            </button>
+          </>
         )}
         {MODES.map((item) => (
           <button

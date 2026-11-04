@@ -193,6 +193,19 @@ class AdminPostControllerTest(
     }
 
     @Test
+    fun `a selected passage streams back rewritten, and a blank one is refused`() {
+        val id = draft().text("id")
+        val passage = mapOf("before" to "앞", "selected" to "문단", "after" to "뒤")
+
+        val written = admin.post("/api/admin/posts/$id/rewrite", passage)
+        val blank = admin.post("/api/admin/posts/$id/rewrite", passage + ("selected" to " "))
+
+        assertThat(written.status).isEqualTo(200)
+        assertThat(written.events.single("done").text("replacement")).isEqualTo(FakeLlmGateway.REPLY.text)
+        assertThat(blank.status).isEqualTo(400)
+    }
+
+    @Test
     fun `a model that fails midway ends the stream with an error event`() {
         val id = draft().text("id")
         fakeLlmGateway.failingMidway = BlogError.LLM_BUSY

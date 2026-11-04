@@ -7,10 +7,12 @@ import { MemoDialog } from '@/features/admin/components/MemoDialog'
 import { MetaFields } from '@/features/admin/components/MetaFields'
 import { PageHead } from '@/features/admin/components/PageHead'
 import { PublishDialog } from '@/features/admin/components/PublishDialog'
+import { RewriteDialog } from '@/features/admin/components/RewriteDialog'
 import { Toast } from '@/features/admin/components/Toast'
 import { useEditor } from '@/features/admin/hooks/useEditor'
 import { useUnsavedWarning } from '@/features/admin/hooks/useUnsavedWarning'
 import { editorMeta } from '@/features/admin/utils/editor'
+import { type SelectionRange, selectionIn } from '@/features/admin/utils/selection'
 
 /** Renders MDX through the reader's pipeline on the server, so the preview is the post. */
 export type PreviewAction = (source: string) => Promise<ReactNode>
@@ -31,6 +33,8 @@ export function PostEditor({ post, topics, previewAction }: Props) {
   const [preview, setPreview] = useState<ReactNode>(null)
   const [confirming, setConfirming] = useState(false)
   const [drafting, setDrafting] = useState(false)
+  const [rewriting, setRewriting] = useState<SelectionRange | null>(null)
+  const textarea = useRef<HTMLTextAreaElement>(null)
   const previews = useRef(0)
   useUnsavedWarning(dirty)
 
@@ -50,6 +54,18 @@ export function PostEditor({ post, topics, previewAction }: Props) {
     setMode('write')
     editor.edit({ bodyMdx })
     editor.show('다듬은 글을 적용했습니다')
+  }
+
+  const applyRewrite = (bodyMdx: string) => {
+    editor.edit({ bodyMdx })
+    editor.show('선택한 부분을 바꿨습니다')
+  }
+
+  const openRewrite = () => {
+    const box = textarea.current
+    const range = box && selectionIn(state.draft.bodyMdx, box.selectionStart, box.selectionEnd)
+    if (mode === 'write' && range) setRewriting(range)
+    else editor.show('다시 쓸 부분을 Write 에서 먼저 선택해 주세요')
   }
 
   const confirmPublish = () => {
@@ -75,6 +91,7 @@ export function PostEditor({ post, topics, previewAction }: Props) {
         />
         <MetaFields draft={state.draft} topics={topics} onEdit={editor.edit} />
         <textarea
+          ref={textarea}
           className="mdx ebody"
           aria-label="본문 MDX"
           spellCheck={false}
@@ -94,6 +111,7 @@ export function PostEditor({ post, topics, previewAction }: Props) {
         onSave={() => void editor.save()}
         onPublish={() => setConfirming(true)}
         onMemo={() => setDrafting(true)}
+        onRewrite={openRewrite}
       />
       {!published && (
         <MemoDialog
@@ -102,6 +120,15 @@ export function PostEditor({ post, topics, previewAction }: Props) {
           body={state.draft.bodyMdx}
           onApply={applyDraft}
           onClose={() => setDrafting(false)}
+        />
+      )}
+      {!published && (
+        <RewriteDialog
+          postId={state.post.id}
+          body={state.draft.bodyMdx}
+          range={rewriting}
+          onApply={applyRewrite}
+          onClose={() => setRewriting(null)}
         />
       )}
       <PublishDialog

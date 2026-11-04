@@ -84,3 +84,19 @@ export type PostDraft = {
   inputTokens: number
   outputTokens: number
 }
+
+/** What the model wrote in place of a selected passage; nothing is saved until the editor saves it. */
+export type PostRewrite = {
+  replacement: string
+  model: string
+  inputTokens: number
+  outputTokens: number
+}
+
+/** A passage selected in the body as the editor holds it, and what to change, which may be blank. */
+export type PostRewriteRequest = {
+  before: string
+  selected: string
+  after: string
+  instruction: string
+}
