@@ -57,9 +57,29 @@ export type Admin = {
   avatarUrl: string | null
 }
 
+/** What a separate call found comparing a draft with its memo. */
+export type PostDraftReview = {
+  addedFacts: { claim: string; quote: string; confidence: 'HIGH' | 'LOW' }[]
+  corrections: { memo: string; draft: string; reason: string }[]
+  invented: { quote: string; reason: string }[]
+  dropped: string[]
+  critical: { problem: string; quote: string; fix: string }[]
+}
+
+export type PostDraftCheckKind =
+  | 'MEMO_CODE_CHANGED'
+  | 'MEMO_NUMBER_MISSING'
+  | 'LINK_ADDED'
+  | 'NOT_RENDERABLE'
+
 /** A body the model drafted from the admin's memo; nothing is saved until the editor saves it. */
 export type PostDraft = {
   bodyMdx: string
+  /** Null when the review could not be had, which is not the same as nothing to report. */
+  review: PostDraftReview | null
+  /** The model rewrote the draft once for what its first review called critical. */
+  revised: boolean
+  checks: { kind: PostDraftCheckKind; detail: string }[]
   model: string
   inputTokens: number
   outputTokens: number

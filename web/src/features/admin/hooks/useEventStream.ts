@@ -23,7 +23,7 @@ async function follow<T>(
       dispatch({ type: 'done', result: event.result })
       return event.result
     }
-    dispatch({ type: 'text', text: event.text })
+    dispatch(event)
   }
   return null
 }

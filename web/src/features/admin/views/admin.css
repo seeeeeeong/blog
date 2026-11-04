@@ -507,6 +507,24 @@ select.ainput {
   resize: vertical;
 }
 
+.mreview {
+  display: grid;
+  gap: var(--space-3);
+  max-height: min(320px, 40vh);
+  margin-top: var(--space-4);
+  overflow-y: auto;
+}
+
+.mreview h3 {
+  margin: 0 0 var(--space-1);
+  font-size: inherit;
+}
+
+.mreview ul {
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
 .mmemo:focus {
   border-color: oklch(from var(--accent) l c h / 50%);
 }

@@ -9,6 +9,7 @@ data class LlmSettings(
     val monthlyCapUsd: BigDecimal,
     val askMonthlyCapUsd: BigDecimal,
     val memo: Route,
+    val review: Route,
     val ask: Route,
 ) {
     /** A model and its prices, in USD per million tokens. */
