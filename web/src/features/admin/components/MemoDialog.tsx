@@ -128,8 +128,11 @@ function MemoFoot({ onCancel, onApply, applicable, generable }: FootProps) {
       <button className="pill" type="button" onClick={onCancel}>
         Cancel
       </button>
+      {/* Keys keep these two elements apart: Apply resets the dialog, and were React to turn the same
+          button into a submit one mid-click, the browser would submit the form and bill another run. */}
       {onApply ? (
         <button
+          key="apply"
           className="pill pill--accent"
           type="button"
           disabled={!applicable}
@@ -138,7 +141,7 @@ function MemoFoot({ onCancel, onApply, applicable, generable }: FootProps) {
           Apply
         </button>
       ) : (
-        <button className="pill pill--accent" type="submit" disabled={!generable}>
+        <button key="generate" className="pill pill--accent" type="submit" disabled={!generable}>
           Generate
         </button>
       )}
