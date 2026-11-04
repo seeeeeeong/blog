@@ -68,7 +68,7 @@ blog:
     # second once it writes, so half a minute of silence is a dead stream.
     idle-timeout: 30s
   llm:
-    # Drafts from a memo, per calendar month in Korea.
+    # Writing and reviewing drafts from a memo, per calendar month in Korea.
     monthly-cap-usd: 10
     # Readers' questions, apart from the owner's: at the cap Ask closes until the month ends.
     ask-monthly-cap-usd: 30
@@ -78,6 +78,10 @@ blog:
       model: deepseek-flash
       input-per-million-usd: 0.30
       output-per-million-usd: 1.20
+    review:
+      model: deepseek-v4-pro
+      input-per-million-usd: 1.32
+      output-per-million-usd: 3.96
     ask:
       model: deepseek-flash
       input-per-million-usd: 0.30

@@ -34,6 +34,9 @@ class EventStream(
     @Volatile
     private var gone = false
 
+    /** True once a write found the reader gone, so work they no longer wait for can stop. */
+    val readerLeft: Boolean get() = gone
+
     /** Opens the stream and runs [block], which sends the events; a failure inside it ends as an `error`. */
     @Suppress("TooGenericExceptionCaught")
     fun stream(block: () -> Unit) {

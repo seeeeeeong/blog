@@ -181,13 +181,13 @@ class AdminPostControllerTest(
 
         assertThat(written.status).isEqualTo(200)
         assertThat(written.contentType).startsWith("text/event-stream")
-        assertThat(written.events.names).containsExactly("text", "text", "text", "done")
+        assertThat(written.events.names).containsExactly("text", "text", "text", "stage", "done")
         assertThat(written.events.text).isEqualTo(FakeLlmGateway.REPLY.text)
         val body = written.events.single("done")
         assertThat(body.text("bodyMdx")).isEqualTo(FakeLlmGateway.REPLY.text)
         assertThat(body.text("model")).isEqualTo("deepseek-flash")
-        assertThat(body.get("inputTokens").asInt()).isEqualTo(1_000)
-        assertThat(body.get("outputTokens").asInt()).isEqualTo(2_000)
+        assertThat(body.get("inputTokens").asInt()).isEqualTo(2_000)
+        assertThat(body.get("outputTokens").asInt()).isEqualTo(4_000)
         assertThat(kept.body?.text("bodyMdx")).isEmpty()
         assertThat(kept.body?.get("version")?.asLong()).isEqualTo(draft.get("version").asLong())
     }

@@ -3,9 +3,16 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { draftFromMemo } from '@/features/admin/api/posts'
 import type { PostDraft } from '@/features/admin/api/types'
+import { DraftReview } from '@/features/admin/components/DraftReview'
 import { Modal } from '@/features/admin/components/Modal'
 import { useEventStream } from '@/features/admin/hooks/useEventStream'
-import { asksBeforeReplacing, canDraft, MEMO_MAX, memoStep } from '@/features/admin/utils/memo'
+import {
+  asksBeforeReplacing,
+  canDraft,
+  MEMO_MAX,
+  memoStep,
+  stageLabel,
+} from '@/features/admin/utils/memo'
 
 type Props = {
   open: boolean
@@ -16,14 +23,16 @@ type Props = {
   onClose: () => void
 }
 
-/** A draft of the body from a rough memo, streamed in as the model writes it. */
+/** A draft of the body from a rough memo, streamed in, then shown with its review to accept. */
 export function MemoDialog({ open, postId, body, onApply, onClose }: Props) {
   const [memo, setMemo] = useState('')
   const stream = useEventStream<PostDraft>()
   const { state } = stream
   const step = memoStep(state)
   const output = useRef<HTMLPreElement>(null)
-  const text = state.state === 'streaming' || state.state === 'done' ? state.text : ''
+  const text =
+    state.state === 'done' ? state.result.bodyMdx : state.state === 'streaming' ? state.text : ''
+  const stage = state.state === 'streaming' ? stageLabel(state.stage) : null
 
   useEffect(() => {
     const pre = output.current
@@ -36,14 +45,9 @@ export function MemoDialog({ open, postId, body, onApply, onClose }: Props) {
     onApply(draft)
   }
 
-  const generate = async () => {
-    const draft = await stream.start((signal) => draftFromMemo(postId, memo, signal))
-    if (draft && !asksBeforeReplacing(body)) apply(draft)
-  }
-
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (canDraft(memo)) void generate()
+    if (canDraft(memo)) void stream.start((signal) => draftFromMemo(postId, memo, signal))
   }
 
   const close = () => {
@@ -73,7 +77,11 @@ export function MemoDialog({ open, postId, body, onApply, onClose }: Props) {
             {state.message}
           </p>
         )}
-        {step === 'confirm' && <p>지금 본문을 이 초안으로 바꿉니다.</p>}
+        {stage && <p role="status">{stage}</p>}
+        {state.state === 'done' && <DraftReview draft={state.result} />}
+        {step === 'confirm' && asksBeforeReplacing(body) && (
+          <p>지금 본문을 이 초안으로 바꿉니다.</p>
+        )}
         <div className="modal__foot">
           <button className="pill" type="button" onClick={step === 'memo' ? close : stream.cancel}>
             Cancel

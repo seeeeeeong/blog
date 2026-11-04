@@ -1,13 +1,14 @@
 /** A streamed write: the text so far while the model writes, then its result or what went wrong. */
 export type StreamState<T> =
   | { state: 'idle' }
-  | { state: 'streaming'; text: string }
+  | { state: 'streaming'; text: string; stage?: string }
   | { state: 'done'; text: string; result: T }
   | { state: 'failed'; message: string }
 
 export type StreamAction<T> =
   | { type: 'start' }
   | { type: 'text'; text: string }
+  | { type: 'stage'; stage: string }
   | { type: 'done'; result: T }
   | { type: 'fail'; message: string }
   | { type: 'reset' }
@@ -20,7 +21,8 @@ export function streamReducer<T>(state: StreamState<T>, action: StreamAction<T>)
   if (action.type === 'start') return { state: 'streaming', text: '' }
   if (action.type === 'reset') return IDLE
   if (state.state !== 'streaming') return state
-  if (action.type === 'text') return { state: 'streaming', text: state.text + action.text }
+  if (action.type === 'text') return { ...state, text: state.text + action.text }
+  if (action.type === 'stage') return { ...state, stage: action.stage }
   if (action.type === 'done') return { state: 'done', text: state.text, result: action.result }
   return { state: 'failed', message: action.message }
 }

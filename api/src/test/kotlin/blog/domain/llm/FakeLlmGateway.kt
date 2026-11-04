@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Primary
 import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.Collections
+import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
  * Streams what a test puts in it, a line at a time, instead of calling DeepSeek, and remembers what
@@ -30,6 +31,8 @@ class FakeLlmGateway : LlmGateway {
     @Volatile
     var failingMidway: BlogError? = null
 
+    private val queued = ConcurrentLinkedQueue<String>()
+
     val asked: MutableList<LlmChat> = Collections.synchronizedList(mutableListOf())
 
     /** Whether a transaction was open as each call reached the model, in order. */
@@ -42,11 +45,12 @@ class FakeLlmGateway : LlmGateway {
         asked += chat
         inTransaction += TransactionSynchronizationManager.isActualTransactionActive()
         failing?.let { throw BlogException(it) }
-        piecesOf(reply.text).forEachIndexed { index, piece ->
+        val answer = queued.poll()?.let { reply.copy(text = it) } ?: reply
+        piecesOf(answer.text).forEachIndexed { index, piece ->
             if (index == 1) failingMidway?.let { throw BlogException(it) }
             onText(piece)
         }
-        return reply
+        return answer
     }
 
     fun answers(
@@ -57,8 +61,14 @@ class FakeLlmGateway : LlmGateway {
         reply = REPLY.copy(text = text, inputTokens = inputTokens, outputTokens = outputTokens)
     }
 
+    /** The next calls' answers in turn; a call after them gets [reply]. */
+    fun answersInTurn(vararg texts: String) {
+        queued += texts
+    }
+
     fun reset() {
         reply = REPLY
+        queued.clear()
         configured = true
         failing = null
         failingMidway = null

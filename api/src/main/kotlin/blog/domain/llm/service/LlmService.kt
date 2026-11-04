@@ -38,7 +38,7 @@ class LlmService(
 
     private val editor =
         Budget(
-            purposes = listOf(LlmPurpose.MEMO),
+            purposes = listOf(LlmPurpose.MEMO, LlmPurpose.REVIEW),
             capUsd = llmSettings.monthlyCapUsd,
             unavailable = BlogError.LLM_UNAVAILABLE,
             capReached = BlogError.LLM_MONTHLY_CAP_REACHED,
@@ -56,7 +56,7 @@ class LlmService(
     fun check(purpose: LlmRequest.Purpose) {
         val budget = if (purpose == LlmRequest.Purpose.ASK) ask else editor
         if (!llmGateway.configured) throw BlogException(budget.unavailable)
-        // Calls checked at once may all go out, so a cap is passed by what those few cost, a cent or so each.
+        // Calls checked at once may all go out, so a cap is passed by what those few cost.
         val spent = jdbcLlmCalls.spentSince(LlmCostPolicy.monthStart(clock.instant()), budget.purposes)
         if (LlmCostPolicy.reached(spent, budget.capUsd)) throw BlogException(budget.capReached)
     }
@@ -106,6 +106,7 @@ class LlmService(
     private fun routeOf(purpose: LlmRequest.Purpose): LlmSettings.Route =
         when (purpose) {
             LlmRequest.Purpose.MEMO -> llmSettings.memo
+            LlmRequest.Purpose.REVIEW -> llmSettings.review
             LlmRequest.Purpose.ASK -> llmSettings.ask
         }
 }

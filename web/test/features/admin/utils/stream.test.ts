@@ -12,6 +12,16 @@ const run = (actions: StreamAction<Result>[], from: StreamState<Result> = IDLE) 
   actions.reduce(streamReducer<Result>, from)
 
 describe('streamReducer', () => {
+  it('keeps the step a stream has reached beside its text', () => {
+    const state = run([
+      { type: 'start' },
+      { type: 'text', text: '세 번' },
+      { type: 'stage', stage: 'reviewing' },
+    ])
+
+    expect(state).toEqual({ state: 'streaming', text: '세 번', stage: 'reviewing' })
+  })
+
   it('gathers the text as it comes, then keeps it beside the result', () => {
     const state = run([
       { type: 'start' },

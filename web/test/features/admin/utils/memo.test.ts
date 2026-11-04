@@ -1,7 +1,22 @@
 import { describe, expect, it } from 'vitest'
-import { asksBeforeReplacing, canDraft, MEMO_MAX, memoStep } from '@/features/admin/utils/memo'
+import {
+  asksBeforeReplacing,
+  canDraft,
+  checkLabel,
+  MEMO_MAX,
+  memoStep,
+  stageLabel,
+} from '@/features/admin/utils/memo'
 
-const DRAFT = { bodyMdx: '## TCP', model: 'm', inputTokens: 1, outputTokens: 1 }
+const DRAFT = {
+  bodyMdx: '## TCP',
+  review: null,
+  revised: false,
+  checks: [],
+  model: 'm',
+  inputTokens: 1,
+  outputTokens: 1,
+}
 
 describe('canDraft', () => {
   it('takes a memo with text, up to the length the api accepts', () => {
@@ -21,6 +36,21 @@ describe('asksBeforeReplacing', () => {
     expect(asksBeforeReplacing('## 왜 세 번인가')).toBe(true)
     expect(asksBeforeReplacing('')).toBe(false)
     expect(asksBeforeReplacing('\n  \n')).toBe(false)
+  })
+})
+
+describe('stageLabel', () => {
+  it('names the steps it knows, and nothing for the rest', () => {
+    expect(stageLabel('reviewing')).toContain('검토')
+    expect(stageLabel('revising')).toContain('고치는')
+    expect(stageLabel('other')).toBeNull()
+    expect(stageLabel(undefined)).toBeNull()
+  })
+})
+
+describe('checkLabel', () => {
+  it('says what a machine check found', () => {
+    expect(checkLabel('MEMO_NUMBER_MISSING')).toContain('숫자')
   })
 })
 
