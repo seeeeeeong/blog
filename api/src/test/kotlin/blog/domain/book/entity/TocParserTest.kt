@@ -73,6 +73,45 @@ class TocParserTest {
     }
 
     @Test
+    fun `a part numbered by a Roman glyph or glued to its label is no section of the chapter before it`() {
+        val contents =
+            """
+            PARTⅠ개관
+            CHAPTER 1 서론
+            CHAPTER 2 시스템 구조
+
+            PARTⅡ 프로세스 관리
+            CHAPTER 3 프로세스
+            Ⅲ메모리 관리
+            CHAPTER 4 가상 메모리
+            PART5 저장장치
+            CHAPTER 5 파일 시스템
+            """.trimIndent()
+
+        assertThat(outline(contents)).containsExactly(
+            "1 서론",
+            "  1.1 서론",
+            "2 시스템 구조",
+            "  2.1 시스템 구조",
+            "3 프로세스",
+            "  3.1 프로세스",
+            "4 가상 메모리",
+            "  4.1 가상 메모리",
+            "5 파일 시스템",
+            "  5.1 파일 시스템",
+        )
+    }
+
+    @Test
+    fun `a word that only starts like a part is no part`() {
+        assertThat(outline("1장 디스크\nPartition 나누기\nPARTIAL 쓰기")).containsExactly(
+            "1 디스크",
+            "  1.1 Partition 나누기",
+            "  1.2 PARTIAL 쓰기",
+        )
+    }
+
+    @Test
     fun `an appendix that is only back matter is left out`() {
         val contents = "1장 대화\n1.1 질문\n부록D: 참고문헌\n___ 참고문헌"
 
