@@ -1,7 +1,7 @@
 'use client'
 
 import { type ReactNode, useRef, useState } from 'react'
-import type { AdminPost, PostDraft, Topic } from '@/features/admin/api/types'
+import type { AdminPost, Topic } from '@/features/admin/api/types'
 import { EditorBar, type EditorMode } from '@/features/admin/components/EditorBar'
 import { MemoDialog } from '@/features/admin/components/MemoDialog'
 import { MetaFields } from '@/features/admin/components/MetaFields'
@@ -45,11 +45,11 @@ export function PostEditor({ post, topics, previewAction }: Props) {
   }
 
   // The draft goes in as an edit, so autosave keeps it like any other.
-  const applyDraft = (draft: PostDraft) => {
+  const applyDraft = (bodyMdx: string) => {
     setDrafting(false)
     setMode('write')
-    editor.edit({ bodyMdx: draft.bodyMdx })
-    editor.show('초안을 만들었습니다')
+    editor.edit({ bodyMdx })
+    editor.show('다듬은 글을 적용했습니다')
   }
 
   const confirmPublish = () => {
