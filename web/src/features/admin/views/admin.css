@@ -507,12 +507,50 @@ select.ainput {
   resize: vertical;
 }
 
+.mcompare {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.mcompare__same {
+  margin: 0;
+  opacity: 0.6;
+}
+
+.mcompare__change {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.mcompare__sides {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: var(--space-2);
+}
+
+.mcompare__sides pre {
+  min-height: 2em;
+  margin: 0;
+  padding: var(--space-2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-2);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.mcompare__sides figure {
+  margin: 0;
+}
+
+.mcompare__sides figure:last-child pre {
+  background: oklch(from var(--accent) l c h / 8%);
+}
+
 .mreview {
   display: grid;
   gap: var(--space-3);
-  max-height: min(320px, 40vh);
   margin-top: var(--space-4);
-  overflow-y: auto;
 }
 
 .mreview h3 {

@@ -4,16 +4,11 @@ import type { StreamState } from '@/features/admin/utils/stream'
 // The api's PostDraftPrompt.MAX_MEMO, which refuses a longer memo.
 export const MEMO_MAX = 20_000
 
-/** Where the From memo dialog is: writing the memo, watching the draft come, or replacing the body. */
+/** Where the From memo dialog is: writing the memo, watching the draft come, or choosing what to apply. */
 export type MemoStep = 'memo' | 'streaming' | 'confirm'
 
 export function canDraft(memo: string): boolean {
   return memo.trim() !== '' && memo.length <= MEMO_MAX
-}
-
-/** A body with text is replaced only once the admin says so; an empty one is just filled. */
-export function asksBeforeReplacing(body: string): boolean {
-  return body.trim() !== ''
 }
 
 const CHECK_LABELS: Record<PostDraftCheckKind, string> = {
@@ -34,6 +29,16 @@ const STAGE_LABELS: Record<string, string> = {
 
 export function stageLabel(stage: string | undefined): string | null {
   return stage ? (STAGE_LABELS[stage] ?? null) : null
+}
+
+/** What the dialog shows for a stream's state: the text coming, the step it reached, the finished draft. */
+export function memoView(state: StreamState<PostDraft>) {
+  return {
+    text: state.state === 'streaming' ? state.text : '',
+    stage: state.state === 'streaming' ? stageLabel(state.stage) : null,
+    draft: state.state === 'done' ? state.result : null,
+    failure: state.state === 'failed' ? state.message : null,
+  }
 }
 
 export function memoStep(state: StreamState<PostDraft>): MemoStep {
