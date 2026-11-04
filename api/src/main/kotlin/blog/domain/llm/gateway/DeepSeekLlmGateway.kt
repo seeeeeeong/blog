@@ -24,7 +24,6 @@ import java.time.Duration
 class DeepSeekLlmGateway(
     @Value("\${blog.deepseek.base-url}") private val baseUrl: String,
     @Value("\${blog.deepseek.api-key}") private val apiKey: String,
-    @Value("\${blog.deepseek.model}") private val model: String,
     @Value("\${blog.deepseek.idle-timeout}") private val idleTimeout: Duration,
 ) : LlmGateway {
     private val log = LoggerFactory.getLogger(javaClass)
@@ -51,7 +50,7 @@ class DeepSeekLlmGateway(
             checkStatus(connection)
             val received = Received()
             connection.inputStream.bufferedReader(Charsets.UTF_8).use { read(it, received, onText) }
-            return replyOf(received)
+            return replyOf(received, chat.model)
         } catch (exception: IOException) {
             // Refused, dropped, or quiet past the idle timeout.
             throw BlogException(BlogError.LLM_FAILED, exception)
@@ -63,7 +62,7 @@ class DeepSeekLlmGateway(
     private fun bodyOf(chat: LlmChat): ByteArray =
         json.writeValueAsBytes(
             mapOf(
-                "model" to model,
+                "model" to chat.model,
                 "messages" to
                     listOf(
                         mapOf("role" to "system", "content" to chat.system),
@@ -148,7 +147,10 @@ class DeepSeekLlmGateway(
         }
     }
 
-    private fun replyOf(received: Received): LlmReply {
+    private fun replyOf(
+        received: Received,
+        asked: String,
+    ): LlmReply {
         val inputTokens = received.inputTokens
         val outputTokens = received.outputTokens
         if (received.finish == null || inputTokens == null || outputTokens == null) {
@@ -157,7 +159,7 @@ class DeepSeekLlmGateway(
         }
         return LlmReply(
             text = received.text.toString(),
-            model = received.model ?: model,
+            model = received.model ?: asked,
             inputTokens = inputTokens,
             outputTokens = outputTokens,
             finished = received.finish == STOP,
