@@ -1,11 +1,12 @@
 'use client'
 
 import { type FormEvent, useState } from 'react'
-import { importBook, searchBooks } from '@/features/admin/api/books'
+import { importBook, readContents, searchBooks } from '@/features/admin/api/books'
 import { messageOf } from '@/features/admin/api/client'
-import type { BookEdition, Topic } from '@/features/admin/api/types'
+import type { BookContents, BookEdition, Topic } from '@/features/admin/api/types'
 import { EditionList } from '@/features/admin/components/EditionList'
 import { Modal } from '@/features/admin/components/Modal'
+import { PastedContents } from '@/features/admin/components/PastedContents'
 import { bookHref } from '@/features/admin/utils/books'
 
 type Props = {
@@ -17,10 +18,12 @@ type Props = {
 const field = (form: HTMLFormElement, name: string) =>
   String(new FormData(form).get(name) ?? '').trim()
 
-/** Finds a book on YES24, picks an edition, and imports its contents. */
+/** Finds a book on YES24, picks an edition, and imports its contents, pasted if YES24 lists none. */
 export function AddBookDialog({ open, topics, onClose }: Props) {
   const [editions, setEditions] = useState<BookEdition[] | null>(null)
   const [picked, setPicked] = useState<string | null>(null)
+  const [contents, setContents] = useState('')
+  const [outline, setOutline] = useState<BookContents | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -36,11 +39,19 @@ export function AddBookDialog({ open, topics, onClose }: Props) {
     }
   }
 
+  const needsContents = editions?.find((e) => e.sourceRef === picked)?.hasContents === false
+
+  const pick = (sourceRef: string | null) => {
+    setPicked(sourceRef)
+    setContents('')
+    setOutline(null)
+  }
+
   const search = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const query = field(event.currentTarget, 'q')
     if (!query) return
-    setPicked(null)
+    pick(null)
     setEditions(null)
     void run(async () => setEditions(await searchBooks(query)))
   }
@@ -50,7 +61,11 @@ export function AddBookDialog({ open, topics, onClose }: Props) {
     const topicSlug = field(event.currentTarget, 'topic')
     if (!picked) return
     void run(async () => {
-      const book = await importBook({ sourceRef: picked, ...(topicSlug && { topicSlug }) })
+      const book = await importBook({
+        sourceRef: picked,
+        ...(topicSlug && { topicSlug }),
+        ...(needsContents && { contents }),
+      })
       location.assign(bookHref(book.id))
     })
   }
@@ -72,8 +87,20 @@ export function AddBookDialog({ open, topics, onClose }: Props) {
           Search
         </button>
       </form>
-      {editions && <EditionList editions={editions} picked={picked} onPick={setPicked} />}
+      {editions && <EditionList editions={editions} picked={picked} onPick={pick} />}
       <form className="aform" onSubmit={submit}>
+        {needsContents && (
+          <PastedContents
+            value={contents}
+            outline={outline}
+            busy={busy}
+            onChange={(value) => {
+              setContents(value)
+              setOutline(null)
+            }}
+            onCheck={() => void run(async () => setOutline(await readContents(contents)))}
+          />
+        )}
         <label className="afield">
           <span className="mono">Topic</span>
           <select className="ainput" name="topic" defaultValue="">
@@ -94,7 +121,11 @@ export function AddBookDialog({ open, topics, onClose }: Props) {
           <button className="pill" type="button" onClick={onClose}>
             Cancel
           </button>
-          <button className="pill pill--accent" type="submit" disabled={!picked || busy}>
+          <button
+            className="pill pill--accent"
+            type="submit"
+            disabled={!picked || busy || (needsContents && !outline)}
+          >
             Import
           </button>
         </div>

@@ -4,6 +4,7 @@ import blog.TestcontainersConfiguration
 import blog.common.exception.BlogError
 import blog.common.exception.BlogException
 import blog.domain.book.FakeBookSourceGateway
+import blog.domain.book.dto.request.BookContentsRequest
 import blog.domain.book.dto.request.BookImportRequest
 import blog.domain.book.dto.request.BookSearchRequest
 import org.assertj.core.api.Assertions.assertThat
@@ -96,6 +97,78 @@ class BookSourceServiceTest(
         fails(BlogError.BOOK_CONTENTS_UNREADABLE) { bookSourceService.import(BookImportRequest(sourceRef = "102")) }
         fails(BlogError.BOOK_CONTENTS_UNREADABLE) { bookSourceService.import(BookImportRequest(sourceRef = "103")) }
         assertThat(count("book")).isZero()
+    }
+
+    @Test
+    fun `pasted contents make a book YES24 lists none for importable`() {
+        fakeBookSourceGateway.holds("104", contents = "Part 1 개관\nPart 2 프로세스")
+
+        val book =
+            bookSourceService.import(
+                BookImportRequest(sourceRef = "104", contents = "▣ 1장 서론\n1.1 운영체제가 하는 일\n2장 구조<br>2.1 서비스"),
+            )
+
+        assertThat(book.chapters.map { it.title }).containsExactly("서론", "구조")
+        assertThat(
+            book.chapters
+                .first()
+                .sections
+                .map { it.title },
+        ).containsExactly("운영체제가 하는 일")
+        assertThat(
+            book.chapters
+                .last()
+                .sections
+                .map { it.number },
+        ).containsExactly("2.1")
+    }
+
+    @Test
+    fun `blank pasted contents leave what YES24 lists`() {
+        fakeBookSourceGateway.holds("105")
+
+        val book = bookSourceService.import(BookImportRequest(sourceRef = "105", contents = "  \n"))
+
+        assertThat(book.chapters.first().title).isEqualTo("객체, 설계")
+    }
+
+    @Test
+    fun `pasted contents that read as nothing are refused and store nothing`() {
+        fakeBookSourceGateway.holds("106", contents = null)
+
+        fails(BlogError.BOOK_CONTENTS_UNREADABLE) {
+            bookSourceService.import(BookImportRequest(sourceRef = "106", contents = "들어가며\n감사의 글"))
+        }
+        assertThat(count("book")).isZero()
+    }
+
+    @Test
+    fun `reading pasted contents shows how they split and neither asks YES24 nor stores anything`() {
+        val read = bookSourceService.readContents(BookContentsRequest("1장 서론\n1.1 하는 일\n2장 구조"))
+
+        assertThat(read.chapters.map { it.number to it.title }).containsExactly("1" to "서론", "2" to "구조")
+        assertThat(
+            read.chapters
+                .first()
+                .sections
+                .single()
+                .number,
+        ).isEqualTo("1.1")
+        assertThat(
+            read.chapters
+                .last()
+                .sections
+                .single()
+                .title,
+        ).isEqualTo("구조")
+        assertThat(fakeBookSourceGateway.asked).isEmpty()
+        assertThat(count("book")).isZero()
+    }
+
+    @Test
+    fun `reading contents with no chapter is refused`() {
+        fails(BlogError.BOOK_CONTENTS_UNREADABLE) { bookSourceService.readContents(BookContentsRequest("<br>")) }
+        fails(BlogError.BOOK_CONTENTS_UNREADABLE) { bookSourceService.readContents(BookContentsRequest("감사의 글")) }
     }
 
     @Test

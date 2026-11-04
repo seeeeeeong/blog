@@ -617,6 +617,53 @@ select.ainput {
   padding-right: var(--space-2);
 }
 
+/* The list gives way to the contents, so Import stays within reach. */
+.modal:has(.bpaste) .bresults {
+  max-height: 150px;
+}
+
+.bpaste {
+  height: auto;
+  padding: 8px 12px;
+  resize: vertical;
+  font: 13px / 20px var(--font-code);
+}
+
+.bcheck {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.bcheck__meta {
+  color: var(--text-tertiary);
+  text-transform: none;
+}
+
+.boutline {
+  max-height: min(180px, 25vh);
+  margin: 0;
+  padding: var(--space-3);
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-2);
+  color: var(--text-primary);
+  font-size: var(--font-size-1);
+  list-style: none;
+}
+
+.boutline ol {
+  margin: 0 0 var(--space-2);
+  padding-left: var(--space-4);
+  color: var(--text-secondary);
+  list-style: none;
+}
+
+.boutline .mono {
+  color: var(--text-tertiary);
+  text-transform: none;
+}
+
 .modal .bnone {
   margin-top: var(--space-4);
   color: var(--text-tertiary);

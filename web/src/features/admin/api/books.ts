@@ -3,6 +3,7 @@ import { adminStream, type StreamEvent } from '@/features/admin/api/stream'
 import type {
   AdminBook,
   AdminPost,
+  BookContents,
   BookEdition,
   BookImportRequest,
   StudyNote,
@@ -15,6 +16,11 @@ const bookPath = (id: string) => `${BOOKS}/${encodeURIComponent(id)}`
 /** YES24's editions for [query]; `book.source_unavailable` when no key is set. */
 export function searchBooks(query: string): Promise<BookEdition[]> {
   return adminGet(`${BOOKS}/search?q=${encodeURIComponent(query)}`)
+}
+
+/** How pasted [contents] read; `book.contents_unreadable` when no chapter is found. */
+export function readContents(contents: string): Promise<BookContents> {
+  return adminWrite('POST', `${BOOKS}/contents`, { contents })
 }
 
 export function importBook(request: BookImportRequest): Promise<AdminBook> {

@@ -8,7 +8,7 @@ type Props = {
   onPick: (sourceRef: string) => void
 }
 
-/** What a search found; an edition already here, or whose contents read as nothing, is not picked. */
+/** What a search found; an edition already here is not picked. */
 export function EditionList({ editions, picked, onPick }: Props) {
   if (editions.length === 0) return <p className="bnone">검색 결과가 없습니다.</p>
   return (
@@ -19,7 +19,7 @@ export function EditionList({ editions, picked, onPick }: Props) {
             className="row brow"
             type="button"
             aria-pressed={edition.sourceRef === picked}
-            disabled={!edition.hasContents || edition.imported}
+            disabled={edition.imported}
             onClick={() => onPick(edition.sourceRef)}
           >
             <span className="brow__title">

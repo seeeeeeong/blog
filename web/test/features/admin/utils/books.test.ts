@@ -4,6 +4,7 @@ import {
   bookHref,
   bookProgress,
   booksMeta,
+  contentsMeta,
   editionNote,
   noteHref,
   noteMeta,
@@ -105,8 +106,21 @@ describe('postStatus', () => {
   })
 })
 
+describe('contentsMeta', () => {
+  it('counts the chapters and the sections under them', () => {
+    const contents = {
+      chapters: [
+        { number: '1', title: '서론', sections: [{ number: '1.1', title: '하는 일' }] },
+        { number: '2', title: '구조', sections: [] },
+      ],
+    }
+
+    expect(contentsMeta(contents)).toBe('2 chapters / 1 sections')
+  })
+})
+
 describe('editionNote', () => {
-  it('says why an edition cannot be picked', () => {
+  it('says what an edition needs beside its name', () => {
     expect(editionNote({ hasContents: true, imported: true })).toBe('Imported')
     expect(editionNote({ hasContents: false, imported: false })).toBe('No contents')
     expect(editionNote({ hasContents: true, imported: false })).toBe('')

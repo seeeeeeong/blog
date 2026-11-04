@@ -1,9 +1,11 @@
 package blog.domain.book.controller
 
+import blog.domain.book.dto.request.BookContentsRequest
 import blog.domain.book.dto.request.BookImportRequest
 import blog.domain.book.dto.request.BookSearchRequest
 import blog.domain.book.dto.request.BookTopicRequest
 import blog.domain.book.dto.response.AdminBookResponse
+import blog.domain.book.dto.response.BookContentsResponse
 import blog.domain.book.dto.response.BookEditionResponse
 import blog.domain.book.service.AdminBookService
 import blog.domain.book.service.BookSourceService
@@ -36,6 +38,11 @@ class AdminBookController(
     fun import(
         @Valid @RequestBody request: BookImportRequest,
     ): AdminBookResponse = bookSourceService.import(request)
+
+    @PostMapping("/contents")
+    fun readContents(
+        @Valid @RequestBody request: BookContentsRequest,
+    ): BookContentsResponse = bookSourceService.readContents(request)
 
     @GetMapping
     fun list(): List<AdminBookResponse> = adminBookService.list()

@@ -39,11 +39,11 @@ describe('EditionList', () => {
     )
   })
 
-  it('lets only an edition with contents, not yet here, be picked', () => {
+  it('lets any edition not yet here be picked, saying which needs its contents pasted', () => {
     const out = render('1')
 
     expect(out).toContain('aria-pressed="true"><span class="brow__title">')
-    expect(out.match(/disabled=""/g)).toHaveLength(2)
+    expect(out.match(/disabled=""/g)).toHaveLength(1)
     expect(out).toContain('<span class="row__meta mono">Imported</span>')
     expect(out).toContain('<span class="row__meta mono">No contents</span>')
   })
