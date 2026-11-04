@@ -25,7 +25,7 @@ import java.time.Clock
 class LlmService(
     private val llmGateway: LlmGateway,
     private val jdbcLlmCalls: JdbcLlmCalls,
-    llmSettings: LlmSettings,
+    private val llmSettings: LlmSettings,
     private val clock: Clock,
 ) {
     /** Purposes that share a monthly cap, and what a caller is told without a key or at the cap. */
@@ -35,12 +35,6 @@ class LlmService(
         val unavailable: BlogError,
         val capReached: BlogError,
     )
-
-    private val prices =
-        LlmCostPolicy.Prices(
-            inputPerMillion = llmSettings.price.inputPerMillionUsd,
-            outputPerMillion = llmSettings.price.outputPerMillionUsd,
-        )
 
     private val editor =
         Budget(
@@ -76,7 +70,20 @@ class LlmService(
         onText: (String) -> Unit,
     ): LlmResponse {
         check(request.purpose)
-        val reply = llmGateway.stream(LlmChat(request.system, request.user, request.maxTokens), onText)
+        val route = routeOf(request.purpose)
+        val chat =
+            LlmChat(
+                model = route.model,
+                system = request.system,
+                user = request.user,
+                maxTokens = request.maxTokens,
+            )
+        val reply = llmGateway.stream(chat, onText)
+        val prices =
+            LlmCostPolicy.Prices(
+                inputPerMillion = route.inputPerMillionUsd,
+                outputPerMillion = route.outputPerMillionUsd,
+            )
         val call =
             LlmCall(
                 purpose = LlmPurpose.valueOf(request.purpose.name),
@@ -95,4 +102,10 @@ class LlmService(
             outputTokens = reply.outputTokens,
         )
     }
+
+    private fun routeOf(purpose: LlmRequest.Purpose): LlmSettings.Route =
+        when (purpose) {
+            LlmRequest.Purpose.MEMO -> llmSettings.memo
+            LlmRequest.Purpose.ASK -> llmSettings.ask
+        }
 }

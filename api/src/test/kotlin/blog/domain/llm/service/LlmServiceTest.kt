@@ -20,7 +20,7 @@ import java.time.Instant
 import java.util.UUID
 
 // Not @Transactional: the model must be asked outside any transaction.
-@SpringBootTest
+@SpringBootTest(properties = ["blog.llm.ask.model=ask-model"])
 @Import(TestcontainersConfiguration::class, MutableClock.Config::class, FakeLlmGateway.Config::class)
 class LlmServiceTest(
     @Autowired private val llmService: LlmService,
@@ -50,6 +50,14 @@ class LlmServiceTest(
         assertThatThrownBy(call).isInstanceOfSatisfying(BlogException::class.java) {
             assertThat(it.error).isEqualTo(error)
         }
+    }
+
+    @Test
+    fun `each use asks the model set for it`() {
+        write()
+        llmService.stream(request.copy(purpose = LlmRequest.Purpose.ASK)) {}
+
+        assertThat(fakeLlmGateway.asked.map { it.model }).containsExactly("deepseek-flash", "ask-model")
     }
 
     private fun spent(

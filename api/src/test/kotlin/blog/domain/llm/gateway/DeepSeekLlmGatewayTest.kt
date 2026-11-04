@@ -23,7 +23,7 @@ class DeepSeekLlmGatewayTest {
     private var body: String? = null
     private var authorization: String? = null
     private var calls = 0
-    private val chat = LlmChat(system = "rules", user = "material", maxTokens = 8_192)
+    private val chat = LlmChat(model = "deepseek-flash", system = "rules", user = "material", maxTokens = 8_192)
     private val pieces = mutableListOf<String>()
 
     private fun fixture(name: String): String =
@@ -51,7 +51,6 @@ class DeepSeekLlmGatewayTest {
         return DeepSeekLlmGateway(
             baseUrl = "http://127.0.0.1:${started.address.port}",
             apiKey = apiKey,
-            model = "deepseek-flash",
             idleTimeout = idleTimeout,
         )
     }
