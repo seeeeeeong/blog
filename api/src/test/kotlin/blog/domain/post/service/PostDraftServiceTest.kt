@@ -57,7 +57,7 @@ class PostDraftServiceTest(
     @BeforeEach
     @AfterEach
     fun clear() {
-        jdbc.sql("truncate llm_call, ask_message, post_revision, post").update()
+        jdbc.sql("truncate llm_call, ask_message, post_generation, post_revision, post").update()
         fakeLlmGateway.reset()
         fakeLlmGateway.answers("## 세 번의 인사\n\nSYN, SYN-ACK, ACK 를 주고받습니다.")
     }
@@ -213,6 +213,40 @@ class PostDraftServiceTest(
         assertThat(draft.bodyMdx).isEqualTo(WRITTEN)
         assertThat(draft.review).isNull()
         assertThat(draft.revised).isFalse()
+    }
+
+    @Test
+    fun `each generation is kept beside the post, with its memo and review`() {
+        val post = adminPostService.create(request())
+        fakeLlmGateway.answersInTurn(WRITTEN, CLEAN)
+
+        draft(post.id, "메모")
+
+        val kept =
+            jdbc
+                .sql("select memo, body_mdx, review->'addedFacts'->0->>'claim' as claim, revised from post_generation")
+                .query { row, _ ->
+                    listOf(
+                        row.getString("memo"),
+                        row.getString("body_mdx"),
+                        row.getString("claim"),
+                        row.getBoolean("revised"),
+                    )
+                }.single()
+        assertThat(kept).containsExactly("메모", WRITTEN, "주장", false)
+        assertThat(adminPostService.get(post.id).bodyMdx).isEmpty()
+    }
+
+    @Test
+    fun `a generation without a review is kept as one`() {
+        val post = adminPostService.create(request())
+        fakeLlmGateway.answersInTurn(WRITTEN, "문제 없습니다")
+
+        draft(post.id, "메모")
+
+        val reviewed =
+            jdbc.sql("select review is not null from post_generation").query(Boolean::class.java).single()
+        assertThat(reviewed).isFalse()
     }
 
     @Test
