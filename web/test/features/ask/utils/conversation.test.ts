@@ -165,7 +165,7 @@ describe('postSlugOf', () => {
 
   it('finds none elsewhere', () => {
     expect(postSlugOf('/')).toBeUndefined()
-    expect(postSlugOf('/books/1')).toBeUndefined()
+    expect(postSlugOf('/admin/1')).toBeUndefined()
     expect(postSlugOf('/posts/')).toBeUndefined()
     expect(postSlugOf('/posts/a/b')).toBeUndefined()
     expect(postSlugOf(null)).toBeUndefined()

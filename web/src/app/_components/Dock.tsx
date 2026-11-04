@@ -16,10 +16,6 @@ type Props = {
 
 const current = (on: boolean) => (on ? 'page' : undefined)
 
-// usePathname is null outside the app router, as in a test.
-const inBooks = (pathname: string | null) =>
-  pathname === '/books' || pathname?.startsWith('/books/') === true
-
 /**
  * The floating bar at the top of every page. Index and Topics are plain links: Next keeps a
  * fragment-only change to itself, and the archive follows the browser's `hashchange`. Cmd opens
@@ -45,9 +41,6 @@ export function Dock({ latestHref }: Props) {
           <a className="dock__item" href="/#topic" aria-current={current(home && view === 'topic')}>
             Topics
           </a>
-          <Link className="dock__item" href="/books" aria-current={current(inBooks(pathname))}>
-            Books
-          </Link>
           {latestHref && (
             <Link
               className="dock__item"

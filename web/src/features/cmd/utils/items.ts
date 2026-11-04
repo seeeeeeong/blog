@@ -74,13 +74,6 @@ function commands(latestHref: string | undefined): CmdItem[] {
       icon: 'arrow',
       action: { type: 'page', href: '/#topic' },
     },
-    {
-      id: 'books',
-      group: 'Navigation',
-      label: 'Books',
-      icon: 'arrow',
-      action: { type: 'route', href: '/books' },
-    },
     ...latest,
     {
       id: 'rss',

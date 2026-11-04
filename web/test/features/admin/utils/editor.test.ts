@@ -21,7 +21,6 @@ function post(overrides: Partial<AdminPost> = {}): AdminPost {
     title: 'TCP 3-way handshake',
     status: 'DRAFT',
     topic: network,
-    sectionId: null,
     position: 1,
     number: '2.1',
     summary: '',

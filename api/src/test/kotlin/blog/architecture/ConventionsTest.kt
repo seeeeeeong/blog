@@ -46,6 +46,9 @@ class ConventionsTest {
         Conventions.migrationsHaveSchemaTests(tests = ownTests(), migrations = migrations())
     }
 
+    // A later migration dropped what these made; a merged migration stays, with nothing left to check.
+    private val dropped = setOf("V5__create_book.sql", "V6__link_post_to_section.sql", "V8__create_study_note.sql")
+
     // These tests check rules, and the fixtures are examples, not tests of a production file.
     private fun ownTests() =
         Konsist.scopeFromTest().slice {
@@ -54,7 +57,7 @@ class ConventionsTest {
 
     private fun migrations(): Set<String> {
         val root = checkNotNull(System.getProperty("blog.root")) { "api/build.gradle.kts sets blog.root" }
-        return File(root, "api/src/main/resources/db/migration").list().orEmpty().toSet()
+        return File(root, "api/src/main/resources/db/migration").list().orEmpty().toSet() - dropped
     }
 }
 

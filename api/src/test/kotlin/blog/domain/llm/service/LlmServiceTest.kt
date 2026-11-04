@@ -37,7 +37,7 @@ class LlmServiceTest(
     }
 
     private val request =
-        LlmRequest(purpose = LlmRequest.Purpose.NOTE, system = "rules", user = "material", maxTokens = 8_192)
+        LlmRequest(purpose = LlmRequest.Purpose.MEMO, system = "rules", user = "material", maxTokens = 8_192)
 
     private val pieces = mutableListOf<String>()
 
@@ -97,7 +97,7 @@ class LlmServiceTest(
         assertThat(fakeLlmGateway.asked.single().system).isEqualTo("rules")
         assertThat(fakeLlmGateway.inTransaction).containsExactly(false)
         // 1,000 input tokens at $0.30 and 2,000 output at $1.20 a million.
-        assertThat(calls()).containsExactly(listOf("NOTE", "deepseek-flash", 1_000, 2_000, 2_700L, clock.instant()))
+        assertThat(calls()).containsExactly(listOf("MEMO", "deepseek-flash", 1_000, 2_000, 2_700L, clock.instant()))
     }
 
     @Test
@@ -159,7 +159,7 @@ class LlmServiceTest(
     @Test
     fun `Ask has a cap of its own, apart from the editor's, and its own errors`() {
         val ask = request.copy(purpose = LlmRequest.Purpose.ASK)
-        spent(micros = 10_000_000, at = clock.instant(), purpose = "NOTE")
+        spent(micros = 10_000_000, at = clock.instant(), purpose = "MEMO")
 
         fails(BlogError.LLM_MONTHLY_CAP_REACHED) { write() }
         llmService.stream(ask) {}
@@ -168,7 +168,7 @@ class LlmServiceTest(
         fails(BlogError.ASK_MONTHLY_CAP_REACHED) { llmService.check(LlmRequest.Purpose.ASK) }
         fakeLlmGateway.configured = false
         fails(BlogError.ASK_UNAVAILABLE) { llmService.check(LlmRequest.Purpose.ASK) }
-        assertThat(calls().map { it[0] }).containsExactlyInAnyOrder("NOTE", "ASK", "ASK")
+        assertThat(calls().map { it[0] }).containsExactlyInAnyOrder("MEMO", "ASK", "ASK")
     }
 
     @Test

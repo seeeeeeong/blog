@@ -11,7 +11,6 @@ data class LlmRequest(
     val maxTokens: Int,
 ) {
     enum class Purpose {
-        NOTE,
         MEMO,
         ASK,
     }

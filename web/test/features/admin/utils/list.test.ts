@@ -11,7 +11,6 @@ function draft(id: string, updatedAt: string): AdminPostSummary {
     title: `${id} title`,
     status: 'DRAFT',
     topic: network,
-    sectionId: null,
     number: '2.9',
     updatedAt,
     publishedAt: null,

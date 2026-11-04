@@ -185,7 +185,6 @@ class AdminPostControllerTest(
         assertThat(written.events.text).isEqualTo(FakeLlmGateway.REPLY.text)
         val body = written.events.single("done")
         assertThat(body.text("bodyMdx")).isEqualTo(FakeLlmGateway.REPLY.text)
-        assertThat(body.get("usedNote").asBoolean()).isFalse()
         assertThat(body.text("model")).isEqualTo("deepseek-flash")
         assertThat(body.get("inputTokens").asInt()).isEqualTo(1_000)
         assertThat(body.get("outputTokens").asInt()).isEqualTo(2_000)

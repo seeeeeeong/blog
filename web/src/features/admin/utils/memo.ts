@@ -21,8 +21,3 @@ export function memoStep(state: StreamState<PostDraft>): MemoStep {
   if (state.state === 'done') return 'confirm'
   return 'memo'
 }
-
-/** The toast once the draft is in the body. */
-export function draftNotice(draft: Pick<PostDraft, 'usedNote'>): string {
-  return draft.usedNote ? '노트를 참고해 초안을 만들었습니다' : '초안을 만들었습니다'
-}
