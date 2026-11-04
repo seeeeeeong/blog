@@ -67,6 +67,12 @@ blog:
     # Between pieces of a stream: DeepSeek sends a keep-alive while a request queues, and many pieces a
     # second once it writes, so half a minute of silence is a dead stream.
     idle-timeout: 30s
+  claude:
+    base-url: https://api.anthropic.com
+    # The owner's key; empty, a use set to a Claude model answers 503.
+    api-key: ${BLOG_ANTHROPIC_API_KEY:}
+    # Between pieces of a stream: Anthropic pings while the model thinks, so two minutes of silence is a dead stream.
+    idle-timeout: 120s
   llm:
     # Writing and reviewing drafts from a memo, per calendar month in Korea.
     monthly-cap-usd: 10
