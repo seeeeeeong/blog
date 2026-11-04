@@ -18,7 +18,6 @@ class PostTest {
             position = 1,
             summary = "",
             bodyMdx = "",
-            sectionId = null,
             now = written,
         )
 

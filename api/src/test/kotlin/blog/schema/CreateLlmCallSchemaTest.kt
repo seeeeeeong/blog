@@ -42,7 +42,7 @@ class CreateLlmCallSchemaTest(
     }
 
     @Test
-    fun `a call is recorded for a study note or a draft from a memo`() {
+    fun `a call is recorded for a past study note or a draft from a memo`() {
         call(purpose = "NOTE")
         call(purpose = "MEMO")
 

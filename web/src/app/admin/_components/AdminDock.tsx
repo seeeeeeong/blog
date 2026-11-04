@@ -5,15 +5,10 @@ import { ThemeToggle } from '@/app/_components/ThemeToggle'
 import { Logo } from '@/components/ui/Logo'
 import { messageOf } from '@/features/admin/api/client'
 import { LOGIN_PATH, signOut } from '@/features/admin/api/session'
-import { BOOKS_HREF } from '@/features/admin/utils/books'
 
 const ADMIN_HOME = '/admin'
 
 const current = (on: boolean) => (on ? 'page' : undefined)
-
-// usePathname is null outside the app router, as in a test.
-const inBooks = (pathname: string | null) =>
-  pathname === BOOKS_HREF || pathname?.startsWith(`${BOOKS_HREF}/`) === true
 
 async function leave() {
   try {
@@ -47,9 +42,6 @@ export function AdminDock({ signedIn = false }: { signedIn?: boolean }) {
                 aria-current={current(pathname === ADMIN_HOME)}
               >
                 Posts
-              </a>
-              <a className="dock__item" href={BOOKS_HREF} aria-current={current(inBooks(pathname))}>
-                Books
               </a>
             </>
           )}

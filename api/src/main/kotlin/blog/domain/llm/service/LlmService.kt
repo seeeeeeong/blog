@@ -44,7 +44,7 @@ class LlmService(
 
     private val editor =
         Budget(
-            purposes = listOf(LlmPurpose.NOTE, LlmPurpose.MEMO),
+            purposes = listOf(LlmPurpose.MEMO),
             capUsd = llmSettings.monthlyCapUsd,
             unavailable = BlogError.LLM_UNAVAILABLE,
             capReached = BlogError.LLM_MONTHLY_CAP_REACHED,

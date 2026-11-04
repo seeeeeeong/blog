@@ -22,7 +22,6 @@ class Post(
     position: Int,
     summary: String,
     bodyMdx: String,
-    sectionId: UUID?,
     now: Instant,
 ) : BaseEntity(UuidV7.at(now)) {
     var slug: String = slug
@@ -36,10 +35,6 @@ class Post(
     var summary: String = summary
         protected set
     var bodyMdx: String = bodyMdx
-        protected set
-
-    /** The book section this post was written for; a post keeps it for good. */
-    var sectionId: UUID? = sectionId
         protected set
 
     @Enumerated(EnumType.STRING)

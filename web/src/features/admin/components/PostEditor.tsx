@@ -10,9 +10,7 @@ import { PublishDialog } from '@/features/admin/components/PublishDialog'
 import { Toast } from '@/features/admin/components/Toast'
 import { useEditor } from '@/features/admin/hooks/useEditor'
 import { useUnsavedWarning } from '@/features/admin/hooks/useUnsavedWarning'
-import type { SectionPlace } from '@/features/admin/utils/books'
 import { editorMeta } from '@/features/admin/utils/editor'
-import { draftNotice } from '@/features/admin/utils/memo'
 
 /** Renders MDX through the reader's pipeline on the server, so the preview is the post. */
 export type PreviewAction = (source: string) => Promise<ReactNode>
@@ -20,14 +18,12 @@ export type PreviewAction = (source: string) => Promise<ReactNode>
 type Props = {
   post: AdminPost
   topics: readonly Topic[]
-  /** The book section the post was written for, if any. */
-  section?: SectionPlace | null
   previewAction: PreviewAction
 }
 
 const PREVIEW_FAILED = <p className="empty">미리보기를 만들지 못했습니다.</p>
 
-export function PostEditor({ post, topics, section = null, previewAction }: Props) {
+export function PostEditor({ post, topics, previewAction }: Props) {
   const editor = useEditor(post)
   const { state, dirty, busy } = editor
   const published = state.post.status === 'PUBLISHED'
@@ -53,7 +49,7 @@ export function PostEditor({ post, topics, section = null, previewAction }: Prop
     setDrafting(false)
     setMode('write')
     editor.edit({ bodyMdx: draft.bodyMdx })
-    editor.show(draftNotice(draft))
+    editor.show('초안을 만들었습니다')
   }
 
   const confirmPublish = () => {
@@ -77,7 +73,7 @@ export function PostEditor({ post, topics, section = null, previewAction }: Prop
           }
           meta={editorMeta(state, topics)}
         />
-        <MetaFields draft={state.draft} topics={topics} section={section} onEdit={editor.edit} />
+        <MetaFields draft={state.draft} topics={topics} onEdit={editor.edit} />
         <textarea
           className="mdx ebody"
           aria-label="본문 MDX"

@@ -3,7 +3,6 @@ scopes = [
   "api",
   "post",
   "auth",
-  "book",
   "llm",
   "ask",
   "web",

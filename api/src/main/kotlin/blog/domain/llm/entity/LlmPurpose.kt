@@ -1,8 +1,7 @@
 package blog.domain.llm.entity
 
-/** What a call was for. A study note and a draft from a memo share one monthly cap; Ask has its own. */
+/** What a call was for. A draft from a memo and Ask each have a monthly cap of their own. */
 enum class LlmPurpose {
-    NOTE,
     MEMO,
     ASK,
 }

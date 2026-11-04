@@ -58,7 +58,7 @@ describe('adminStream', () => {
   it('sends no body and no content type when there is nothing to send', async () => {
     answer(() => events('event: done\ndata: {}\n\n'))
 
-    await collect(adminStream('/api/admin/sections/1/note', undefined))
+    await collect(adminStream('/api/admin/posts/1/draft', undefined))
 
     const init = fetch.mock.calls[0]?.[1] as RequestInit
     expect(init.body).toBeUndefined()
@@ -73,7 +73,7 @@ describe('adminStream', () => {
       ),
     )
 
-    const failure = collect(adminStream('/api/admin/sections/1/note', undefined))
+    const failure = collect(adminStream('/api/admin/posts/1/draft', undefined))
 
     await expect(failure).rejects.toEqual(
       new AdminApiError(429, 'llm.monthly_cap_reached', '이번 달 AI 한도를 다 썼습니다'),
@@ -90,7 +90,7 @@ describe('adminStream', () => {
     const seen: StreamEvent<unknown>[] = []
 
     const failure = (async () => {
-      for await (const event of adminStream('/api/admin/sections/1/note', undefined)) {
+      for await (const event of adminStream('/api/admin/posts/1/draft', undefined)) {
         seen.push(event)
       }
     })()
@@ -105,8 +105,8 @@ describe('adminStream', () => {
   it('throws when the stream ends without done, as when the line drops', async () => {
     answer(() => events('event: text\ndata: {"text":"반쯤"}\n\n'))
 
-    await expect(
-      collect(adminStream('/api/admin/sections/1/note', undefined)),
-    ).rejects.toMatchObject({ code: 'common.stream_cut' })
+    await expect(collect(adminStream('/api/admin/posts/1/draft', undefined))).rejects.toMatchObject(
+      { code: 'common.stream_cut' },
+    )
   })
 })

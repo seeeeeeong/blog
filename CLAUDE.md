@@ -1,9 +1,8 @@
 # Sinseong Lee
 
 A personal blog of computer science notes. Posts and their revisions are stored in PostgreSQL
-as MDX and grouped by topic; private study notes for a book's sections, a draft from the
-admin's memo and a reader's "Ask" run on DeepSeek. It is
-self-hosted on a home server behind a Cloudflare Tunnel.
+as MDX and grouped by topic; a draft from the admin's memo and a reader's "Ask" run on DeepSeek.
+It is self-hosted on a home server behind a Cloudflare Tunnel.
 
 `api/` is the Spring Boot app and the only Gradle module, `web/` is Next.js. The design lives in
 local, uncommitted notes under `docs/`; read the relevant note before changing a feature.
@@ -29,7 +28,7 @@ code it guards.
 
 - **Layout**: two packages under `blog/`, beside the application class: `blog/common/` (config,
   entity, exception, security, util, web) and `blog/domain/`, which holds one package per feature
-  (`domain/post`, `domain/auth`, `domain/book`, `domain/llm`, `domain/ask`), each in these layers:
+  (`domain/post`, `domain/auth`, `domain/llm`, `domain/ask`), each in these layers:
 
   | Layer | Holds |
   |---|---|
@@ -52,7 +51,7 @@ code it guards.
   it calls that feature's service, whose requests and responses it may use. `ArchitectureTest`
   checks this and the layers with ArchUnit, each rule with a fixture that breaks it.
 - **No ports**: no use-case interfaces; an interface only for an external system, named
-  `XxxGateway` (`BookSourceGateway` for YES24) in the feature's `gateway/`, which only its service
+  `XxxGateway` (`LlmGateway` for DeepSeek) in the feature's `gateway/`, which only its service
   calls and which reaches into no other layer.
 - **Rules** (`XxxPolicy`, `XxxDecision`, `XxxParser`, `XxxPrompt`, `XxxCheck`) sit in `entity/`
   and depend only on Kotlin, the JDK's pure packages and other rule classes; `ArchitectureTest`
