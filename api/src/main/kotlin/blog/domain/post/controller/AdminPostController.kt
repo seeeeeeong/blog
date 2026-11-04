@@ -3,11 +3,13 @@ package blog.domain.post.controller
 import blog.common.web.EventStream
 import blog.domain.post.dto.request.PostCreateRequest
 import blog.domain.post.dto.request.PostDraftRequest
+import blog.domain.post.dto.request.PostRewriteRequest
 import blog.domain.post.dto.request.PostSaveRequest
 import blog.domain.post.dto.response.AdminPostResponse
 import blog.domain.post.dto.response.AdminPostSummaryResponse
 import blog.domain.post.service.AdminPostService
 import blog.domain.post.service.PostDraftService
+import blog.domain.post.service.PostRewriteService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
@@ -26,6 +28,7 @@ import java.util.UUID
 class AdminPostController(
     private val adminPostService: AdminPostService,
     private val postDraftService: PostDraftService,
+    private val postRewriteService: PostRewriteService,
 ) {
     @GetMapping
     fun list(): List<AdminPostSummaryResponse> = adminPostService.list()
@@ -61,5 +64,15 @@ class AdminPostController(
         events: EventStream,
     ) {
         postDraftService.draft(id, request, events)
+    }
+
+    /** A passage of the body rewritten, streamed; the editor puts it in, and nothing is saved here. */
+    @PostMapping("/{id}/rewrite")
+    fun rewrite(
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: PostRewriteRequest,
+        events: EventStream,
+    ) {
+        postRewriteService.rewrite(id, request, events)
     }
 }

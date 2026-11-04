@@ -5,6 +5,8 @@ import type {
   AdminPostSummary,
   PostCreateRequest,
   PostDraft,
+  PostRewrite,
+  PostRewriteRequest,
   PostSaveRequest,
   Topic,
 } from '@/features/admin/api/types'
@@ -46,4 +48,13 @@ export function draftFromMemo(
   signal?: AbortSignal,
 ): AsyncGenerator<StreamEvent<PostDraft>> {
   return adminStream(`${postPath(id)}/draft`, { memo }, signal)
+}
+
+/** A passage rewritten, streamed as the model writes it; the api saves nothing. */
+export function rewriteSelection(
+  id: string,
+  request: PostRewriteRequest,
+  signal?: AbortSignal,
+): AsyncGenerator<StreamEvent<PostRewrite>> {
+  return adminStream(`${postPath(id)}/rewrite`, request, signal)
 }

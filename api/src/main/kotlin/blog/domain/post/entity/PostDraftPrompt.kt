@@ -51,7 +51,7 @@ object PostDraftPrompt {
         )
     }
 
-    private val MDX_RULES =
+    val MDX_RULES =
         """
         Write MDX that the blog renders, and nothing else:
         - Start with the body. No front matter and no top-level `#` title; sections start at `##`, then `###`.
