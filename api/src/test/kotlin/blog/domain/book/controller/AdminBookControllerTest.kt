@@ -89,6 +89,39 @@ class AdminBookControllerTest(
     }
 
     @Test
+    fun `the admin reads pasted contents, then imports the book with them`() {
+        fakeBookSourceGateway.holds("107", contents = null)
+        val pasted = "1장 서론\n1.1 하는 일"
+
+        val read = admin.post("/api/admin/books/contents", mapOf("contents" to pasted))
+        val imported = admin.post("/api/admin/books", mapOf("sourceRef" to "107", "contents" to pasted))
+
+        assertThat(read.status).isEqualTo(200)
+        val chapter = checkNotNull(read.body).get("chapters").first()
+        assertThat(chapter.text("title")).isEqualTo("서론")
+        assertThat(chapter.get("sections").first().text("number")).isEqualTo("1.1")
+        assertThat(imported.status).isEqualTo(201)
+        assertThat(
+            checkNotNull(imported.body)
+                .get("chapters")
+                .first()
+                .text("title"),
+        ).isEqualTo("서론")
+    }
+
+    @Test
+    fun `contents that are blank, too long or unreadable are refused`() {
+        val blank = admin.post("/api/admin/books/contents", mapOf("contents" to " "))
+        val long = admin.post("/api/admin/books/contents", mapOf("contents" to "가".repeat(50_001)))
+        val unreadable = admin.post("/api/admin/books/contents", mapOf("contents" to "감사의 글"))
+
+        assertThat(blank.status).isEqualTo(400)
+        assertThat(long.status).isEqualTo(400)
+        assertThat(unreadable.status).isEqualTo(422)
+        assertThat(unreadable.code).isEqualTo("book.contents_unreadable")
+    }
+
+    @Test
     fun `a blank search, a malformed reference and an unknown book are refused`() {
         val blank = admin.get("/api/admin/books/search?q=%20")
         val none = admin.get("/api/admin/books/search")

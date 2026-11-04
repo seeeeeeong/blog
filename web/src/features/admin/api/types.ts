@@ -59,7 +59,7 @@ export type Admin = {
   avatarUrl: string | null
 }
 
-/** An edition `GET /api/admin/books/search` found; only one [hasContents] can be imported. */
+/** An edition `GET /api/admin/books/search` found; one without [hasContents] needs its contents pasted. */
 export type BookEdition = {
   sourceRef: string
   sourceUrl: string
@@ -106,6 +106,17 @@ export type AdminBook = {
 export type BookImportRequest = {
   sourceRef: string
   topicSlug?: string
+  /** Pasted, in place of what YES24 lists. */
+  contents?: string
+}
+
+/** How contents read, as `POST /api/admin/books/contents` answers. */
+export type BookContents = {
+  chapters: {
+    number: string
+    title: string
+    sections: { number: string; title: string }[]
+  }[]
 }
 
 /** A section's latest study note, private to the admin. */

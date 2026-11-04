@@ -2,6 +2,7 @@ import type {
   AdminBook,
   AdminBookSection,
   AdminPostSummary,
+  BookContents,
   StudyNote,
 } from '@/features/admin/api/types'
 import { leavesOf, type Progress, progressOf } from '@/utils/book'
@@ -51,6 +52,12 @@ export function booksMeta(books: readonly AdminBook[]): string {
   return `${books.length} books`
 }
 
+/** `12 chapters / 60 sections`. */
+export function contentsMeta(contents: BookContents): string {
+  const sections = contents.chapters.reduce((sum, chapter) => sum + chapter.sections.length, 0)
+  return `${contents.chapters.length} chapters / ${sections} sections`
+}
+
 /** The row's word on its post: the day it came out, `Draft`, or a dash for none yet. */
 export function postStatus(post: AdminPostSummary | null): { label: string; draft: boolean } {
   if (!post) return { label: '—', draft: false }
@@ -58,7 +65,7 @@ export function postStatus(post: AdminPostSummary | null): { label: string; draf
   return { label: shortDate(post.publishedAt), draft: false }
 }
 
-/** What an edition's row says beside it when it cannot be picked. */
+/** What an edition's row says beside it: it is here already, or its contents must be pasted. */
 export function editionNote(edition: { hasContents: boolean; imported: boolean }): string {
   if (edition.imported) return 'Imported'
   return edition.hasContents ? '' : 'No contents'

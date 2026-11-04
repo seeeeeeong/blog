@@ -35,7 +35,7 @@ enum class BlogError(
     BOOK_CONTENTS_UNREADABLE(
         HttpStatus.UNPROCESSABLE_CONTENT,
         "book.contents_unreadable",
-        "목차를 읽을 수 없는 책입니다. 다른 판을 골라 주세요",
+        "목차를 읽지 못했습니다. 장을 '1장 제목'처럼 한 줄씩 적어 주세요",
     ),
     BOOK_SOURCE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "book.source_unavailable", "YES24 검색이 설정되지 않았습니다"),
     BOOK_SOURCE_BUSY(HttpStatus.TOO_MANY_REQUESTS, "book.source_busy", "YES24 요청이 많습니다. 잠시 후 다시 시도해 주세요"),

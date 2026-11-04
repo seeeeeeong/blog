@@ -5,6 +5,7 @@ import {
   importBook,
   listBooks,
   placeBookInTopic,
+  readContents,
   searchBooks,
   writeSectionNote,
   writeSectionPost,
@@ -32,6 +33,13 @@ describe('admin books', () => {
     expect(sent()).toEqual([
       [`/api/admin/books/search?q=${encodeURIComponent('컴퓨터 네트워킹 & TCP')}`, 'GET'],
     ])
+  })
+
+  it('sends pasted contents to be read', async () => {
+    await readContents('1장 서론')
+
+    expect(sent()).toEqual([['/api/admin/books/contents', 'POST']])
+    expect(bodyOf(0)).toEqual({ contents: '1장 서론' })
   })
 
   it('reads the books and one book by its id', async () => {
