@@ -12,26 +12,32 @@ import blog.domain.post.dto.response.PostDraftReviewResponse
 import blog.domain.post.entity.PostDraftCheck
 import blog.domain.post.entity.PostDraftPrompt
 import blog.domain.post.entity.PostDraftReviewPrompt
+import blog.domain.post.entity.PostGeneration
 import blog.domain.post.entity.PostStatus
+import blog.domain.post.repository.JdbcPostGenerations
 import blog.domain.post.repository.PostRepository
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DataAccessException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import tools.jackson.core.JacksonException
 import tools.jackson.databind.json.JsonMapper
+import java.time.Clock
 import java.util.UUID
 
 /**
  * A post from the admin's memo: written, reviewed against the memo, and rewritten at most once for
- * what the review calls critical. Nothing is saved, and no transaction is held while the model
- * writes. Only the writing can fail the draft; a review or a rewrite that fails leaves the draft as
- * it was, and says so.
+ * what the review calls critical. The post stays as it was and each generation is only kept beside
+ * it; no transaction is held while the model writes. Only the writing can fail the draft; a review
+ * or a rewrite that fails leaves the draft as it was, and says so.
  */
 @Service
 class PostDraftService(
     private val postRepository: PostRepository,
     private val llmService: LlmService,
     private val jsonMapper: JsonMapper,
+    private val jdbcPostGenerations: JdbcPostGenerations,
+    private val clock: Clock,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -81,7 +87,40 @@ class PostDraftService(
                     inputTokens = run.inputTokens,
                     outputTokens = run.outputTokens,
                 )
+            keep(id, request.memo, draft)
             events.done(draft)
+        }
+    }
+
+    // The admin has waited for this draft and is about to read it; failing to keep a copy must not cost it.
+    private fun keep(
+        postId: UUID,
+        memo: String,
+        draft: PostDraftResponse,
+    ) {
+        val generation =
+            PostGeneration(
+                postId = postId,
+                memo = memo,
+                written =
+                    PostGeneration.Written(
+                        bodyMdx = draft.bodyMdx,
+                        reviewJson = draft.review?.let(jsonMapper::writeValueAsString),
+                        checksJson = jsonMapper.writeValueAsString(draft.checks),
+                        revised = draft.revised,
+                    ),
+                usage =
+                    PostGeneration.Usage(
+                        model = draft.model,
+                        inputTokens = draft.inputTokens,
+                        outputTokens = draft.outputTokens,
+                    ),
+                now = clock.instant(),
+            )
+        try {
+            jdbcPostGenerations.append(generation)
+        } catch (exception: DataAccessException) {
+            log.warn("A generation could not be kept: {}", exception.javaClass.simpleName)
         }
     }
 

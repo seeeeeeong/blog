@@ -43,7 +43,7 @@ class AskServiceTest(
     @BeforeEach
     @AfterEach
     fun clear() {
-        jdbc.sql("truncate ask_message, ask_daily_usage, llm_call, post_revision, post").update()
+        jdbc.sql("truncate ask_message, ask_daily_usage, llm_call, post_generation, post_revision, post").update()
         fakeLlmGateway.reset()
         clock.reset()
     }
