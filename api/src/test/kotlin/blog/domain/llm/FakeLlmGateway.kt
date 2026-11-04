@@ -7,7 +7,8 @@ import blog.domain.llm.gateway.LlmGateway
 import blog.domain.llm.gateway.LlmReply
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Primary
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
 import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.Collections
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -22,6 +23,12 @@ class FakeLlmGateway : LlmGateway {
 
     @Volatile
     override var configured: Boolean = true
+
+    /** The models this one answers for; a test's second gateway narrows it. */
+    @Volatile
+    var serving: (String) -> Boolean = { true }
+
+    override fun serves(model: String): Boolean = serving(model)
 
     /** Thrown before the first piece. */
     @Volatile
@@ -92,8 +99,9 @@ class FakeLlmGateway : LlmGateway {
 
     @TestConfiguration(proxyBeanMethods = false)
     class Config {
+        // First in the list LlmService picks a gateway from, so no test reaches a real one.
         @Bean
-        @Primary
+        @Order(Ordered.HIGHEST_PRECEDENCE)
         fun fakeLlmGateway() = FakeLlmGateway()
     }
 }

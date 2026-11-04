@@ -9,6 +9,9 @@ interface LlmGateway {
     /** False when the blog has no key for the model, so nothing can be asked. */
     val configured: Boolean
 
+    /** Whether [model] is one this gateway asks. */
+    fun serves(model: String): Boolean
+
     fun stream(
         chat: LlmChat,
         onText: (String) -> Unit,
