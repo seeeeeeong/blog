@@ -74,6 +74,7 @@ class LlmService(
         val chat =
             LlmChat(
                 model = route.model,
+                thinking = route.thinking,
                 system = request.system,
                 user = request.user,
                 maxTokens = request.maxTokens,

@@ -7,8 +7,9 @@ import blog.common.util.MaterialPrompt
  * admin reads before publishing, so it says what was added and what must change, in JSON.
  */
 object PostDraftReviewPrompt {
-    // The answer is short, but a model that thinks spends many times its length first.
-    const val MAX_TOKENS = 16_000
+    // The answer is short, but thinking took up to thirty thousand tokens over a short post, at about
+    // four cents; a limit it runs into leaves the admin with no review at all.
+    const val MAX_TOKENS = 64_000
 
     fun of(
         memo: String,

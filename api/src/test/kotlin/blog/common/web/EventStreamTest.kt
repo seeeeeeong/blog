@@ -38,6 +38,17 @@ class EventStreamTest {
     }
 
     @Test
+    fun `a step that starts is a stage event`() {
+        val recorder = ServerSentEvents.Recorder()
+
+        recorder.stream.stream { recorder.stream.stage("reviewing") }
+
+        assertThat(recorder.response.contentAsString).isEqualTo(
+            ": open\n\nevent: stage\ndata: {\"stage\":\"reviewing\"}\n\n",
+        )
+    }
+
+    @Test
     fun `a failure inside the stream ends it as an error event with the error's code and message`() {
         val recorder = ServerSentEvents.Recorder()
 

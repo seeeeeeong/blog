@@ -40,7 +40,8 @@ object PostRewritePrompt {
         the post is there so the passage fits it: its voice, its terms and what it has already said.
 
         Improve the passage for clarity and flow, without changing its meaning. If an instruction is given,
-        follow it instead. Add no claim, number, name or example unless the instruction asks for one, and never
+        follow it instead. Write in the ending style of the text around it, polite ~습니다 when the post is
+        polite, whatever note endings the passage itself has. Add no claim, number, name or example unless the instruction asks for one, and never
         invent an experience of the owner's. Keep code exactly as it is unless the instruction is about the code.
         If the passage cannot be meaningfully improved, return it unchanged.
 

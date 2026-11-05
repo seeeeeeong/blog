@@ -33,6 +33,7 @@ describe('canDraft', () => {
 
 describe('stageLabel', () => {
   it('names the steps it knows, and nothing for the rest', () => {
+    expect(stageLabel('writing')).toContain('쓰는')
     expect(stageLabel('reviewing')).toContain('검토')
     expect(stageLabel('revising')).toContain('고치는')
     expect(stageLabel('other')).toBeNull()

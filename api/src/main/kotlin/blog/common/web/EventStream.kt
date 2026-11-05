@@ -18,10 +18,10 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 /**
- * A model's answer as server-sent events: `text` pieces as they come, then one `done` with the
- * result, or one `error` with `{code, message}`. A failure before [stream] opens it answers as JSON
- * with its status instead. A reader who leaves is let go: writes stop, and the work runs on to its
- * end, so what the model billed is still recorded.
+ * A model's answer as server-sent events: `text` pieces as they come, a `stage` as a longer step
+ * starts, then one `done` with the result, or one `error` with `{code, message}`. A failure before
+ * [stream] opens it answers as JSON with its status instead. A reader who leaves is let go: writes
+ * stop, and the work runs on to its end, so what the model billed is still recorded.
  */
 class EventStream(
     private val response: HttpServletResponse,
@@ -65,6 +65,9 @@ class EventStream(
     fun text(piece: String) {
         if (piece.isNotEmpty()) send(TEXT, mapOf("text" to piece))
     }
+
+    /** That a longer step of the work has started, for a reader who would otherwise see nothing move. */
+    fun stage(name: String) = send(STAGE, mapOf(STAGE to name))
 
     fun done(result: Any) = send(DONE, result)
 
@@ -111,6 +114,7 @@ class EventStream(
 
     companion object {
         const val TEXT = "text"
+        const val STAGE = "stage"
         const val DONE = "done"
         const val ERROR = "error"
 

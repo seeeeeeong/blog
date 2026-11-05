@@ -17,8 +17,9 @@ import java.time.Duration
 /**
  * DeepSeek's OpenAI-compatible chat completions (api-docs.deepseek.com) on the owner's key,
  * streamed. Plain HttpURLConnection: its read timeout is an idle timeout between pieces, which a
- * stream needs and the JDK's HttpClient lacks. Thinking is off: its tokens bill as output and count
- * against the answer's limit. Never logs the key or the text.
+ * stream needs and the JDK's HttpClient lacks. Thinking is each use's choice: its tokens bill as
+ * output and count against the answer's limit, and its pieces are not the answer. Never logs the key
+ * or the text.
  */
 @Component
 class DeepSeekLlmGateway(
@@ -69,7 +70,7 @@ class DeepSeekLlmGateway(
                         mapOf("role" to "user", "content" to chat.user),
                     ),
                 "max_tokens" to chat.maxTokens,
-                "thinking" to mapOf("type" to "disabled"),
+                "thinking" to mapOf("type" to if (chat.thinking) "enabled" else "disabled"),
                 "stream" to true,
                 // The last piece then carries the tokens, which the cap is counted in.
                 "stream_options" to mapOf("include_usage" to true),

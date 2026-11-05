@@ -73,6 +73,7 @@ class PostDraftService(
         llmService.check(LlmRequest.Purpose.MEMO)
         val run = Run(post.title, request.memo, events)
         events.stream {
+            events.stage(WRITING)
             val written = run.ask(writing(prompt), events::text)
             val first = review(run, written.text)
             val revised = first?.takeIf { it.critical.isNotEmpty() }?.let { revise(run, written.text, it) }
@@ -137,7 +138,7 @@ class PostDraftService(
         body: String,
     ): PostDraftReviewResponse? {
         if (run.events.readerLeft) return null
-        run.events.send(STAGE, mapOf(STAGE to REVIEWING))
+        run.events.stage(REVIEWING)
         val prompt = PostDraftReviewPrompt.of(memo = run.memo, draft = body)
         val request =
             LlmRequest(
@@ -168,7 +169,7 @@ class PostDraftService(
         review: PostDraftReviewResponse,
     ): String? {
         if (run.events.readerLeft) return null
-        run.events.send(STAGE, mapOf(STAGE to REVISING))
+        run.events.stage(REVISING)
         val problems = review.critical.map { "${it.problem} (\"${it.quote}\"): ${it.fix}" }
         val prompt = PostDraftPrompt.revision(title = run.title, memo = run.memo, draft = body, problems = problems)
         return try {
@@ -180,7 +181,7 @@ class PostDraftService(
     }
 
     private companion object {
-        const val STAGE = "stage"
+        const val WRITING = "writing"
         const val REVIEWING = "reviewing"
         const val REVISING = "revising"
     }

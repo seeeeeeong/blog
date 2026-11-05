@@ -63,7 +63,7 @@ class PostRewriteServiceTest(
 
         val events = stream(post.id)
 
-        assertThat(events.names).containsExactly("text", "text", "done")
+        assertThat(events.names).containsExactly("stage", "text", "text", "done")
         val rewrite = events.done(PostRewriteResponse::class)
         assertThat(rewrite.replacement).isEqualTo("고친 문단입니다.\n둘째 줄입니다.").isEqualTo(events.text)
         assertThat(rewrite.model).isEqualTo("deepseek-flash")

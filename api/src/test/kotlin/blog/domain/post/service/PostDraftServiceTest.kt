@@ -109,7 +109,7 @@ class PostDraftServiceTest(
 
         val asked = fakeLlmGateway.asked.first()
         assertThat(asked.user).contains("<title>\n객체, 설계\n</title>", "<memo>\nSYN 보내고 SYN-ACK 받고 ACK\n</memo>")
-        assertThat(asked.maxTokens).isEqualTo(16_000)
+        assertThat(asked.maxTokens).isEqualTo(64_000)
         assertThat(fakeLlmGateway.inTransaction).containsOnly(false)
         assertThat(draft.bodyMdx).isEqualTo("## 세 번의 인사\n\nSYN, SYN-ACK, ACK 를 주고받습니다.")
         assertThat(draft.model).isEqualTo("deepseek-flash")
@@ -136,7 +136,7 @@ class PostDraftServiceTest(
 
         val events = stream(post.id, "메모")
 
-        assertThat(events.names).containsExactly("text", "text", "text", "stage", "done")
+        assertThat(events.names).containsExactly("stage", "text", "text", "text", "stage", "done")
         assertThat(events.text).isEqualTo(events.single("done").get("bodyMdx").asString())
     }
 
@@ -149,7 +149,10 @@ class PostDraftServiceTest(
         val (writing, review) = fakeLlmGateway.asked
         assertThat(writing.model).isEqualTo("deepseek-flash")
         assertThat(writing.system).contains("You may add technical knowledge")
-        assertThat(review.model).isEqualTo("deepseek-v4-pro")
+        assertThat(writing.thinking).isTrue()
+        assertThat(review.model).isEqualTo("deepseek-flash")
+        assertThat(review.thinking).isTrue()
+        assertThat(review.maxTokens).isEqualTo(64_000)
         assertThat(review.system).contains("You check a draft")
         assertThat(review.user).contains("<memo>\n메모\n</memo>", "<draft>\n## 세 번의 인사")
     }
@@ -183,7 +186,7 @@ class PostDraftServiceTest(
         assertThat(draft.revised).isTrue()
         assertThat(draft.review?.critical).isEmpty()
         assertThat(events.events.filter { it.name == "stage" }.map { it.data.get("stage").asString() })
-            .containsExactly("reviewing", "revising", "reviewing")
+            .containsExactly("writing", "reviewing", "revising", "reviewing")
     }
 
     @Test
