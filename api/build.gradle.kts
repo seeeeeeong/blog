@@ -32,7 +32,6 @@ dependencies {
     implementation(libs.spring.boot.starter.security.oauth2.client)
     implementation(libs.spring.boot.starter.session.jdbc)
     implementation(libs.jackson.module.kotlin)
-    implementation(libs.anthropic.java)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.kotlin.jdsl.jpql.dsl)
     implementation(libs.kotlin.jdsl.jpql.render)

@@ -23,7 +23,7 @@ import java.time.Clock
 @Service
 @EnableConfigurationProperties(LlmSettings::class)
 class LlmService(
-    private val llmGateways: List<LlmGateway>,
+    private val llmGateway: LlmGateway,
     private val jdbcLlmCalls: JdbcLlmCalls,
     private val llmSettings: LlmSettings,
     private val clock: Clock,
@@ -55,7 +55,7 @@ class LlmService(
     /** Throws what [stream] would refuse with before asking: no key, or the month's cap reached. */
     fun check(purpose: LlmRequest.Purpose) {
         val budget = if (purpose == LlmRequest.Purpose.ASK) ask else editor
-        if (!gatewayOf(routeOf(purpose)).configured) throw BlogException(budget.unavailable)
+        if (!llmGateway.configured) throw BlogException(budget.unavailable)
         // Calls checked at once may all go out, so a cap is passed by what those few cost.
         val spent = jdbcLlmCalls.spentSince(LlmCostPolicy.monthStart(clock.instant()), budget.purposes)
         if (LlmCostPolicy.reached(spent, budget.capUsd)) throw BlogException(budget.capReached)
@@ -78,7 +78,7 @@ class LlmService(
                 user = request.user,
                 maxTokens = request.maxTokens,
             )
-        val reply = gatewayOf(route).stream(chat, onText)
+        val reply = llmGateway.stream(chat, onText)
         val prices =
             LlmCostPolicy.Prices(
                 inputPerMillion = route.inputPerMillionUsd,
@@ -102,8 +102,6 @@ class LlmService(
             outputTokens = reply.outputTokens,
         )
     }
-
-    private fun gatewayOf(route: LlmSettings.Route): LlmGateway = llmGateways.first { it.serves(route.model) }
 
     private fun routeOf(purpose: LlmRequest.Purpose): LlmSettings.Route =
         when (purpose) {

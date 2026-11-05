@@ -6,7 +6,6 @@ import blog.common.exception.BlogError
 import blog.common.exception.BlogException
 import blog.domain.llm.FakeLlmGateway
 import blog.domain.llm.dto.request.LlmRequest
-import blog.domain.llm.repository.JdbcLlmCalls
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
@@ -28,8 +27,6 @@ class LlmServiceTest(
     @Autowired private val fakeLlmGateway: FakeLlmGateway,
     @Autowired private val clock: MutableClock,
     @Autowired private val jdbc: JdbcClient,
-    @Autowired private val jdbcLlmCalls: JdbcLlmCalls,
-    @Autowired private val llmSettings: LlmSettings,
 ) {
     @BeforeEach
     @AfterEach
@@ -53,33 +50,6 @@ class LlmServiceTest(
         assertThatThrownBy(call).isInstanceOfSatisfying(BlogException::class.java) {
             assertThat(it.error).isEqualTo(error)
         }
-    }
-
-    @Test
-    fun `a use's model goes to the gateway that serves it, whose key decides`() {
-        val deepSeek = FakeLlmGateway().apply { serving = { it.startsWith("deepseek-") } }
-        val claude = FakeLlmGateway().apply { serving = { it.startsWith("claude-") } }
-        val settings =
-            llmSettings.copy(
-                memo = llmSettings.memo.copy(model = "claude-opus-5-5"),
-                ask = llmSettings.ask.copy(model = "deepseek-flash"),
-            )
-        val service =
-            LlmService(
-                llmGateways = listOf(deepSeek, claude),
-                jdbcLlmCalls = jdbcLlmCalls,
-                llmSettings = settings,
-                clock = clock,
-            )
-
-        service.stream(request) {}
-
-        assertThat(claude.asked.single().model).isEqualTo("claude-opus-5-5")
-        assertThat(deepSeek.asked).isEmpty()
-
-        claude.configured = false
-        fails(BlogError.LLM_UNAVAILABLE) { service.check(LlmRequest.Purpose.MEMO) }
-        service.check(LlmRequest.Purpose.ASK)
     }
 
     @Test
