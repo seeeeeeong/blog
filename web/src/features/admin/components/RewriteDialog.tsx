@@ -7,7 +7,6 @@ import { DraftCompare } from '@/features/admin/components/DraftCompare'
 import { Modal } from '@/features/admin/components/Modal'
 import { useChangeChoice } from '@/features/admin/hooks/useChangeChoice'
 import { useEventStream } from '@/features/admin/hooks/useEventStream'
-import { stageLabel } from '@/features/admin/utils/memo'
 import { partsOf, replaced, type SelectionRange } from '@/features/admin/utils/selection'
 
 type Props = {
@@ -73,7 +72,7 @@ export function RewriteDialog({ postId, body, range, onApply, onClose }: Props) 
             {state.text}
           </pre>
         )}
-        {state.state === 'streaming' && <p role="status">{stageLabel(state.stage)}</p>}
+        {state.state === 'streaming' && <p role="status">다시 쓰는 중입니다</p>}
         {result !== null && (
           <DraftCompare blocks={choice.blocks} taken={choice.taken} onToggle={choice.toggle} />
         )}

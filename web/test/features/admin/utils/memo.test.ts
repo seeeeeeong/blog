@@ -3,6 +3,7 @@ import {
   canDraft,
   checkLabel,
   MEMO_MAX,
+  memoProblem,
   memoStep,
   memoView,
   stageLabel,
@@ -60,6 +61,21 @@ describe('memoView', () => {
   it('gives the finished draft, or what went wrong', () => {
     expect(memoView({ state: 'done', text: '## T', result: DRAFT }).draft).toBe(DRAFT)
     expect(memoView({ state: 'failed', message: '실패' }).failure).toBe('실패')
+  })
+})
+
+describe('memoProblem', () => {
+  it('has nothing to say about a memo that fits', () => {
+    expect(memoProblem('메모', null, false)).toBeNull()
+  })
+
+  it('says why a body too long for a memo cannot be polished', () => {
+    expect(memoProblem('a'.repeat(MEMO_MAX + 1), null, false)).toContain('20,000자까지')
+  })
+
+  it('passes on a failure, and puts a changed body first', () => {
+    expect(memoProblem('메모', '실패', false)).toBe('실패')
+    expect(memoProblem('메모', '실패', true)).toContain('본문이 바뀌었습니다')
   })
 })
 
