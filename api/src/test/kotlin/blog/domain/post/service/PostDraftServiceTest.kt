@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.dao.DataAccessResourceFailureException
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.mock.web.MockHttpServletResponse
 import tools.jackson.databind.json.JsonMapper
@@ -250,6 +251,36 @@ class PostDraftServiceTest(
         val reviewed =
             jdbc.sql("select review is not null from post_generation").query(Boolean::class.java).single()
         assertThat(reviewed).isFalse()
+    }
+
+    @Test
+    fun `a database that fails during the review leaves the draft, without a review`() {
+        val post = adminPostService.create(request())
+        fakeLlmGateway.answersInTurn(WRITTEN)
+        fakeLlmGateway.throwingOnCall = 2 to DataAccessResourceFailureException("down")
+
+        val draft = draft(post.id, "메모")
+
+        assertThat(draft.bodyMdx).isEqualTo(WRITTEN)
+        assertThat(draft.review).isNull()
+    }
+
+    @Test
+    fun `a database that fails during the rewrite leaves the draft and the review that asked for it`() {
+        val post = adminPostService.create(request())
+        fakeLlmGateway.answersInTurn(WRITTEN, CRITICAL)
+        fakeLlmGateway.throwingOnCall = 3 to DataAccessResourceFailureException("down")
+
+        val draft = draft(post.id, "메모")
+
+        assertThat(draft.bodyMdx).isEqualTo(WRITTEN)
+        assertThat(draft.revised).isFalse()
+        assertThat(
+            draft.review
+                ?.critical
+                ?.single()
+                ?.problem,
+        ).isEqualTo("틀렸다")
     }
 
     @Test

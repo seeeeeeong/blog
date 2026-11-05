@@ -31,6 +31,10 @@ class FakeLlmGateway : LlmGateway {
     @Volatile
     var failingMidway: BlogError? = null
 
+    /** Thrown by the call of this number, counting from one, as anything else that can go wrong. */
+    @Volatile
+    var throwingOnCall: Pair<Int, RuntimeException>? = null
+
     private val queued = ConcurrentLinkedQueue<String>()
 
     val asked: MutableList<LlmChat> = Collections.synchronizedList(mutableListOf())
@@ -44,13 +48,18 @@ class FakeLlmGateway : LlmGateway {
     ): LlmReply {
         asked += chat
         inTransaction += TransactionSynchronizationManager.isActualTransactionActive()
-        failing?.let { throw BlogException(it) }
+        failIfAsked()
         val answer = queued.poll()?.let { reply.copy(text = it) } ?: reply
         piecesOf(answer.text).forEachIndexed { index, piece ->
             if (index == 1) failingMidway?.let { throw BlogException(it) }
             onText(piece)
         }
         return answer
+    }
+
+    private fun failIfAsked() {
+        throwingOnCall?.takeIf { it.first == asked.size }?.let { throw it.second }
+        failing?.let { throw BlogException(it) }
     }
 
     fun answers(
@@ -72,6 +81,7 @@ class FakeLlmGateway : LlmGateway {
         configured = true
         failing = null
         failingMidway = null
+        throwingOnCall = null
         asked.clear()
         inTransaction.clear()
     }
