@@ -48,7 +48,6 @@ class PostRewriteService(
             )
         llmService.check(llmRequest.purpose)
         events.stream {
-            events.stage(WRITING)
             val written = llmService.stream(llmRequest, events::text)
             val rewrite =
                 PostRewriteResponse(
@@ -59,9 +58,5 @@ class PostRewriteService(
                 )
             events.done(rewrite)
         }
-    }
-
-    private companion object {
-        const val WRITING = "writing"
     }
 }
