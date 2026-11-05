@@ -6,6 +6,8 @@ import blog.common.exception.BlogError
 import blog.common.exception.BlogException
 import blog.domain.llm.FakeLlmGateway
 import blog.domain.llm.dto.request.LlmRequest
+import blog.domain.llm.entity.LlmCall
+import blog.domain.llm.repository.JdbcLlmCalls
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.dao.DataAccessResourceFailureException
 import org.springframework.jdbc.core.simple.JdbcClient
 import java.sql.Timestamp
 import java.time.Instant
@@ -27,6 +30,7 @@ class LlmServiceTest(
     @Autowired private val fakeLlmGateway: FakeLlmGateway,
     @Autowired private val clock: MutableClock,
     @Autowired private val jdbc: JdbcClient,
+    @Autowired private val llmSettings: LlmSettings,
 ) {
     @BeforeEach
     @AfterEach
@@ -50,6 +54,25 @@ class LlmServiceTest(
         assertThatThrownBy(call).isInstanceOfSatisfying(BlogException::class.java) {
             assertThat(it.error).isEqualTo(error)
         }
+    }
+
+    @Test
+    fun `an answer the model billed still comes back when its cost cannot be recorded`() {
+        val unrecorded =
+            object : JdbcLlmCalls(jdbc) {
+                override fun append(call: LlmCall): Unit = throw DataAccessResourceFailureException("down")
+            }
+        val service =
+            LlmService(
+                llmGateway = fakeLlmGateway,
+                jdbcLlmCalls = unrecorded,
+                llmSettings = llmSettings,
+                clock = clock,
+            )
+
+        val answer = service.stream(request) {}
+
+        assertThat(answer.text).isEqualTo(FakeLlmGateway.REPLY.text)
     }
 
     @Test

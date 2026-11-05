@@ -10,7 +10,9 @@ import blog.domain.llm.entity.LlmPurpose
 import blog.domain.llm.gateway.LlmChat
 import blog.domain.llm.gateway.LlmGateway
 import blog.domain.llm.repository.JdbcLlmCalls
+import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.Clock
@@ -28,6 +30,8 @@ class LlmService(
     private val llmSettings: LlmSettings,
     private val clock: Clock,
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
+
     /** Purposes that share a monthly cap, and what a caller is told without a key or at the cap. */
     private data class Budget(
         val purposes: List<LlmPurpose>,
@@ -94,7 +98,7 @@ class LlmService(
                 costMicros = LlmCostPolicy.costMicros(reply.inputTokens, reply.outputTokens, prices),
                 now = clock.instant(),
             )
-        jdbcLlmCalls.append(call)
+        record(call)
         if (!reply.finished || reply.text.isBlank()) throw BlogException(BlogError.LLM_INCOMPLETE)
         return LlmResponse(
             text = reply.text,
@@ -102,6 +106,15 @@ class LlmService(
             inputTokens = reply.inputTokens,
             outputTokens = reply.outputTokens,
         )
+    }
+
+    // The model has billed this answer already, and losing it as well would help no one.
+    private fun record(call: LlmCall) {
+        try {
+            jdbcLlmCalls.append(call)
+        } catch (exception: DataAccessException) {
+            log.error("A call's cost could not be recorded: {}", exception.javaClass.simpleName)
+        }
     }
 
     private fun routeOf(purpose: LlmRequest.Purpose): LlmSettings.Route =

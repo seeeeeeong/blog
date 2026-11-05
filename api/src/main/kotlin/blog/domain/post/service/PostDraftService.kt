@@ -147,12 +147,7 @@ class PostDraftService(
                 user = prompt.user,
                 maxTokens = PostDraftReviewPrompt.MAX_TOKENS,
             )
-        return try {
-            parsed(run.ask(request).text)
-        } catch (exception: BlogException) {
-            log.warn("A draft's review failed: {}", exception.error.code)
-            null
-        }
+        return tolerating("review") { parsed(run.ask(request).text) }
     }
 
     private fun parsed(answer: String): PostDraftReviewResponse? =
@@ -172,13 +167,22 @@ class PostDraftService(
         run.events.stage(REVISING)
         val problems = review.critical.map { "${it.problem} (\"${it.quote}\"): ${it.fix}" }
         val prompt = PostDraftPrompt.revision(title = run.title, memo = run.memo, draft = body, problems = problems)
-        return try {
-            run.ask(writing(prompt)).text
+        return tolerating("rewrite") { run.ask(writing(prompt)).text }
+    }
+
+    private fun <T : Any> tolerating(
+        step: String,
+        block: () -> T?,
+    ): T? =
+        try {
+            block()
         } catch (exception: BlogException) {
-            log.warn("A draft's rewrite failed: {}", exception.error.code)
+            log.warn("A draft's {} failed: {}", step, exception.error.code)
+            null
+        } catch (exception: DataAccessException) {
+            log.warn("A draft's {} failed: {}", step, exception.javaClass.simpleName)
             null
         }
-    }
 
     private companion object {
         const val WRITING = "writing"
