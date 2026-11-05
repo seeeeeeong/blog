@@ -1,8 +1,7 @@
 # Sinseong Lee
 
 A personal blog of computer science notes. Posts and their revisions are stored in PostgreSQL
-as MDX and grouped by topic; a draft from the admin's memo and a reader's "Ask" ask the model set
-for each use.
+as MDX and grouped by topic; a draft from the admin's memo and a reader's "Ask" run on DeepSeek.
 It is self-hosted on a home server behind a Cloudflare Tunnel.
 
 `api/` is the Spring Boot app and the only Gradle module, `web/` is Next.js. The design lives in
@@ -52,8 +51,8 @@ code it guards.
   it calls that feature's service, whose requests and responses it may use. `ArchitectureTest`
   checks this and the layers with ArchUnit, each rule with a fixture that breaks it.
 - **No ports**: no use-case interfaces; an interface only for an external system, named
-  `XxxGateway` (`LlmGateway`, for DeepSeek and for Claude) in the feature's `gateway/`, which only
-  its service calls and which reaches into no other layer.
+  `XxxGateway` (`LlmGateway` for DeepSeek) in the feature's `gateway/`, which only its service
+  calls and which reaches into no other layer.
 - **Rules** (`XxxPolicy`, `XxxDecision`, `XxxParser`, `XxxPrompt`, `XxxCheck`) sit in `entity/`
   and depend only on Kotlin, the JDK's pure packages and other rule classes; `ArchitectureTest`
   checks it with an allow list.

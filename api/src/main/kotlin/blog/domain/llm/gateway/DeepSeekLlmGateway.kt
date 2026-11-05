@@ -31,8 +31,6 @@ class DeepSeekLlmGateway(
 
     override val configured: Boolean get() = apiKey.isNotBlank()
 
-    override fun serves(model: String): Boolean = model.startsWith(PREFIX)
-
     /** What the stream has given so far. */
     private class Received {
         val text = StringBuilder()
@@ -184,8 +182,6 @@ class DeepSeekLlmGateway(
             ?.takeIf { it.isNotBlank() }
 
     private companion object {
-        const val PREFIX = "deepseek-"
-
         // A TCP and TLS handshake with a healthy API takes well under a second; three allows a slow link.
         val CONNECT_TIMEOUT: Duration = Duration.ofSeconds(3)
         const val DATA = "data:"
