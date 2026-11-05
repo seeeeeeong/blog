@@ -12,9 +12,10 @@ data class LlmSettings(
     val review: Route,
     val ask: Route,
 ) {
-    /** A model and its prices, in USD per million tokens. */
+    /** A model, whether it thinks before it answers, and its prices, in USD per million tokens. */
     data class Route(
         val model: String,
+        val thinking: Boolean,
         val inputPerMillionUsd: BigDecimal,
         val outputPerMillionUsd: BigDecimal,
     )

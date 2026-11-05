@@ -23,7 +23,8 @@ export function checkLabel(kind: PostDraftCheckKind): string {
 }
 
 const STAGE_LABELS: Record<string, string> = {
-  reviewing: '메모와 대조해 검토하는 중입니다',
+  writing: '글을 쓰는 중입니다. 첫 글자까지 30초쯤 걸립니다',
+  reviewing: '메모와 대조해 검토하는 중입니다. 1~2분 걸립니다',
   revising: '치명적 문제를 고치는 중입니다',
 }
 

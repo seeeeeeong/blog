@@ -10,8 +10,9 @@ import blog.common.util.MaterialPrompt
 object PostDraftPrompt {
     const val MAX_MEMO = 20_000
 
-    // A long post runs to six thousand tokens in Korean, and a model that thinks may spend as much again.
-    const val MAX_TOKENS = 16_000
+    // Thinking took twenty thousand tokens over a six-line memo, at about three cents; a limit it runs into
+    // leaves nothing at all, so there is room for a long memo.
+    const val MAX_TOKENS = 64_000
 
     data class Messages(
         val system: String,
@@ -80,7 +81,7 @@ object PostDraftPrompt {
         - Keep every point, number, name, code block and conclusion in the memo. Copy code exactly, comments
           included.
         - The memo's experiences, measurements and settings are the owner's. Never invent one: no incident,
-          number, team habit or feeling the memo does not give.
+          symptom, log line, number, team habit or feeling the memo does not give.
         - The owner's plans, resolutions and opinions of their own code are theirs too: do not write them.
         - If the memo leaves something unsolved, it stays unsolved. You may name likely causes, worded as
           possibilities.
@@ -97,7 +98,8 @@ object PostDraftPrompt {
 
         Write like a working engineer explaining to a colleague:
         - Follow the memo's manner: a story stays a story in the first person, a set of notes becomes a clear
-          explanation. Polite Korean (~습니다) unless the memo's prose is meant to stay otherwise.
+          explanation. Polite Korean (~습니다) throughout: a memo's note endings such as "~함" and "~됨" are
+          shorthand, not a style to follow.
         - Natural Korean, not translated English. No hype, no lecture, no filler such as "알아보겠습니다",
           "중요합니다", "살펴보았습니다". Each sentence earns its place, and the length follows what there is
           to say.

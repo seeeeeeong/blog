@@ -73,17 +73,22 @@ blog:
     # Readers' questions, apart from the owner's: at the cap Ask closes until the month ends.
     ask-monthly-cap-usd: 30
     # Prices at peak, from api-docs.deepseek.com/quick_start/pricing on 2026-11-04; every input token
-    # priced as a cache miss, so the estimate is never below the bill.
+    # priced as a cache miss, so the estimate is never below the bill. Thinking multiplies a call's tokens
+    # and takes a minute or more, but without it a review caught none of the known mistakes in a draft, and
+    # a draft repeated the memo's errors; a reader's question stays quick.
     memo:
       model: deepseek-flash
+      thinking: true
       input-per-million-usd: 0.30
       output-per-million-usd: 1.20
     review:
-      model: deepseek-v4-pro
-      input-per-million-usd: 1.32
-      output-per-million-usd: 3.96
+      model: deepseek-flash
+      thinking: true
+      input-per-million-usd: 0.30
+      output-per-million-usd: 1.20
     ask:
       model: deepseek-flash
+      thinking: false
       input-per-million-usd: 0.30
       output-per-million-usd: 1.20
   ask:

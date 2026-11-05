@@ -23,7 +23,8 @@ class DeepSeekLlmGatewayTest {
     private var body: String? = null
     private var authorization: String? = null
     private var calls = 0
-    private val chat = LlmChat(model = "deepseek-flash", system = "rules", user = "material", maxTokens = 8_192)
+    private val chat =
+        LlmChat(model = "deepseek-flash", thinking = false, system = "rules", user = "material", maxTokens = 8_192)
     private val pieces = mutableListOf<String>()
 
     private fun fixture(name: String): String =
@@ -98,6 +99,23 @@ class DeepSeekLlmGatewayTest {
         assertThat(sent.get("stream_options").get("include_usage").asBoolean()).isTrue()
         val messages = sent.get("messages").toList().map { it.get("role").asString() to it.get("content").asString() }
         assertThat(messages).containsExactly("system" to "rules", "user" to "material")
+    }
+
+    @Test
+    fun `a use that thinks asks for it, and what the model thinks is not part of the answer`() {
+        val reply = answering { it.stream(fixture("thinking.sse")) }.stream(chat.copy(thinking = true)) { pieces += it }
+
+        assertThat(
+            json
+                .readTree(body)
+                .get("thinking")
+                .get("type")
+                .asString(),
+        ).isEqualTo("enabled")
+        assertThat(pieces).containsExactly("## 책임\n\n", "객체는 책임을 가집니다.")
+        assertThat(reply.text).isEqualTo("## 책임\n\n객체는 책임을 가집니다.")
+        assertThat(reply.outputTokens).isEqualTo(900)
+        assertThat(reply.finished).isTrue()
     }
 
     @Test

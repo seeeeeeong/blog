@@ -58,6 +58,7 @@ class LlmServiceTest(
         llmService.stream(request.copy(purpose = LlmRequest.Purpose.ASK)) {}
 
         assertThat(fakeLlmGateway.asked.map { it.model }).containsExactly("deepseek-flash", "ask-model")
+        assertThat(fakeLlmGateway.asked.map { it.thinking }).containsExactly(true, false)
     }
 
     private fun spent(

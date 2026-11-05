@@ -102,8 +102,8 @@ code it guards.
 - **Streams**: a model's answer goes out as server-sent events through `common/web/EventStream`,
   which a controller takes as a parameter and hands to its service, returning nothing. The
   service checks everything it can first, so a refusal is still a status with `{code, message}`;
-  then `events.stream { }` sends `text` pieces and one `done` with the result, and a failure
-  inside it ends as an `error` event with `{code, message}`.
+  then `events.stream { }` sends `text` pieces, a `stage` as a longer step starts, and one `done`
+  with the result, and a failure inside it ends as an `error` event with `{code, message}`.
 
 ## Web
 

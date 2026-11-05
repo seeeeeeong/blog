@@ -181,7 +181,7 @@ class AdminPostControllerTest(
 
         assertThat(written.status).isEqualTo(200)
         assertThat(written.contentType).startsWith("text/event-stream")
-        assertThat(written.events.names).containsExactly("text", "text", "text", "stage", "done")
+        assertThat(written.events.names).containsExactly("stage", "text", "text", "text", "stage", "done")
         assertThat(written.events.text).isEqualTo(FakeLlmGateway.REPLY.text)
         val body = written.events.single("done")
         assertThat(body.text("bodyMdx")).isEqualTo(FakeLlmGateway.REPLY.text)
@@ -213,7 +213,7 @@ class AdminPostControllerTest(
         val failed = admin.post("/api/admin/posts/$id/draft", mapOf("memo" to "메모"))
 
         assertThat(failed.status).isEqualTo(200)
-        assertThat(failed.events.names).containsExactly("text", "error")
+        assertThat(failed.events.names).containsExactly("stage", "text", "error")
         val error = failed.events.single("error")
         assertThat(error.text("code")).isEqualTo("llm.busy")
         assertThat(error.text("message")).isEqualTo(BlogError.LLM_BUSY.message)

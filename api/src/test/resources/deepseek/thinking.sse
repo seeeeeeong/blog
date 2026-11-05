@@ -1,0 +1,16 @@
+data: {"id": "7b1", "object": "chat.completion.chunk", "created": 1793245200, "model": "deepseek-flash", "choices": [{"index": 0, "delta": {"role": "assistant", "content": null, "reasoning_content": ""}, "logprobs": null, "finish_reason": null}]}
+
+data: {"id": "7b1", "object": "chat.completion.chunk", "created": 1793245200, "model": "deepseek-flash", "choices": [{"index": 0, "delta": {"content": null, "reasoning_content": "메모를 보면"}, "logprobs": null, "finish_reason": null}]}
+
+: keep-alive
+
+data: {"id": "7b1", "object": "chat.completion.chunk", "created": 1793245200, "model": "deepseek-flash", "choices": [{"index": 0, "delta": {"content": null, "reasoning_content": " 책임을 먼저 말해야 한다."}, "logprobs": null, "finish_reason": null}]}
+
+data: {"id": "7b1", "object": "chat.completion.chunk", "created": 1793245200, "model": "deepseek-flash", "choices": [{"index": 0, "delta": {"content": "## 책임\n\n", "reasoning_content": null}, "logprobs": null, "finish_reason": null}]}
+
+data: {"id": "7b1", "object": "chat.completion.chunk", "created": 1793245200, "model": "deepseek-flash", "choices": [{"index": 0, "delta": {"content": "객체는 책임을 가집니다.", "reasoning_content": null}, "logprobs": null, "finish_reason": null}]}
+
+data: {"id": "7b1", "object": "chat.completion.chunk", "created": 1793245200, "model": "deepseek-flash", "choices": [{"index": 0, "delta": {"content": ""}, "logprobs": null, "finish_reason": "stop"}], "usage": {"prompt_tokens": 120, "completion_tokens": 900, "total_tokens": 1020, "completion_tokens_details": {"reasoning_tokens": 860}}}
+
+data: [DONE]
+
