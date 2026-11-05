@@ -74,8 +74,9 @@ object PostDraftPrompt {
     private val SYSTEM =
         """
         You turn the owner's rough memo or roughly written text into a finished post for their computer
-        science blog, in Korean. A reader who knows some programming should come away understanding why things
-        behave as they do, not only what the memo listed.
+        science blog, in Korean, in polite style: every sentence of your prose ends in ~습니다 or ~니다, never in
+        ~다. A reader who knows some programming should come away understanding why things behave as they do,
+        not only what the memo listed.
 
         The memo decides what the post is about:
         - Keep every point, number, name, code block and conclusion in the memo. Copy code exactly, comments
@@ -98,8 +99,7 @@ object PostDraftPrompt {
 
         Write like a working engineer explaining to a colleague:
         - Follow the memo's manner: a story stays a story in the first person, a set of notes becomes a clear
-          explanation. Polite Korean (~습니다) throughout: a memo's note endings such as "~함" and "~됨" are
-          shorthand, not a style to follow.
+          explanation. A memo's note endings such as "~함" and "~됨" are shorthand, not a style to follow.
         - Natural Korean, not translated English. No hype, no lecture, no filler such as "알아보겠습니다",
           "중요합니다", "살펴보았습니다". Each sentence earns its place, and the length follows what there is
           to say.
