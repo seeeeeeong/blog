@@ -8,7 +8,7 @@ import { DraftReview } from '@/features/admin/components/DraftReview'
 import { Modal } from '@/features/admin/components/Modal'
 import { useChangeChoice } from '@/features/admin/hooks/useChangeChoice'
 import { useEventStream } from '@/features/admin/hooks/useEventStream'
-import { canDraft, MEMO_MAX, memoStep, memoView } from '@/features/admin/utils/memo'
+import { canDraft, MEMO_MAX, memoProblem, memoStep, memoView } from '@/features/admin/utils/memo'
 
 type Props = {
   open: boolean
@@ -82,14 +82,11 @@ export function MemoDialog({ open, postId, body, onApply, onClose }: Props) {
         )}
         {draft && (
           <>
-            <DraftCompare blocks={choice.blocks} taken={choice.taken} onToggle={choice.toggle} />
             <DraftReview draft={draft} />
+            <DraftCompare blocks={choice.blocks} taken={choice.taken} onToggle={choice.toggle} />
           </>
         )}
-        <MemoNotice
-          stage={stage}
-          problem={stale ? '그사이 본문이 바뀌었습니다. 다시 만들어 주세요.' : failure}
-        />
+        <MemoNotice stage={stage} problem={memoProblem(memo, failure, stale)} />
         <MemoFoot
           onCancel={step === 'memo' ? close : reset}
           onApply={draft ? apply : null}

@@ -1,6 +1,6 @@
 /** Lines both sides share, or a change the admin may take or leave. */
 export type CompareBlock =
-  | { kind: 'same'; lines: string[] }
+  | { kind: 'same'; id: number; lines: string[] }
   | { kind: 'change'; id: number; before: string[]; after: string[] }
 
 function linesOf(text: string): string[] {
@@ -45,11 +45,12 @@ function stepsBetween(before: string[], after: string[]): Step[] {
 export function compareBodies(before: string, after: string): CompareBlock[] {
   const blocks: CompareBlock[] = []
   let changes = 0
+  let sames = 0
   for (const step of stepsBetween(linesOf(before), linesOf(after))) {
     const last = blocks.at(-1)
     if (step.kind === 'same') {
       if (last?.kind === 'same') last.lines.push(step.line)
-      else blocks.push({ kind: 'same', lines: [step.line] })
+      else blocks.push({ kind: 'same', id: sames++, lines: [step.line] })
       continue
     }
     const block =
@@ -74,4 +75,41 @@ export function applyChanges(blocks: CompareBlock[], taken: ReadonlySet<number>)
       return taken.has(block.id) ? block.after : block.before
     })
     .join('\n')
+}
+
+/** A run of words on one side of a change, with [start] its offset, and whether the other side lacks it. */
+export type WordPart = { start: number; text: string; changed: boolean }
+
+// The comparison takes this much memory and time, and a paragraph is far below it.
+const MAX_COMPARED_WORD_PAIRS = 1_000_000
+
+function partsOfSide(steps: Step[], side: 'before' | 'after'): WordPart[] {
+  const words = steps.filter((step) => step.kind === 'same' || step.kind === side)
+  const parts: WordPart[] = []
+  let start = 0
+  words.forEach((word, index) => {
+    const between =
+      word.line.trim() === '' && words[index - 1]?.kind === side && words[index + 1]?.kind === side
+    const changed = word.kind === side || between
+    const last = parts.at(-1)
+    if (last?.changed === changed) last.text += word.line
+    else parts.push({ start, text: word.line, changed })
+    start += word.line.length
+  })
+  return parts
+}
+
+/** Each side of a change with the words that differ marked, so a small edit in a long paragraph shows. */
+export function changedWords(before: string, after: string) {
+  const wordsBefore = before.match(/\s+|\S+/g) ?? []
+  const wordsAfter = after.match(/\s+|\S+/g) ?? []
+  const pairs = wordsBefore.length * wordsAfter.length
+  if (pairs === 0 || pairs > MAX_COMPARED_WORD_PAIRS) {
+    return {
+      before: [{ start: 0, text: before, changed: false }],
+      after: [{ start: 0, text: after, changed: false }],
+    }
+  }
+  const steps = stepsBetween(wordsBefore, wordsAfter)
+  return { before: partsOfSide(steps, 'before'), after: partsOfSide(steps, 'after') }
 }

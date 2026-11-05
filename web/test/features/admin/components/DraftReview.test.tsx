@@ -37,8 +37,8 @@ describe('DraftReview', () => {
       },
     })
 
-    expect(out).toContain('<li>확실한 사실</li>')
-    expect(out).toContain('<li>[확실하지 않음] 의심스러운 사실</li>')
+    expect(out).toContain('>확실한 사실<')
+    expect(out).toContain('>[확실하지 않음] 의심스러운 사실<')
   })
 
   it('puts what must be fixed before what was added', () => {
@@ -51,6 +51,25 @@ describe('DraftReview', () => {
     })
 
     expect(out.indexOf('꼭 고칠 점')).toBeLessThan(out.indexOf('메모에 없이 추가된 사실'))
+  })
+
+  it('sets out a correction line by line, without the markup of the text it quotes', () => {
+    const out = render({
+      review: {
+        ...CLEAN,
+        corrections: [
+          {
+            memo: '같은 커넥션',
+            draft: '커넥션을 **하나 더** `꺼내` 씁니다',
+            reason: '새 커넥션을 잡습니다',
+          },
+        ],
+      },
+    })
+
+    expect(out).toContain('>메모: 같은 커넥션<')
+    expect(out).toContain('>글: 커넥션을 하나 더 꺼내 씁니다<')
+    expect(out).toContain('>새 커넥션을 잡습니다<')
   })
 
   it('names a machine check and a rewrite', () => {

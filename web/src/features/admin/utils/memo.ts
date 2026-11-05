@@ -24,7 +24,7 @@ export function checkLabel(kind: PostDraftCheckKind): string {
 
 const STAGE_LABELS: Record<string, string> = {
   writing: '글을 쓰는 중입니다. 첫 글자까지 30초쯤 걸립니다',
-  reviewing: '메모와 대조해 검토하는 중입니다. 1~2분 걸립니다',
+  reviewing: '메모와 대조해 검토하는 중입니다. 1~3분 걸립니다',
   revising: '치명적 문제를 고치는 중입니다',
 }
 
@@ -40,6 +40,15 @@ export function memoView(state: StreamState<PostDraft>) {
     draft: state.state === 'done' ? state.result : null,
     failure: state.state === 'failed' ? state.message : null,
   }
+}
+
+/** What stands in the way, if anything: a body changed since the draft, a memo too long, or a failure. */
+export function memoProblem(memo: string, failure: string | null, stale: boolean): string | null {
+  if (stale) return '그사이 본문이 바뀌었습니다. 다시 만들어 주세요.'
+  if (memo.length > MEMO_MAX) {
+    return `메모는 ${MEMO_MAX.toLocaleString('en-US')}자까지입니다. 지금 ${memo.length.toLocaleString('en-US')}자입니다.`
+  }
+  return failure
 }
 
 export function memoStep(state: StreamState<PostDraft>): MemoStep {

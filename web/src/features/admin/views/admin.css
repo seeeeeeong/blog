@@ -369,6 +369,15 @@ select.minput {
   margin-top: var(--space-5);
 }
 
+/* A long draft and its review scroll under the buttons, which stay at hand at the dialog's bottom edge. */
+.modal--wide .modal__foot {
+  position: sticky;
+  bottom: calc(-1 * var(--space-5));
+  margin-bottom: calc(-1 * var(--space-5));
+  padding: var(--space-3) 0 var(--space-5);
+  background: var(--gray-000);
+}
+
 .aform {
   display: grid;
   gap: var(--space-3);
@@ -515,7 +524,7 @@ select.ainput {
 
 .mcompare__same {
   margin: 0;
-  opacity: 0.6;
+  color: var(--text-tertiary);
 }
 
 .mcompare__change {
@@ -529,8 +538,19 @@ select.ainput {
   gap: var(--space-2);
 }
 
-.mcompare__sides pre {
-  min-height: 2em;
+.mcompare__sides figure {
+  min-width: 0;
+  margin: 0;
+}
+
+.mcompare__sides figcaption {
+  margin-bottom: 4px;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-1);
+}
+
+.mcompare__sides pre,
+.mcompare__whole {
   margin: 0;
   padding: var(--space-2);
   border: 1px solid var(--border-color);
@@ -539,12 +559,20 @@ select.ainput {
   overflow-wrap: anywhere;
 }
 
-.mcompare__sides figure {
-  margin: 0;
+.mcompare__after pre {
+  background: oklch(from var(--accent) l c h / 8%);
 }
 
-.mcompare__sides figure:last-child pre {
-  background: oklch(from var(--accent) l c h / 8%);
+.mcompare mark {
+  border-radius: 2px;
+  background: oklch(from var(--accent) l c h / 28%);
+  color: inherit;
+}
+
+.mcompare__before mark {
+  background: none;
+  color: var(--text-tertiary);
+  text-decoration: line-through;
 }
 
 .mreview {
@@ -561,6 +589,19 @@ select.ainput {
 .mreview ul {
   margin: 0;
   padding-left: var(--space-4);
+}
+
+.mreview li + li {
+  margin-top: var(--space-2);
+}
+
+.mreview__line {
+  display: block;
+}
+
+.mreview__line + .mreview__line {
+  color: var(--text-secondary);
+  font-size: var(--font-size-1);
 }
 
 .mmemo:focus {
