@@ -3,7 +3,6 @@ package blog.domain.post.service
 import blog.common.exception.BlogError
 import blog.common.exception.BlogException
 import blog.domain.post.dto.response.PostResponse
-import blog.domain.post.dto.response.PostSourceResponse
 import blog.domain.post.dto.response.PostSummaryResponse
 import blog.domain.post.entity.PostStatus
 import blog.domain.post.repository.PostRepository
@@ -24,14 +23,6 @@ class PostService(
         val posts = postRepository.findPublishedNewestFirst()
         val topics = topicRepository.findAll().associateBy { it.id }
         return posts.map { PostSummaryResponse.from(it, topics.getValue(it.topicId)) }
-    }
-
-    /** A published post with its id and body, for Ask; a draft is as good as missing. */
-    fun source(slug: String): PostSourceResponse {
-        val post =
-            postRepository.findBySlugAndStatus(slug, PostStatus.PUBLISHED)
-                ?: throw BlogException(BlogError.POST_NOT_FOUND)
-        return PostSourceResponse.from(post)
     }
 
     /** The post and its published neighbours in its topic, which a reader pages through in order. */

@@ -46,7 +46,7 @@ class PostRewriteService(
                 user = prompt.user,
                 maxTokens = PostRewritePrompt.MAX_TOKENS,
             )
-        llmService.check(llmRequest.purpose)
+        llmService.check()
         events.stream {
             val written = llmService.stream(llmRequest, events::text)
             val rewrite =
