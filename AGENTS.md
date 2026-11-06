@@ -1,6 +1,6 @@
 # Sinseong Lee
 
-CS 를 공부하며 정리한 개인 블로그. 글과 개정본을 MDX 로 PostgreSQL 에 저장하고 주제로 묶으며, 관리자 편집 에이전트와 독자의 "Ask" 는 DeepSeek 로 돈다.
+CS 를 공부하며 정리한 개인 블로그. 글과 개정본을 MDX 로 PostgreSQL 에 저장하고 주제로 묶으며, 관리자 편집 에이전트는 DeepSeek 로 돈다.
 Kotlin + Spring Boot 4 (`api`), Next.js (`web`), PostgreSQL 18. 홈 서버에 Cloudflare Tunnel 로 셀프 호스팅한다.
 
 ## Code Review Rules
@@ -27,15 +27,14 @@ Kotlin + Spring Boot 4 (`api`), Next.js (`web`), PostgreSQL 18. 홈 서버에 Cl
 ### 보안
 
 - `.env` 값, API 키, OAuth 시크릿, 터널 토큰, 비밀번호가 코드·테스트·로그·예외 메시지·응답에 들어가면 P0.
-- 관리자 전용 API 에 권한 검사가 빠지면 P1. 관리자 라우트는 `/api/admin/` 아래에 두어 `SecurityConfig` 의 관리자 검사를 받는다. 독자의 쓰기는 `POST /api/ask` 하나뿐이다. 그 밖에 쓰기(POST·PUT·PATCH·DELETE) 라우트를 만들거나 `SecurityConfig` 에서 `/api/admin/` 검사를 느슨하게 하면 P1.
-- Ask 의 일일 한도는 `CF-Connecting-IP` 의 HMAC 해시로 센다. `X-Forwarded-For` 로 독자를 구분하거나, 독자 주소를 해시 없이 저장·로그하거나, `ask_message` 를 해시와 이어 붙이면 지적한다.
+- 관리자 전용 API 에 권한 검사가 빠지면 P1. 관리자 라우트는 `/api/admin/` 아래에 두어 `SecurityConfig` 의 관리자 검사를 받는다. 독자 라우트는 GET 뿐이다. 그 밖에 쓰기(POST·PUT·PATCH·DELETE) 라우트를 만들거나 `SecurityConfig` 에서 `/api/admin/` 검사를 느슨하게 하면 P1.
 - CSRF 를 끄거나 `ignoringRequestMatchers` 로 경로를 빼면 지적한다. 쓰기는 `XSRF-TOKEN` 쿠키를 `X-XSRF-TOKEN` 헤더로 돌려보낸다.
 - 세션에 `SessionAdmin` 말고 GitHub 액세스 토큰이나 프로필 전체를 담으면 지적한다. 관리자가 아닌 계정에 세션이 남는 경로도 지적한다.
 - 저장된 MDX 와 LLM 이 만든 글을 신뢰하지 않는 입력으로 다루는지 본다(raw HTML, 링크 스킴, 임의 컴포넌트).
 
 ### 구조 (docs 없이도 판단할 수 있게)
 
-- `blog/` 아래에는 애플리케이션 클래스와 `common/`, `domain/` 두 패키지만 둔다. 기능은 `blog/domain/` 아래 패키지(`domain/post`, `domain/auth`, `domain/llm`, `domain/ask`)이고 `controller/`, `security/`(Spring Security 설정·핸들러, `domain/auth` 만), `service/`, `dto/request/`·`dto/response/`, `repository/`, `entity/`, `gateway/`(외부 시스템 클라이언트) 로 나뉜다. 이 밖의 패키지에 클래스를 두면 지적한다.
+- `blog/` 아래에는 애플리케이션 클래스와 `common/`, `domain/` 두 패키지만 둔다. 기능은 `blog/domain/` 아래 패키지(`domain/post`, `domain/auth`, `domain/llm`)이고 `controller/`, `security/`(Spring Security 설정·핸들러, `domain/auth` 만), `service/`, `dto/request/`·`dto/response/`, `repository/`, `entity/`, `gateway/`(외부 시스템 클라이언트) 로 나뉜다. 이 밖의 패키지에 클래스를 두면 지적한다.
 - 한 기능이 다른 기능의 `repository/`·`entity/`·`gateway/` 를 직접 쓰면 지적한다. 다른 기능은 그 기능의 `service/` 를 부르고, 그 서비스의 요청·응답 DTO 는 써도 된다.
 - 계층 방향(`controller → service → repository → entity`, `dto/` 는 controller·service 가 쓰고 entity 만 읽는다)을 거스르거나, controller 가 entity·repository 를 직접 쓰거나, `entity/` 가 HTTP·JDBC 코드를 쓰면 지적한다. 포트를 두지 않으며, 인터페이스는 외부 시스템(`XxxGateway`)에만 두고, gateway 는 같은 기능의 service 만 부른다.
 - 엔티티를 Controller 가 그대로 반환하면 지적한다. `XxxResponse` 로 바꾼다.

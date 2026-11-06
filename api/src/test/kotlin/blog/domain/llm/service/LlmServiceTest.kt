@@ -23,7 +23,7 @@ import java.time.Instant
 import java.util.UUID
 
 // Not @Transactional: the model must be asked outside any transaction.
-@SpringBootTest(properties = ["blog.llm.ask.model=ask-model"])
+@SpringBootTest(properties = ["blog.llm.review.model=review-model"])
 @Import(TestcontainersConfiguration::class, MutableClock.Config::class, FakeLlmGateway.Config::class)
 class LlmServiceTest(
     @Autowired private val llmService: LlmService,
@@ -78,10 +78,9 @@ class LlmServiceTest(
     @Test
     fun `each use asks the model set for it`() {
         write()
-        llmService.stream(request.copy(purpose = LlmRequest.Purpose.ASK)) {}
+        llmService.stream(request.copy(purpose = LlmRequest.Purpose.REVIEW)) {}
 
-        assertThat(fakeLlmGateway.asked.map { it.model }).containsExactly("deepseek-flash", "ask-model")
-        assertThat(fakeLlmGateway.asked.map { it.thinking }).containsExactly(true, false)
+        assertThat(fakeLlmGateway.asked.map { it.model }).containsExactly("deepseek-flash", "review-model")
     }
 
     private fun spent(
@@ -178,29 +177,23 @@ class LlmServiceTest(
     fun `a check before asking refuses without a key and at the cap, and asks nothing`() {
         fakeLlmGateway.configured = false
 
-        fails(BlogError.LLM_UNAVAILABLE) { llmService.check(LlmRequest.Purpose.MEMO) }
+        fails(BlogError.LLM_UNAVAILABLE) { llmService.check() }
         fails(BlogError.LLM_UNAVAILABLE) { write() }
 
         fakeLlmGateway.configured = true
-        llmService.check(LlmRequest.Purpose.MEMO)
+        llmService.check()
         spent(micros = 10_000_000, at = clock.instant())
-        fails(BlogError.LLM_MONTHLY_CAP_REACHED) { llmService.check(LlmRequest.Purpose.MEMO) }
+        fails(BlogError.LLM_MONTHLY_CAP_REACHED) { llmService.check() }
         assertThat(fakeLlmGateway.asked).isEmpty()
     }
 
     @Test
-    fun `Ask has a cap of its own, apart from the editor's, and its own errors`() {
-        val ask = request.copy(purpose = LlmRequest.Purpose.ASK)
-        spent(micros = 10_000_000, at = clock.instant(), purpose = "MEMO")
+    fun `what readers' questions once cost counts nothing toward the editor's cap`() {
+        spent(micros = 30_000_000, at = clock.instant(), purpose = "ASK")
 
-        fails(BlogError.LLM_MONTHLY_CAP_REACHED) { write() }
-        llmService.stream(ask) {}
-        spent(micros = 29_999_999, at = clock.instant(), purpose = "ASK")
+        write()
 
-        fails(BlogError.ASK_MONTHLY_CAP_REACHED) { llmService.check(LlmRequest.Purpose.ASK) }
-        fakeLlmGateway.configured = false
-        fails(BlogError.ASK_UNAVAILABLE) { llmService.check(LlmRequest.Purpose.ASK) }
-        assertThat(calls().map { it[0] }).containsExactlyInAnyOrder("MEMO", "ASK", "ASK")
+        assertThat(calls().map { it[0] }).containsExactlyInAnyOrder("ASK", "MEMO")
     }
 
     @Test

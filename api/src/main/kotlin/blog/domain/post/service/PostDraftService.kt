@@ -70,7 +70,7 @@ class PostDraftService(
         val post = postRepository.findByIdOrNull(id) ?: throw BlogException(BlogError.POST_NOT_FOUND)
         if (post.status != PostStatus.DRAFT) throw BlogException(BlogError.POST_NOT_DRAFT)
         val prompt = PostDraftPrompt.of(title = post.title, memo = request.memo)
-        llmService.check(LlmRequest.Purpose.MEMO)
+        llmService.check()
         val run = Run(post.title, request.memo, events)
         events.stream {
             events.stage(WRITING)

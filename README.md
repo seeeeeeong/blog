@@ -1,7 +1,7 @@
 # Sinseong Lee
 
 A personal blog of computer science notes: posts written in MDX, grouped by topic, with an
-editor agent for the author and an "Ask" beside each post for readers.
+editor agent for the author.
 
 `api/` is Spring Boot (Kotlin), `web/` is Next.js, PostgreSQL stores the posts.
 

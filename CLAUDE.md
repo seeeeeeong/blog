@@ -1,7 +1,7 @@
 # Sinseong Lee
 
 A personal blog of computer science notes. Posts and their revisions are stored in PostgreSQL
-as MDX and grouped by topic; a draft from the admin's memo and a reader's "Ask" run on DeepSeek.
+as MDX and grouped by topic; a draft from the admin's memo runs on DeepSeek.
 It is self-hosted on a home server behind a Cloudflare Tunnel.
 
 `api/` is the Spring Boot app and the only Gradle module, `web/` is Next.js. The design lives in
@@ -28,7 +28,7 @@ code it guards.
 
 - **Layout**: two packages under `blog/`, beside the application class: `blog/common/` (config,
   entity, exception, security, util, web) and `blog/domain/`, which holds one package per feature
-  (`domain/post`, `domain/auth`, `domain/llm`, `domain/ask`), each in these layers:
+  (`domain/post`, `domain/auth`, `domain/llm`), each in these layers:
 
   | Layer | Holds |
   |---|---|
@@ -59,8 +59,7 @@ code it guards.
 - **Persistence**: JPA for what changes in place. A simple lookup is a Spring Data derived
   query (`findBySlugAndStatus`); one whose name would grow long or that needs an explicit
   order is a `@Query`; Kotlin JDSL only for a query built at run time. JdbcClient for
-  append-only tables, which are guarded by triggers and, in JPA, `@Immutable`, and for a count
-  that must be one atomic upsert (`ask_daily_usage`).
+  append-only tables, which are guarded by triggers and, in JPA, `@Immutable`.
 - **DTOs**: `XxxRequest` / `XxxResponse` data classes in `dto/request/` and `dto/response/`, one
   per file. The service takes requests and returns responses (`PostResponse.from(post)`).
   Entities never leave through a controller. Validation annotations name their target
@@ -74,11 +73,8 @@ code it guards.
   `BlogException(BlogError.Y)`; `GlobalExceptionHandler` answers `{code, message}`. A sealed
   result only where the caller really branches on it.
 - **Paths**: every endpoint is under `/api/`, which the web rewrites to the api. A reader's
-  routes are GET only, but for `POST /api/ask`; otherwise only `/api/admin/*` and `/api/auth/*`
-  write, which `BlogApplicationTest` checks. Ask has no session, yet keeps the CSRF check like
-  every write: the page fetches the token first, so another site cannot spend a reader's
-  questions. A reader is told apart by Cloudflare's `CF-Connecting-IP` (`common/web/ClientIp`),
-  never `X-Forwarded-For`, whose first entry the reader can write, and only as a daily hash.
+  routes are GET only; only `/api/admin/*` and `/api/auth/*` write, which `BlogApplicationTest`
+  checks.
 - **Admin**: one admin, the owner, signs in with GitHub (`oauth2Login` in `domain/auth/security`);
   only `BLOG_ADMIN_GITHUB_LOGIN` gets a session, kept in PostgreSQL by Spring Session JDBC.
   `SecurityConfig` puts everything under `/api/admin/` behind the admin's role (401 without a
