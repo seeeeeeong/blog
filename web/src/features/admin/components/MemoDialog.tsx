@@ -1,10 +1,11 @@
 'use client'
 
-import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { type FormEvent, useState } from 'react'
 import { draftFromMemo } from '@/features/admin/api/posts'
 import type { PostDraft } from '@/features/admin/api/types'
 import { DraftCompare } from '@/features/admin/components/DraftCompare'
 import { DraftReview } from '@/features/admin/components/DraftReview'
+import { Generating } from '@/features/admin/components/Generating'
 import { Modal } from '@/features/admin/components/Modal'
 import { useChangeChoice } from '@/features/admin/hooks/useChangeChoice'
 import { useEventStream } from '@/features/admin/hooks/useEventStream'
@@ -27,15 +28,9 @@ export function MemoDialog({ open, postId, body, onApply, onClose }: Props) {
   const stream = useEventStream<PostDraft>()
   const { state } = stream
   const step = memoStep(state)
-  const output = useRef<HTMLPreElement>(null)
-  const { text, stage, draft, failure } = memoView(state)
+  const { generating, draft, failure } = memoView(state)
   const choice = useChangeChoice(base, draft?.bodyMdx ?? null)
   const stale = draft !== null && body !== base
-
-  useEffect(() => {
-    const pre = output.current
-    if (pre && text) pre.scrollTop = pre.scrollHeight
-  }, [text])
 
   const reset = () => {
     choice.clear()
@@ -63,7 +58,7 @@ export function MemoDialog({ open, postId, body, onApply, onClose }: Props) {
   }
 
   return (
-    <Modal open={open} eyebrow="From memo" title="메모나 쓴 글 다듬기" onClose={close} wide>
+    <Modal open={open} eyebrow="From memo" onClose={close} wide>
       <form className="aform" onSubmit={submit}>
         {step === 'memo' && (
           <textarea
@@ -75,18 +70,14 @@ export function MemoDialog({ open, postId, body, onApply, onClose }: Props) {
             onChange={(event) => setEdited(event.target.value)}
           />
         )}
-        {step === 'streaming' && (
-          <pre ref={output} className="mdx mstream" aria-busy>
-            {text}
-          </pre>
-        )}
+        {generating && <Generating step={generating.step} label={generating.label} />}
         {draft && (
-          <>
-            <DraftReview draft={draft} />
+          <div className="mresult">
             <DraftCompare blocks={choice.blocks} taken={choice.taken} onToggle={choice.toggle} />
-          </>
+            <DraftReview draft={draft} />
+          </div>
         )}
-        <MemoNotice stage={stage} problem={memoProblem(memo, failure, stale)} />
+        <MemoNotice problem={memoProblem(memo, failure, stale)} />
         <MemoFoot
           onCancel={step === 'memo' ? close : reset}
           onApply={draft ? apply : null}
@@ -98,16 +89,12 @@ export function MemoDialog({ open, postId, body, onApply, onClose }: Props) {
   )
 }
 
-function MemoNotice({ stage, problem }: { stage: string | null; problem: string | null }) {
+function MemoNotice({ problem }: { problem: string | null }) {
+  if (!problem) return null
   return (
-    <>
-      {problem && (
-        <p className="aerror" role="alert">
-          {problem}
-        </p>
-      )}
-      {stage && <p role="status">{stage}</p>}
-    </>
+    <p className="aerror" role="alert">
+      {problem}
+    </p>
   )
 }
 

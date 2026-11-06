@@ -47,17 +47,17 @@ describe('PostEditor', () => {
 
     expect(out).toContain('aria-pressed="true">Write</button>')
     expect(out).toContain('aria-pressed="false">Preview</button>')
-    expect(out).toContain('<span class="mono ebar__save" aria-live="polite">Saved</span>')
+    expect(out).toContain('<span class="ebar__save" aria-live="polite">Saved</span>')
     expect(out).toContain('disabled="">Save draft</button>')
     expect(out).toMatch(
-      /<button class="dock__item dock__item--accent" type="button">Publish<\/button>/,
+      /<button class="ebar__item ebar__item--accent" type="button">Publish<\/button>/,
     )
   })
 
   it('has no Save for a published post, which changes only by publishing again', () => {
     const out = render({ ...DRAFT, status: 'PUBLISHED', publishedAt: '2026-10-21T00:00:00Z' })
 
-    expect(out).toContain('Published OCT 21 / 2.1 network')
+    expect(out).toContain('Published Oct 21 / 2.1 network')
     expect(out).not.toContain('Save draft')
     expect(out).toContain('disabled="">Republish</button>')
   })
@@ -65,9 +65,9 @@ describe('PostEditor', () => {
   it('drafts a draft from a memo, behind a dialog that stays closed until asked', () => {
     const out = render(DRAFT)
 
-    expect(out).toMatch(/<button class="dock__item" type="button">.*From memo<\/button>/)
-    expect(out).toContain('<dialog class="modal modal--wide">')
-    expect(out).not.toContain('<dialog class="modal modal--wide" open')
+    expect(out).toMatch(/<button class="ebar__item" type="button">.*From memo<\/button>/)
+    expect(out).toContain('<dialog class="modal modal--wide" aria-label="From memo">')
+    expect(out).not.toMatch(/<dialog[^>]* open/)
   })
 
   it('has no From memo for a published post', () => {

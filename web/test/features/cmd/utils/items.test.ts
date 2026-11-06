@@ -80,7 +80,7 @@ describe('visibleItems', () => {
       ['Posts', 'Virtual Memory'],
     ])
     expect(items[2]).toMatchObject({
-      hint: 'JUN 03',
+      hint: 'Jun 3',
       action: { type: 'route', href: '/posts/virtual-memory' },
     })
   })

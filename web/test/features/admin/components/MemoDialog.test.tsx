@@ -11,7 +11,7 @@ describe('MemoDialog', () => {
   it('opens on the memo, up to the length the api accepts', () => {
     const out = render()
 
-    expect(out).toContain('<p class="mono modal__eyebrow">From memo</p>')
+    expect(out).toContain('<p class="modal__eyebrow">From memo</p>')
     expect(out).toContain(
       '<textarea class="mdx mmemo" aria-label="메모" spellCheck="false" maxLength="20000"></textarea>',
     )
@@ -36,6 +36,13 @@ describe('MemoDialog', () => {
     expect(render()).toContain(
       '<button class="pill pill--accent" type="submit" disabled="">Generate</button>',
     )
+  })
+
+  it('has no title of its own beside the From memo label', () => {
+    const out = render()
+
+    expect(out).toContain('<dialog class="modal modal--wide" aria-label="From memo">')
+    expect(out).not.toContain('<h2')
   })
 
   it('neither streams nor offers to apply before anything is generated', () => {

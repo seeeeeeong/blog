@@ -32,7 +32,7 @@ describe('PostIndex', () => {
   it('heads the list with its counts, the filter and New post', () => {
     const out = renderToStaticMarkup(<PostIndex posts={POSTS} topics={[network]} />)
 
-    expect(out).toContain('<h1>Posts</h1><p class="mono ahead__meta">2 posts / 1 drafts</p>')
+    expect(out).toContain('<h1>Posts</h1><p class="ahead__meta">2 posts / 1 drafts</p>')
     expect(out).toContain('<button type="button" aria-pressed="true">All</button>')
     expect(out).toContain('New post</button>')
   })
@@ -40,9 +40,11 @@ describe('PostIndex', () => {
   it('lists drafts, with when they were edited, above the published posts by year', () => {
     const out = renderToStaticMarkup(<PostIndex posts={POSTS} topics={[network]} />)
 
-    expect(out).toContain('<span class="mono group__count">(1)</span>')
+    expect(out).toContain(
+      '<h2 class="alist__group">Drafts <span class="alist__count">(1)</span></h2>',
+    )
     expect(out).toContain('href="/admin/posts/0199-b"')
-    expect(out).toContain('Edited OCT 25')
+    expect(out).toContain('Edited Oct 25')
     expect(out).toContain('href="/admin/posts/0199-a"')
     expect(out.indexOf('QUIC')).toBeLessThan(out.indexOf('2026'))
     expect(out.indexOf('2026')).toBeLessThan(out.indexOf('TCP 3-way handshake'))

@@ -19,4 +19,19 @@ describe('RewriteDialog', () => {
     expect(out).toContain('Generate')
     expect(out).not.toContain('Apply')
   })
+
+  it('has no title of its own beside the Rewrite label', () => {
+    const out = renderToStaticMarkup(
+      <RewriteDialog
+        postId="0199-a"
+        body="앞 고칠 문단 뒤"
+        range={{ start: 2, end: 7 }}
+        onApply={() => {}}
+        onClose={() => {}}
+      />,
+    )
+
+    expect(out).toContain('aria-label="Rewrite"')
+    expect(out).not.toContain('<h2')
+  })
 })

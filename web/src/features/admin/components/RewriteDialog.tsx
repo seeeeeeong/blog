@@ -4,6 +4,7 @@ import { type FormEvent, useState } from 'react'
 import { rewriteSelection } from '@/features/admin/api/posts'
 import type { PostRewrite } from '@/features/admin/api/types'
 import { DraftCompare } from '@/features/admin/components/DraftCompare'
+import { Generating } from '@/features/admin/components/Generating'
 import { Modal } from '@/features/admin/components/Modal'
 import { useChangeChoice } from '@/features/admin/hooks/useChangeChoice'
 import { useEventStream } from '@/features/admin/hooks/useEventStream'
@@ -46,13 +47,7 @@ export function RewriteDialog({ postId, body, range, onApply, onClose }: Props) 
   }
 
   return (
-    <Modal
-      open={range !== null}
-      eyebrow="Rewrite"
-      title="선택한 부분 다시 쓰기"
-      onClose={finish}
-      wide
-    >
+    <Modal open={range !== null} eyebrow="Rewrite" onClose={finish} wide>
       <form className="aform" onSubmit={submit}>
         {state.state === 'idle' || state.state === 'failed' ? (
           <>
@@ -67,12 +62,7 @@ export function RewriteDialog({ postId, body, range, onApply, onClose }: Props) 
             />
           </>
         ) : null}
-        {state.state === 'streaming' && (
-          <pre className="mdx mstream" aria-busy>
-            {state.text}
-          </pre>
-        )}
-        {state.state === 'streaming' && <p role="status">다시 쓰는 중입니다</p>}
+        {state.state === 'streaming' && <Generating label="다시 쓰는 중" />}
         {result !== null && (
           <DraftCompare blocks={choice.blocks} taken={choice.taken} onToggle={choice.toggle} />
         )}

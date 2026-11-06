@@ -1,5 +1,5 @@
 import type { AdminPost, PostSaveRequest, Topic } from '@/features/admin/api/types'
-import { shortDate } from '@/utils/date'
+import { monthDay } from '@/utils/date'
 
 /** What the editor's fields hold. */
 export type Draft = Omit<PostSaveRequest, 'version'>
@@ -55,7 +55,7 @@ export function editorMeta(state: EditorState, topics: readonly Topic[]): string
   const topic = topics.find((t) => t.slug === draft.topicSlug) ?? post.topic
   const status =
     post.status === 'PUBLISHED' && post.publishedAt
-      ? `Published ${shortDate(post.publishedAt)}`
+      ? `Published ${monthDay(post.publishedAt)}`
       : 'Draft'
   return `${status} / ${topic.position}.${draft.position} ${topic.slug}`
 }

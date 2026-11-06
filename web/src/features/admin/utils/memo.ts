@@ -22,21 +22,31 @@ export function checkLabel(kind: PostDraftCheckKind): string {
   return CHECK_LABELS[kind]
 }
 
-const STAGE_LABELS: Record<string, string> = {
-  writing: '글을 쓰는 중입니다. 첫 글자까지 30초쯤 걸립니다',
-  reviewing: '메모와 대조해 검토하는 중입니다. 1~3분 걸립니다',
-  revising: '치명적 문제를 고치는 중입니다',
+const STAGES = ['writing', 'reviewing', 'revising'] as const
+
+const STAGE_LABELS: Record<(typeof STAGES)[number], string> = {
+  writing: '글을 쓰는 중',
+  reviewing: '메모와 대조해 검토하는 중',
+  revising: '검토에서 나온 문제를 고치는 중',
 }
 
-export function stageLabel(stage: string | undefined): string | null {
-  return stage ? (STAGE_LABELS[stage] ?? null) : null
+/** Where a step sits on the progress; one the api adds later counts as the start. */
+export function stageStep(stage: string | undefined): number {
+  return Math.max(0, (STAGES as readonly (string | undefined)[]).indexOf(stage))
 }
 
-/** What the dialog shows for a stream's state: the text coming, the step it reached, the finished draft. */
+/** The step in words, for a screen reader only: the dialog shows no text while it waits. */
+export function stageLabel(stage: string | undefined): string {
+  return STAGE_LABELS[STAGES[stageStep(stage)] ?? 'writing']
+}
+
+/** What the dialog shows for a stream's state: where the run is, then the finished draft. */
 export function memoView(state: StreamState<PostDraft>) {
   return {
-    text: state.state === 'streaming' ? state.text : '',
-    stage: state.state === 'streaming' ? stageLabel(state.stage) : null,
+    generating:
+      state.state === 'streaming'
+        ? { step: stageStep(state.stage), label: stageLabel(state.stage) }
+        : null,
     draft: state.state === 'done' ? state.result : null,
     failure: state.state === 'failed' ? state.message : null,
   }
