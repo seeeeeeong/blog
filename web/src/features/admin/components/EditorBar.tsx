@@ -22,7 +22,7 @@ type Props = {
 }
 
 /**
- * The floating bar at the bottom of the editor. A draft saves in place and can be drafted from a
+ * The bar held at the bottom of the editor. A draft saves in place and can be drafted from a
  * memo; a published post changes only by publishing again, so it has neither.
  */
 export function EditorBar(props: Props) {
@@ -30,18 +30,18 @@ export function EditorBar(props: Props) {
     props
   return (
     <div className="ebar">
-      <div className="dock__bar">
-        <span className="mono ebar__save" aria-live="polite">
+      <div className="ebar__bar">
+        <span className="ebar__save" aria-live="polite">
           {saveLabel(dirty, busy, savedAt)}
         </span>
-        <span className="dock__divider" aria-hidden="true" />
+        <span className="ebar__divider" aria-hidden="true" />
         {!published && (
           <>
-            <button className="dock__item" type="button" onClick={onMemo}>
+            <button className="ebar__item" type="button" onClick={onMemo}>
               <Icon name="spark" />
               From memo
             </button>
-            <button className="dock__item" type="button" onClick={onRewrite}>
+            <button className="ebar__item" type="button" onClick={onRewrite}>
               Rewrite
             </button>
           </>
@@ -49,7 +49,7 @@ export function EditorBar(props: Props) {
         {MODES.map((item) => (
           <button
             key={item.mode}
-            className="dock__item"
+            className="ebar__item"
             type="button"
             aria-pressed={item.mode === mode}
             onClick={() => onMode(item.mode)}
@@ -57,10 +57,10 @@ export function EditorBar(props: Props) {
             {item.label}
           </button>
         ))}
-        <span className="dock__divider" aria-hidden="true" />
+        <span className="ebar__divider" aria-hidden="true" />
         {!published && (
           <button
-            className="dock__item"
+            className="ebar__item"
             type="button"
             disabled={!dirty || busy !== null}
             onClick={onSave}
@@ -69,7 +69,7 @@ export function EditorBar(props: Props) {
           </button>
         )}
         <button
-          className="dock__item dock__item--accent"
+          className="ebar__item ebar__item--accent"
           type="button"
           disabled={busy !== null || (published && !dirty)}
           onClick={onPublish}

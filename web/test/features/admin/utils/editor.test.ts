@@ -104,7 +104,7 @@ describe('the editor state', () => {
     })
 
     expect(published.post.status).toBe('PUBLISHED')
-    expect(editorMeta(published, [network])).toBe('Published OCT 21 / 2.1 network')
+    expect(editorMeta(published, [network])).toBe('Published Oct 21 / 2.1 network')
   })
 })
 

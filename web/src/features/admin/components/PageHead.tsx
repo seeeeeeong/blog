@@ -10,7 +10,7 @@ export function PageHead({ title, meta }: Props) {
   return (
     <header className="ahead">
       {typeof title === 'string' ? <h1>{title}</h1> : title}
-      <p className="mono ahead__meta">{meta}</p>
+      <p className="ahead__meta">{meta}</p>
     </header>
   )
 }

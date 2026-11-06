@@ -1,5 +1,5 @@
 import { FEED_PATH } from '@/lib/site'
-import { shortDate } from '@/utils/date'
+import { monthDay } from '@/utils/date'
 
 /** A published post as the palette searches it; the route that lists posts maps them in. */
 export type CmdPost = {
@@ -98,7 +98,7 @@ function postItem(post: CmdPost): CmdItem {
     id: `post:${post.href}`,
     group: 'Posts',
     label: post.title,
-    hint: shortDate(post.publishedAt),
+    hint: monthDay(post.publishedAt),
     icon: 'doc',
     action: { type: 'route', href: post.href },
   }

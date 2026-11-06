@@ -38,11 +38,6 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="ko" className={FONT_VARIABLES}>
-      <head>
-        <noscript>
-          <style>{'.scramble-pending{opacity:1}'}</style>
-        </noscript>
-      </head>
       <body>{children}</body>
     </html>
   )

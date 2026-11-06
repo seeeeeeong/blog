@@ -62,7 +62,7 @@ describe('CmdMenu', () => {
     expect(out).toContain('placeholder="Search posts..."')
     expect(out).toContain('role="group" aria-label="Posts"')
     expect(out).toContain('<span class="cmd__label">TCP 3-way handshake</span>')
-    expect(out).toContain('<span class="cmd__hint mono">OCT 21</span>')
+    expect(out).toContain('<span class="cmd__hint mono">Oct 21</span>')
     expect(out).not.toContain('Search posts...</span>')
     expect(out.match(/role="option"/g)).toHaveLength(2)
   })

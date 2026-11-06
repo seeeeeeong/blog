@@ -12,7 +12,7 @@ type FieldProps = { id: string; label: string; wide?: boolean; children: ReactNo
 
 function Field({ id, label, wide, children }: FieldProps) {
   return (
-    <div className={wide ? 'meta-item mfield mfield--wide' : 'meta-item mfield'}>
+    <div className={wide ? 'mfield mfield--wide' : 'mfield'}>
       <label className="mfield__label" htmlFor={id}>
         {label}
       </label>
@@ -21,17 +21,16 @@ function Field({ id, label, wide, children }: FieldProps) {
   )
 }
 
-/** The post's metadata in the footer's card: where it lives, its place in the topic, its summary. */
+/** The post's metadata: where it lives, its place in the topic, its summary. */
 export function MetaFields({ draft, topics, onEdit }: Props) {
   const id = useId()
   return (
-    <div className="meta-card emeta">
-      <div className="meta-grid">
-        <p className="meta-grid__title">Metadata</p>
+    <div className="emeta">
+      <div className="emeta__grid">
         <Field id={`${id}slug`} label="Slug">
           <input
             id={`${id}slug`}
-            className="minput mono"
+            className="minput minput--code"
             value={draft.slug}
             spellCheck={false}
             autoComplete="off"
@@ -55,7 +54,7 @@ export function MetaFields({ draft, topics, onEdit }: Props) {
         <Field id={`${id}order`} label="Order">
           <input
             id={`${id}order`}
-            className="minput mono"
+            className="minput minput--code"
             type="number"
             min={1}
             value={draft.position}

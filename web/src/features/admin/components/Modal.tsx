@@ -4,9 +4,9 @@ import { type ReactNode, useEffect, useRef } from 'react'
 
 type Props = {
   open: boolean
-  /** The small mono line above the title. */
+  /** The dialog's small label, and its name when it has no title. */
   eyebrow: string
-  title: string
+  title?: string
   /** Escape, or the dialog closing by any way other than an action. */
   onClose: () => void
   wide?: boolean
@@ -25,9 +25,14 @@ export function Modal({ open, eyebrow, title, onClose, wide = false, children }:
   }, [open])
 
   return (
-    <dialog ref={ref} className={wide ? 'modal modal--wide' : 'modal'} onClose={onClose}>
-      <p className="mono modal__eyebrow">{eyebrow}</p>
-      <h2>{title}</h2>
+    <dialog
+      ref={ref}
+      className={wide ? 'modal modal--wide' : 'modal'}
+      aria-label={title ?? eyebrow}
+      onClose={onClose}
+    >
+      <p className="modal__eyebrow">{eyebrow}</p>
+      {title && <h2>{title}</h2>}
       {children}
     </dialog>
   )

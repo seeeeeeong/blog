@@ -7,6 +7,7 @@ import {
   memoStep,
   memoView,
   stageLabel,
+  stageStep,
 } from '@/features/admin/utils/memo'
 
 const DRAFT = {
@@ -33,12 +34,21 @@ describe('canDraft', () => {
 })
 
 describe('stageLabel', () => {
-  it('names the steps it knows, and nothing for the rest', () => {
-    expect(stageLabel('writing')).toContain('쓰는')
-    expect(stageLabel('reviewing')).toContain('검토')
-    expect(stageLabel('revising')).toContain('고치는')
-    expect(stageLabel('other')).toBeNull()
-    expect(stageLabel(undefined)).toBeNull()
+  it('names the step for a screen reader, without a promise of how long it takes', () => {
+    expect(stageLabel('writing')).toBe('글을 쓰는 중')
+    expect(stageLabel('reviewing')).toBe('메모와 대조해 검토하는 중')
+    expect(stageLabel('revising')).toBe('검토에서 나온 문제를 고치는 중')
+    expect(stageLabel(undefined)).toBe('글을 쓰는 중')
+  })
+})
+
+describe('stageStep', () => {
+  it('places each step on the progress, a step it does not know at the start', () => {
+    expect(stageStep('writing')).toBe(0)
+    expect(stageStep('reviewing')).toBe(1)
+    expect(stageStep('revising')).toBe(2)
+    expect(stageStep('other')).toBe(0)
+    expect(stageStep(undefined)).toBe(0)
   })
 })
 
@@ -49,13 +59,19 @@ describe('checkLabel', () => {
 })
 
 describe('memoView', () => {
-  it('shows the text and step while streaming, and no draft yet', () => {
-    expect(memoView({ state: 'streaming', text: '## T', stage: 'reviewing' })).toMatchObject({
-      text: '## T',
+  it('shows only where the run is while it lasts, never the text coming in', () => {
+    const view = memoView({ state: 'streaming', text: '## T', stage: 'reviewing' })
+
+    expect(view).toEqual({
+      generating: { step: 1, label: '메모와 대조해 검토하는 중' },
       draft: null,
       failure: null,
     })
-    expect(memoView({ state: 'streaming', text: '' }).stage).toBeNull()
+    expect(JSON.stringify(view)).not.toContain('## T')
+  })
+
+  it('is not generating once the run ends', () => {
+    expect(memoView({ state: 'idle' }).generating).toBeNull()
   })
 
   it('gives the finished draft, or what went wrong', () => {
