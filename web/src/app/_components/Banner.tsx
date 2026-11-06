@@ -1,8 +1,6 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { ASK_PANEL_ID } from '@/features/ask/components/AskPanel'
-import { toggleAsk, useAskMode } from '@/features/ask/hooks/useAskMode'
 import { FEED_PATH, GITHUB_URL, SITE_TITLE } from '@/lib/site'
 
 const current = (on: boolean) => (on ? 'page' : undefined)
@@ -10,7 +8,6 @@ const current = (on: boolean) => (on ? 'page' : undefined)
 /** The band across the top of every page: the site's name, where to go, and where else to follow. */
 export function Banner() {
   const pathname = usePathname()
-  const askMode = useAskMode()
   return (
     <header className="banner">
       <div className="banner__wrapper">
@@ -24,14 +21,6 @@ export function Banner() {
           <a href="/archives" aria-current={current(pathname === '/archives')}>
             Archives
           </a>
-          <button
-            type="button"
-            aria-controls={ASK_PANEL_ID}
-            aria-expanded={askMode === 'open'}
-            onClick={toggleAsk}
-          >
-            Ask
-          </button>
         </nav>
         <div className="banner__social">
           <a href={GITHUB_URL} title="GitHub">

@@ -9,17 +9,14 @@ describe('Banner', () => {
     expect(out).toContain('<div class="banner__title"><a href="/">Sinseong Lee</a></div>')
   })
 
-  it('links the blog and the archives, then opens the Ask panel', () => {
+  it('links the blog, then the archives', () => {
     const out = renderToStaticMarkup(<Banner />)
 
     expect(out).toContain('<nav class="banner__nav" aria-label="사이트">')
     expect(out).toContain('href="/">Blog</a>')
     expect(out).toContain('href="/archives">Archives</a>')
-    expect(out).toContain(
-      '<button type="button" aria-controls="ask-panel" aria-expanded="false">Ask</button>',
-    )
     expect(out.indexOf('>Blog<')).toBeLessThan(out.indexOf('>Archives<'))
-    expect(out.indexOf('>Archives<')).toBeLessThan(out.indexOf('>Ask<'))
+    expect(out).not.toContain('Ask')
   })
 
   it('links the source and the feed by icon, each with a name', () => {
