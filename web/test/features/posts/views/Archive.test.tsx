@@ -3,56 +3,40 @@ import { describe, expect, it } from 'vitest'
 import type { PostSummary, Topic } from '@/features/posts/api/types'
 import { Archive } from '@/features/posts/views/Archive'
 
-const TOPICS: Topic[] = [
-  { slug: 'os', title: '운영체제', position: 1 },
-  { slug: 'network', title: '네트워크', position: 2 },
-  { slug: 'database', title: '데이터베이스', position: 3 },
-]
+const os: Topic = { slug: 'os', title: '운영체제', position: 1 }
 
-function post(slug: string, topic: Topic, place: number, publishedAt: string): PostSummary {
-  return {
-    slug,
-    title: `${slug} title`,
-    summary: `${slug} summary`,
-    topic,
-    number: `${topic.position}.${place}`,
-    publishedAt,
-  }
+function post(slug: string, publishedAt: string): PostSummary {
+  return { slug, title: `${slug} title`, summary: 's', topic: os, number: '1.1', publishedAt }
 }
 
-const [os, network] = TOPICS as [Topic, Topic, Topic]
-
-/** Newest first, as the api lists them. */
 const POSTS: PostSummary[] = [
-  post('tcp-handshake', network, 1, '2026-10-21T01:00:00Z'),
-  post('virtual-memory', os, 3, '2026-06-03T01:00:00Z'),
-  post('process-thread', os, 1, '2026-02-20T01:00:00Z'),
-  post('cpu-scheduling', os, 2, '2025-07-18T01:00:00Z'),
+  post('cpu-scheduling', '2025-07-18T01:00:00Z'),
+  post('tcp-handshake', '2026-10-21T01:00:00Z'),
+  post('virtual-memory', '2026-06-03T01:00:00Z'),
 ]
 
 describe('Archive', () => {
-  it('lists posts by date on the server, which cannot see the fragment', () => {
-    const out = renderToStaticMarkup(<Archive archive={{ posts: POSTS, topics: TOPICS }} />)
+  it('lists every post under its year, newest year and newest post first', () => {
+    const out = renderToStaticMarkup(<Archive archive={{ posts: POSTS, topics: [os] }} />)
 
-    expect(out).toContain('<a href="#date" aria-current="page">By date</a>')
-    expect(out).toContain('<a href="#topic">By topic</a>')
+    expect(out).toContain('<h1 class="archive__title">Archives</h1>')
     expect(out.indexOf('>2026<')).toBeLessThan(out.indexOf('>2025<'))
-    expect(out).toContain('href="/posts/tcp-handshake"')
-    expect(out).toContain('tcp-handshake title')
-    expect(out).toContain('OCT 21')
-    expect(out).not.toContain('row--topic')
+    expect(out.indexOf('tcp-handshake title')).toBeLessThan(out.indexOf('virtual-memory title'))
+    expect(out.indexOf('virtual-memory title')).toBeLessThan(out.indexOf('>2025<'))
   })
 
-  it('renders its text hidden until it scrolls into view', () => {
-    const out = renderToStaticMarkup(<Archive archive={{ posts: POSTS, topics: TOPICS }} />)
+  it('dates each entry by month and day, and links its title', () => {
+    const out = renderToStaticMarkup(<Archive archive={{ posts: POSTS, topics: [os] }} />)
 
-    expect(out).toContain('<span class="scramble-pending">tcp-handshake title</span>')
+    expect(out).toContain(
+      '<li class="archive__entry"><time class="archive__date" dateTime="2026-10-21">Oct 21</time><a class="archive__link" href="/posts/tcp-handshake">tcp-handshake title</a></li>',
+    )
   })
 
-  it('renders an empty page when there are no posts yet', () => {
-    const out = renderToStaticMarkup(<Archive archive={{ posts: [], topics: TOPICS }} />)
+  it('keeps the heading alone before the first post', () => {
+    const out = renderToStaticMarkup(<Archive archive={{ posts: [], topics: [os] }} />)
 
-    expect(out).toBe('<main class="index"></main>')
+    expect(out).toBe('<main class="archive"><h1 class="archive__title">Archives</h1></main>')
   })
 
   it('says when the posts could not be read', () => {

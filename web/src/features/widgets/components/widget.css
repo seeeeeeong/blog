@@ -1,20 +1,13 @@
 .widget {
   overflow: hidden;
-  margin-right: -24px;
-  margin-left: -24px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-2);
+  margin: 2.3em 0 2em;
+  border-radius: 10px;
   background: var(--widget-background);
-  box-shadow: var(--shadow);
+  box-shadow: var(--border-color) 0 0 0 3px;
 }
 
 .widget__stage {
   padding: var(--space-5) var(--space-5) var(--space-2);
-  background-image: radial-gradient(
-    oklch(from var(--text-primary) l c h / 9%) 1px,
-    transparent 1px
-  );
-  background-size: 16px 16px;
 }
 
 .widget__canvas {

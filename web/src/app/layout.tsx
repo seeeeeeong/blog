@@ -1,31 +1,29 @@
 import type { Metadata } from 'next'
-import { Fira_Code, Inter } from 'next/font/google'
-import localFont from 'next/font/local'
+import { IBM_Plex_Sans, IBM_Plex_Sans_KR, Inter } from 'next/font/google'
 import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css'
 import './tokens.css'
 import './globals.css'
 import '@/app/_components/shell.css'
 import { FEED_PATH, SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '@/lib/site'
-import { THEME_SCRIPT } from '@/lib/theme'
 
-const inter = Inter({
+const plexSans = IBM_Plex_Sans({
   subsets: ['latin'],
-  axes: ['opsz'],
+  weight: ['400', '500'],
   style: ['normal', 'italic'],
-  variable: '--font-inter',
+  variable: '--font-plex-sans',
 })
 
-const firaCode = Fira_Code({ subsets: ['latin'], variable: '--font-fira-code' })
-
-// The pixel font's metrics match no system font, so no adjusted fallback.
-const departureMono = localFont({
-  src: './fonts/DepartureMono-Regular.woff2',
-  variable: '--font-departure-mono',
-  display: 'swap',
-  adjustFontFallback: false,
+// Hangul comes in a hundred slices the browser picks by character, so none is worth preloading.
+const plexSansKr = IBM_Plex_Sans_KR({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-plex-sans-kr',
+  preload: false,
 })
 
-const FONT_VARIABLES = [inter, firaCode, departureMono].map((font) => font.variable).join(' ')
+const inter = Inter({ subsets: ['latin'], axes: ['opsz'], variable: '--font-inter' })
+
+const FONT_VARIABLES = [plexSans, plexSansKr, inter].map((font) => font.variable).join(' ')
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -36,14 +34,11 @@ export const metadata: Metadata = {
   },
 }
 
-// The theme script sets data-theme on <html> before React hydrates it. The reader's pages and the
-// admin's bring their own dock.
+// The reader's pages and the admin's bring their own banner.
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="ko" className={FONT_VARIABLES} suppressHydrationWarning>
+    <html lang="ko" className={FONT_VARIABLES}>
       <head>
-        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: a constant of our own, not user input */}
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <noscript>
           <style>{'.scramble-pending{opacity:1}'}</style>
         </noscript>

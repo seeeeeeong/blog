@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isoDay, longDate, rfc822Date, shortDate, yearOf } from '@/utils/date'
+import { fullDate, isoDay, monthDay, rfc822Date, shortDate, yearOf } from '@/utils/date'
 
 describe('shortDate', () => {
   it('names the month and pads the day', () => {
@@ -24,10 +24,17 @@ describe('yearOf', () => {
   })
 })
 
-describe('longDate', () => {
-  it('adds the year in Seoul to the short date', () => {
-    expect(longDate('2026-10-21T01:00:00Z')).toBe('OCT 21, 2026')
-    expect(longDate('2025-12-31T15:00:00Z')).toBe('JAN 01, 2026')
+describe('fullDate', () => {
+  it('spells out the month and keeps the day unpadded, with the year in Seoul', () => {
+    expect(fullDate('2026-10-21T01:00:00Z')).toBe('October 21, 2026')
+    expect(fullDate('2025-12-31T15:00:00Z')).toBe('January 1, 2026')
+  })
+})
+
+describe('monthDay', () => {
+  it('shortens the month and keeps the day unpadded, in Seoul', () => {
+    expect(monthDay('2026-10-21T01:00:00Z')).toBe('Oct 21')
+    expect(monthDay('2026-09-03T15:00:00Z')).toBe('Sep 4')
   })
 })
 

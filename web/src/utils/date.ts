@@ -19,10 +19,19 @@ export function shortDate(instant: string): string {
   return `${MONTHS[Number(month) - 1]} ${day}`
 }
 
-/** `OCT 21, 2026`, the day an instant falls on in Seoul, with its year. */
-export function longDate(instant: string): string {
-  const { year } = seoulParts(instant)
-  return `${shortDate(instant)}, ${year}`
+const LONG_MONTHS = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', month: 'long' })
+
+const SHORT_MONTHS = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', month: 'short' })
+
+/** `October 21, 2026`, the day an instant falls on in Seoul, as a post is dated. */
+export function fullDate(instant: string): string {
+  const { year, day } = seoulParts(instant)
+  return `${LONG_MONTHS.format(new Date(instant))} ${Number(day)}, ${year}`
+}
+
+/** `Oct 21`, the day an instant falls on in Seoul, as the archive lists it. */
+export function monthDay(instant: string): string {
+  return `${SHORT_MONTHS.format(new Date(instant))} ${Number(seoulParts(instant).day)}`
 }
 
 /** `2026-10-21`, the day an instant falls on in Seoul, for a `<time>` element. */

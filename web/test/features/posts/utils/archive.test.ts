@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { PostSummary, Topic } from '@/features/posts/api/types'
-import { byTopic, byYear, newestOf, postHref, viewOf } from '@/features/posts/utils/archive'
+import { byYear, newestOf, postHref } from '@/features/posts/utils/archive'
 
 const TOPICS: Topic[] = [
   { slug: 'os', title: '운영체제', position: 1 },
@@ -50,41 +50,10 @@ describe('byYear', () => {
   })
 })
 
-describe('byTopic', () => {
-  it('lists topics in their order, each with its posts by number', () => {
-    const groups = byTopic(POSTS, [...TOPICS].reverse())
-
-    expect(groups.map((g) => [g.label, g.topic.title, g.posts.map((p) => p.number)])).toEqual([
-      ['01', '운영체제', ['1.1', '1.2', '1.3']],
-      ['02', '네트워크', ['2.1']],
-    ])
-  })
-
-  it('leaves out a topic with no posts', () => {
-    expect(byTopic(POSTS, TOPICS).map((g) => g.topic.slug)).not.toContain('database')
-  })
-
-  it('orders 2.10 after 2.9', () => {
-    const tenth = post('tenth', network, 10, '2026-01-01T00:00:00Z')
-    const ninth = post('ninth', network, 9, '2026-01-02T00:00:00Z')
-
-    expect(byTopic([tenth, ninth], TOPICS)[0]?.posts.map((p) => p.number)).toEqual(['2.9', '2.10'])
-  })
-})
-
 describe('newestOf', () => {
   it('finds the newest post, or none', () => {
     expect(newestOf([...POSTS].reverse())?.slug).toBe('tcp-handshake')
     expect(newestOf([])).toBeUndefined()
-  })
-})
-
-describe('viewOf', () => {
-  it('shows posts by topic only when the fragment asks', () => {
-    expect(viewOf('#topic')).toBe('topic')
-    expect(viewOf('#date')).toBe('date')
-    expect(viewOf('')).toBe('date')
-    expect(viewOf('#elsewhere')).toBe('date')
   })
 })
 

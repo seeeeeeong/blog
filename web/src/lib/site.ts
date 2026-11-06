@@ -6,3 +6,5 @@ export const SITE_DESCRIPTION = 'CS를 공부하며 정리한 글'
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3150'
 
 export const FEED_PATH = '/rss.xml'
+
+export const GITHUB_URL = 'https://github.com/seeeeeeong'

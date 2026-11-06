@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Dock } from '@/app/_components/Dock'
+import { Banner } from '@/app/_components/Banner'
 import { SiteFooter } from '@/app/_components/SiteFooter'
 import { Ask } from '@/features/ask/views/Ask'
 import type { CmdPost } from '@/features/cmd/utils/items'
@@ -19,20 +19,19 @@ function cmdPost(post: PostSummary): CmdPost {
 }
 
 /**
- * The reader's dock, palette, Ask panel and footer around a page. The palette searches the posts
+ * The reader's banner, palette, Ask panel and footer around a page. The palette searches the posts
  * this already reads, so it opens with them and fetches nothing of its own.
  */
 export async function SiteChrome({ children }: { children: ReactNode }) {
   const posts = (await loadArchive())?.posts ?? []
   const newest = newestOf(posts)
-  const latestHref = newest && postHref(newest.slug)
   return (
-    <>
-      <Dock latestHref={latestHref} />
-      <CmdPalette posts={posts.map(cmdPost)} latestHref={latestHref} />
+    <div className="site">
+      <Banner />
+      <CmdPalette posts={posts.map(cmdPost)} latestHref={newest && postHref(newest.slug)} />
       <Ask />
       {children}
-      <SiteFooter lastUpdated={newest?.publishedAt} />
-    </>
+      <SiteFooter />
+    </div>
   )
 }
