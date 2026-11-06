@@ -14,15 +14,14 @@ const POST = {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('SiteChrome', () => {
-  it('puts the dock above the page and the footer below it, with the newest post as Latest', async () => {
+  it('puts the banner above the page and the footer below it', async () => {
     vi.stubGlobal('fetch', async (url: string) =>
       Response.json(url.endsWith('/api/posts') ? [POST] : []),
     )
 
     const out = renderToStaticMarkup(await SiteChrome({ children: <main>page</main> }))
 
-    expect(out).toContain('href="/posts/tcp-handshake">Latest</a>')
-    expect(out.indexOf('class="dock"')).toBeLessThan(out.indexOf('<main>page</main>'))
+    expect(out.indexOf('class="banner"')).toBeLessThan(out.indexOf('<main>page</main>'))
     expect(out.indexOf('<main>page</main>')).toBeLessThan(out.indexOf('class="site-footer"'))
   })
 
@@ -33,7 +32,7 @@ describe('SiteChrome', () => {
 
     const out = renderToStaticMarkup(await SiteChrome({ children: <main>page</main> }))
 
+    expect(out).toContain('class="banner"')
     expect(out).toContain('<main>page</main>')
-    expect(out).not.toContain('Latest')
   })
 })

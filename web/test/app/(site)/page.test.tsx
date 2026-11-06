@@ -1,47 +1,59 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import Home from '@/app/(site)/page'
-import type { PostSummary, Topic } from '@/features/posts/api/types'
+import type { Post, PostSummary, Topic } from '@/features/posts/api/types'
 
-const TOPICS: Topic[] = [
-  { slug: 'os', title: '운영체제', position: 1 },
-  { slug: 'network', title: '네트워크', position: 2 },
-  { slug: 'database', title: '데이터베이스', position: 3 },
-]
+const network: Topic = { slug: 'network', title: '네트워크', position: 2 }
+const os: Topic = { slug: 'os', title: '운영체제', position: 1 }
 
-function post(slug: string, topic: Topic, place: number, publishedAt: string): PostSummary {
-  return {
-    slug,
-    title: `${slug} title`,
-    summary: `${slug} summary`,
-    topic,
-    number: `${topic.position}.${place}`,
-    publishedAt,
-  }
+function summary(slug: string, topic: Topic, publishedAt: string): PostSummary {
+  return { slug, title: `${slug} title`, summary: 's', topic, number: '1.1', publishedAt }
 }
 
-const [os, network] = TOPICS as [Topic, Topic, Topic]
-
-/** Newest first, as the api lists them. */
+/** Not newest first, so the page has to find the newest itself. */
 const POSTS: PostSummary[] = [
-  post('tcp-handshake', network, 1, '2026-10-21T01:00:00Z'),
-  post('virtual-memory', os, 3, '2026-06-03T01:00:00Z'),
-  post('process-thread', os, 1, '2026-02-20T01:00:00Z'),
-  post('cpu-scheduling', os, 2, '2025-07-18T01:00:00Z'),
+  summary('virtual-memory', os, '2026-06-03T01:00:00Z'),
+  summary('tcp-handshake', network, '2026-10-21T01:00:00Z'),
 ]
+
+const NEWEST: Post = {
+  ...summary('tcp-handshake', network, '2026-10-21T01:00:00Z'),
+  title: 'TCP 3-way handshake',
+  bodyMdx: '세 번 주고받습니다.',
+  previous: null,
+  next: null,
+}
+
+function answering(posts: PostSummary[]) {
+  return async (url: string) => {
+    if (url.endsWith('/api/posts/tcp-handshake')) return Response.json(NEWEST)
+    if (url.endsWith('/api/posts')) return Response.json(posts)
+    return Response.json([network, os])
+  }
+}
 
 afterEach(() => vi.unstubAllGlobals())
 
 describe('Home', () => {
-  it('shows the hero above the archive', async () => {
-    vi.stubGlobal('fetch', async (url: string) =>
-      Response.json(url.endsWith('/api/posts') ? POSTS : TOPICS),
-    )
+  it('shows the newest post in full, its title linking to its own page', async () => {
+    vi.stubGlobal('fetch', answering(POSTS))
 
     const out = renderToStaticMarkup(await Home())
 
-    expect(out).toContain('<section class="hero" aria-hidden="true"><canvas class="hero__art">')
-    expect(out).toContain('href="/posts/tcp-handshake"')
+    expect(out).toContain(
+      '<h1 class="post__title"><a href="/posts/tcp-handshake">TCP 3-way handshake</a></h1>',
+    )
+    expect(out).toContain('October 21, 2026')
+    expect(out).toContain('세 번 주고받습니다.')
+    expect(out).not.toContain('virtual-memory')
+  })
+
+  it('is an empty page before the first post', async () => {
+    vi.stubGlobal('fetch', answering([]))
+
+    const out = renderToStaticMarkup(await Home())
+
+    expect(out).toBe('<main class="post"></main>')
   })
 
   it('still opens when the api is down', async () => {
@@ -51,6 +63,6 @@ describe('Home', () => {
 
     const out = renderToStaticMarkup(await Home())
 
-    expect(out).toContain('글 목록을 불러오지 못했습니다.')
+    expect(out).toContain('글을 불러오지 못했습니다.')
   })
 })

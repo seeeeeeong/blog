@@ -7,10 +7,5 @@ export const metadata: Metadata = {
 }
 
 export default function AdminLayout({ children }: LayoutProps<'/admin'>) {
-  return (
-    <>
-      <div className="aglow" aria-hidden="true" />
-      {children}
-    </>
-  )
+  return children
 }

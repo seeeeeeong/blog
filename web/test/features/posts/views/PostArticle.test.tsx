@@ -30,15 +30,25 @@ function post(previous: PostSummary | null, next: PostSummary | null): Post {
 const Body = () => <p>본문이다.</p>
 
 describe('PostArticle', () => {
-  it('heads the post with its title, its day in Seoul and its number in the topic', () => {
+  it('puts the day in Seoul above the title, then the body', () => {
     const out = renderToStaticMarkup(
       <PostArticle post={post(null, null)} Content={Body} components={{}} />,
     )
 
-    expect(out).toContain('<h1>TCP 3-way handshake</h1>')
-    expect(out).toContain('<time dateTime="2026-10-21">OCT 21, 2026</time>')
-    expect(out).toContain('<a href="/#topic">2.2 network</a>')
-    expect(out).toContain('<div class="prose"><p>본문이다.</p>')
+    expect(out).toContain(
+      '<header><time class="post__date" dateTime="2026-10-21">October 21, 2026</time><h1 class="post__title">TCP 3-way handshake</h1></header>',
+    )
+    expect(out).toContain('<div class="prose"><p>본문이다.</p></div>')
+  })
+
+  it('links the title to the post when shown elsewhere', () => {
+    const out = renderToStaticMarkup(
+      <PostArticle post={post(null, null)} Content={Body} components={{}} linked />,
+    )
+
+    expect(out).toContain(
+      '<h1 class="post__title"><a href="/posts/tcp-handshake">TCP 3-way handshake</a></h1>',
+    )
   })
 
   it('pages to the posts before and after it in the topic', () => {
@@ -51,25 +61,16 @@ describe('PostArticle', () => {
     )
 
     expect(out).toContain('<nav class="pager" aria-label="이전 글과 다음 글">')
-    expect(out).toContain(
-      '<a class="pager__prev" href="/posts/osi"><span class="mono">Prev / 2.1</span>osi title</a>',
-    )
-    expect(out).toContain(
-      '<a class="pager__next" href="/posts/http"><span class="mono">Next / 2.3</span>http title</a>',
-    )
+    expect(out).toContain('<a class="pager__prev" href="/posts/osi">← osi title</a>')
+    expect(out).toContain('<a class="pager__next" href="/posts/http">http title →</a>')
   })
 
-  it('keeps a lone next post on the right, and has no pager for a post alone in its topic', () => {
-    const first = renderToStaticMarkup(
-      <PostArticle post={post(null, summary('http', 3))} Content={Body} components={{}} />,
-    )
-    const alone = renderToStaticMarkup(
+  it('has no pager for a post alone in its topic', () => {
+    const out = renderToStaticMarkup(
       <PostArticle post={post(null, null)} Content={Body} components={{}} />,
     )
 
-    expect(first).not.toContain('pager__prev')
-    expect(first).toContain('pager__next')
-    expect(alone).not.toContain('pager')
+    expect(out).not.toContain('pager')
   })
 
   it('says so when the body could not be shown', () => {

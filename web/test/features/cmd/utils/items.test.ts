@@ -47,8 +47,8 @@ describe('visibleItems', () => {
 
     expect(items.map((item) => [item.group, item.label])).toEqual([
       ['Tools', 'Search posts...'],
-      ['Navigation', 'Index'],
-      ['Navigation', 'Topics'],
+      ['Navigation', 'Blog'],
+      ['Navigation', 'Archives'],
       ['Navigation', 'Latest'],
       ['Navigation', 'RSS'],
       ['Links', 'GitHub'],
@@ -75,12 +75,11 @@ describe('visibleItems', () => {
     const items = visibleItems('root', 'I', POSTS)
 
     expect(items.map((item) => [item.group, item.label])).toEqual([
-      ['Navigation', 'Index'],
-      ['Navigation', 'Topics'],
+      ['Navigation', 'Archives'],
       ['Links', 'GitHub'],
       ['Posts', 'Virtual Memory'],
     ])
-    expect(items[3]).toMatchObject({
+    expect(items[2]).toMatchObject({
       hint: 'JUN 03',
       action: { type: 'route', href: '/posts/virtual-memory' },
     })
@@ -104,8 +103,8 @@ describe('groupsOf', () => {
     const groups = groupsOf(visibleItems('root', 'i', POSTS))
 
     expect(groups.map((group) => group.name)).toEqual(['Navigation', 'Links', 'Posts'])
-    expect(groups[0]?.entries.map((entry) => entry.index)).toEqual([0, 1])
-    expect(groups[2]?.entries.map((entry) => entry.index)).toEqual([3])
+    expect(groups[0]?.entries.map((entry) => entry.index)).toEqual([0])
+    expect(groups[2]?.entries.map((entry) => entry.index)).toEqual([2])
   })
 
   it('has no groups for no items', () => {

@@ -11,14 +11,12 @@ export function Pager({ previous, next }: Props) {
     <nav className="pager" aria-label="이전 글과 다음 글">
       {previous && (
         <Link className="pager__prev" href={postHref(previous.slug)}>
-          <span className="mono">Prev / {previous.number}</span>
-          {previous.title}
+          ← {previous.title}
         </Link>
       )}
       {next && (
         <Link className="pager__next" href={postHref(next.slug)}>
-          <span className="mono">Next / {next.number}</span>
-          {next.title}
+          {next.title} →
         </Link>
       )}
     </nav>
