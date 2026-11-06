@@ -54,8 +54,7 @@
 
 .banner__nav a:hover,
 .banner__nav button:hover,
-.banner__nav [aria-current="page"],
-.banner__nav [aria-expanded="true"] {
+.banner__nav [aria-current="page"] {
   opacity: 1;
 }
 
