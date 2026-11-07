@@ -33,6 +33,7 @@ h4 {
   font-family: var(--font-heading);
   font-optical-sizing: auto;
   font-weight: var(--weight-600);
+  line-height: normal;
 }
 
 a {

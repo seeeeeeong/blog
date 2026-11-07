@@ -47,10 +47,14 @@
 }
 
 .prose h2 {
-  font-size: 1.5em;
+  font-size: 1.8em;
 }
 
 .prose h3 {
+  font-size: 1.5em;
+}
+
+.prose h4 {
   font-size: 1.3em;
 }
 
@@ -214,7 +218,8 @@
   padding: 0.5em;
   overflow-x: auto;
   color: var(--code-text);
-  font: 1.05em / 1.5 var(--font-code);
+  /* The original's 1.05em sits on the 13px a browser gives generic monospace. */
+  font: calc(1.05 * 13px) / normal var(--font-code);
   -webkit-overflow-scrolling: touch;
 }
 
@@ -225,7 +230,7 @@
 
 .code .line {
   display: block;
-  min-height: 1.5em;
+  min-height: 1lh;
   white-space: pre;
 }
 
@@ -313,10 +318,6 @@
   .post {
     padding-right: 1.2rem;
     padding-left: 1.2rem;
-  }
-
-  .prose p {
-    font-size: 1.1em;
   }
 
   .prose blockquote,
