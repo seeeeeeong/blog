@@ -25,11 +25,11 @@ describe('Archive', () => {
     expect(out.indexOf('virtual-memory title')).toBeLessThan(out.indexOf('>2025<'))
   })
 
-  it('dates each entry by month and day, and links its title', () => {
+  it('dates each entry by month and day, and links its title alone', () => {
     const out = renderToStaticMarkup(<Archive archive={{ posts: POSTS, topics: [os] }} />)
 
     expect(out).toContain(
-      '<li class="archive__entry"><time class="archive__date" dateTime="2026-10-21">Oct 21</time><a class="archive__link" href="/posts/tcp-handshake">tcp-handshake title</a></li>',
+      '<li class="archive__entry"><time class="archive__date" dateTime="2026-10-21">Oct 21</time><div class="archive__link"><a href="/posts/tcp-handshake">tcp-handshake title</a></div></li>',
     )
   })
 

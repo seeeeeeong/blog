@@ -30,25 +30,15 @@ function post(previous: PostSummary | null, next: PostSummary | null): Post {
 const Body = () => <p>본문이다.</p>
 
 describe('PostArticle', () => {
-  it('puts the day in Seoul above the title, then the body', () => {
+  it('puts the day in Seoul above the title, which links to the post, then the body', () => {
     const out = renderToStaticMarkup(
       <PostArticle post={post(null, null)} Content={Body} components={{}} />,
     )
 
     expect(out).toContain(
-      '<header><time class="post__date" dateTime="2026-10-21">October 21, 2026</time><h1 class="post__title">TCP 3-way handshake</h1></header>',
+      '<header><time class="post__date" dateTime="2026-10-21">October 21, 2026</time><h1 class="post__title"><a href="/posts/tcp-handshake">TCP 3-way handshake</a></h1></header>',
     )
     expect(out).toContain('<div class="prose"><p>본문이다.</p></div>')
-  })
-
-  it('links the title to the post when shown elsewhere', () => {
-    const out = renderToStaticMarkup(
-      <PostArticle post={post(null, null)} Content={Body} components={{}} linked />,
-    )
-
-    expect(out).toContain(
-      '<h1 class="post__title"><a href="/posts/tcp-handshake">TCP 3-way handshake</a></h1>',
-    )
   })
 
   it('pages to the posts before and after it in the topic', () => {

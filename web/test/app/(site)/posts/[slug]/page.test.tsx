@@ -47,7 +47,9 @@ describe('PostPage', () => {
 
     const out = renderToStaticMarkup(await PostPage(props('tcp-handshake')))
 
-    expect(out).toContain('<h1 class="post__title">TCP 3-way handshake</h1>')
+    expect(out).toContain(
+      '<h1 class="post__title"><a href="/posts/tcp-handshake">TCP 3-way handshake</a></h1>',
+    )
     expect(out).toContain('<div class="widget" id="handshake">')
     expect(out).toContain('<a href="#handshake" class="action">끝으로</a>')
     expect(out).toContain('<span class="tone tone--orange"><strong>SYN</strong></span>')

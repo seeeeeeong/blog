@@ -28,26 +28,30 @@
 .archive__date {
   position: absolute;
   bottom: 0.7em;
+  box-sizing: content-box;
   height: 1.5em;
+  padding-bottom: 0.2em;
   color: var(--gray-900);
   line-height: 1.5em;
 }
 
 .archive__link {
-  display: block;
   padding-left: 3em;
-  color: var(--heading);
   font: var(--weight-600) 1.5em var(--font-heading);
   font-optical-sizing: auto;
+}
+
+.archive__link a {
+  color: var(--heading);
   text-decoration: none;
 }
 
-.archive__link:visited {
-  color: var(--gray-900);
+.archive__link a:visited {
+  color: var(--heading-visited);
 }
 
-.archive__link:hover {
-  color: var(--gray-1000);
+.archive__link a:hover {
+  color: var(--heading-hover);
 }
 
 @media (max-width: 450px) {
