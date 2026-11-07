@@ -58,7 +58,7 @@ class PostDraftServiceTest(
     @BeforeEach
     @AfterEach
     fun clear() {
-        jdbc.sql("truncate llm_call, ask_message, post_generation, post_revision, post").update()
+        jdbc.sql("truncate llm_call, post_generation, post_revision, post").update()
         fakeLlmGateway.reset()
         fakeLlmGateway.answers("## 세 번의 인사\n\nSYN, SYN-ACK, ACK 를 주고받습니다.")
     }

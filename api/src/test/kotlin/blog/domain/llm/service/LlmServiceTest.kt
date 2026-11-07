@@ -86,16 +86,14 @@ class LlmServiceTest(
     private fun spent(
         micros: Long,
         at: Instant,
-        purpose: String = "MEMO",
     ) {
         jdbc
             .sql(
                 """
                 insert into llm_call (id, purpose, model, input_tokens, output_tokens, cost_micros, created_at)
-                values (:id, :purpose, 'deepseek-flash', 0, 0, :micros, :at)
+                values (:id, 'MEMO', 'deepseek-flash', 0, 0, :micros, :at)
                 """.trimIndent(),
             ).param("id", UUID.randomUUID())
-            .param("purpose", purpose)
             .param("micros", micros)
             .param("at", Timestamp.from(at))
             .update()
@@ -185,15 +183,6 @@ class LlmServiceTest(
         spent(micros = 10_000_000, at = clock.instant())
         fails(BlogError.LLM_MONTHLY_CAP_REACHED) { llmService.check() }
         assertThat(fakeLlmGateway.asked).isEmpty()
-    }
-
-    @Test
-    fun `what readers' questions once cost counts nothing toward the editor's cap`() {
-        spent(micros = 30_000_000, at = clock.instant(), purpose = "ASK")
-
-        write()
-
-        assertThat(calls().map { it[0] }).containsExactlyInAnyOrder("ASK", "MEMO")
     }
 
     @Test

@@ -47,7 +47,8 @@ class ConventionsTest {
     }
 
     // A later migration dropped what these made; a merged migration stays, with nothing left to check.
-    private val dropped = setOf("V5__create_book.sql", "V6__link_post_to_section.sql", "V8__create_study_note.sql")
+    private val dropped =
+        setOf("V5__create_book.sql", "V6__link_post_to_section.sql", "V8__create_study_note.sql", "V9__create_ask.sql")
 
     // These tests check rules, and the fixtures are examples, not tests of a production file.
     private fun ownTests() =
