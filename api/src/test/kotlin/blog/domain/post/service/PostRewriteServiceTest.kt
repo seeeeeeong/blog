@@ -32,7 +32,7 @@ class PostRewriteServiceTest(
     @BeforeEach
     @AfterEach
     fun clear() {
-        jdbc.sql("truncate llm_call, ask_message, post_generation, post_revision, post").update()
+        jdbc.sql("truncate llm_call, post_generation, post_revision, post").update()
         fakeLlmGateway.reset()
         fakeLlmGateway.answers("고친 문단입니다.\n둘째 줄입니다.")
     }
