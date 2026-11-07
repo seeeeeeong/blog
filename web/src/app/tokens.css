@@ -40,8 +40,9 @@
   --weight-600: 600;
 
   /* 44rem less 3rem of gutter on each side, the measure of every page. */
-  --page-max: 44rem;
   --page-gutter: 3rem;
+  /* The original sizes content-box, so its 44rem is the text alone, inside the gutters. */
+  --page-max: calc(44rem + 2 * var(--page-gutter));
   --content-max: 38rem;
   --gutter: 20px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
