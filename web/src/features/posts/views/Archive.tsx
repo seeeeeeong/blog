@@ -19,9 +19,9 @@ export function Archive({ archive }: { archive: ArchiveData | null }) {
                   <time className="archive__date" dateTime={isoDay(post.publishedAt)}>
                     {monthDay(post.publishedAt)}
                   </time>
-                  <Link className="archive__link" href={postHref(post.slug)}>
-                    {post.title}
-                  </Link>
+                  <div className="archive__link">
+                    <Link href={postHref(post.slug)}>{post.title}</Link>
+                  </div>
                 </li>
               ))}
             </ul>

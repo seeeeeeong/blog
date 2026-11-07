@@ -77,6 +77,8 @@
   --banner: #2052bb;
   --banner-text: #f8f8f8;
   --heading: #535353;
+  --heading-hover: #777;
+  --heading-visited: #999;
   --accent: var(--blue-900);
   --background: var(--gray-100);
   --header: rgb(255 255 255 / 70%);
@@ -92,7 +94,7 @@
   --card-background: var(--gray-000);
   --inline-code-background: var(--gray-400);
   --inline-code-text: var(--gray-1100);
-  --code-text: var(--gray-1200);
+  --code-text: #333;
   --widget-background: var(--gray-000);
   --input-border: var(--gray-600);
   --shadow: none;

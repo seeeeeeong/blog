@@ -30,7 +30,7 @@ describe('compileMdx', () => {
     const out = await render('## 왜 세 번인가\n\ntext\n\n### Step `one`')
 
     expect(out).toContain(
-      '<h2 id="왜-세-번인가" class="anchor">왜 세 번인가<a href="#왜-세-번인가" aria-label="이 섹션 링크">#</a></h2>',
+      '<h2 id="왜-세-번인가" class="anchor">왜 세 번인가<a href="#왜-세-번인가"><span class="sr-only">이 섹션 링크</span><svg viewBox="0 0 16 8"',
     )
     expect(out).toContain('<h3 id="step-one" class="anchor">Step <code>one</code>')
   })

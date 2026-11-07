@@ -53,21 +53,22 @@
 }
 
 .banner__nav a:hover,
-.banner__nav button:hover,
-.banner__nav [aria-current="page"] {
+.banner__nav button:hover {
   opacity: 1;
 }
 
 .banner__social {
   float: right;
-  display: flex;
+  line-height: normal;
 }
 
+/* Inline blocks that clip, as the original's, so each sits on the baseline and the row is 38px tall. */
 .banner__social a {
-  display: grid;
-  place-items: center;
+  display: inline-block;
   width: 34px;
   height: 34px;
+  padding: 7px;
+  overflow: hidden;
   color: var(--banner-text);
   opacity: 0.75;
   transition: opacity 0.15s;
@@ -78,6 +79,7 @@
 }
 
 .banner__social svg {
+  display: block;
   width: 20px;
   height: 20px;
 }

@@ -13,12 +13,10 @@ type Props = {
   Content: MDXContent | null
   /** The components the body was compiled to allow. */
   components: MDXComponents
-  /** Shown away from its own page, so the title leads there. */
-  linked?: boolean
 }
 
 /** One post: when it came out, its title, its body and its neighbours in the topic. */
-export function PostArticle({ post, Content, components, linked = false }: Props) {
+export function PostArticle({ post, Content, components }: Props) {
   return (
     <article className="post">
       <header>
@@ -26,7 +24,7 @@ export function PostArticle({ post, Content, components, linked = false }: Props
           {fullDate(post.publishedAt)}
         </time>
         <h1 className="post__title">
-          {linked ? <Link href={postHref(post.slug)}>{post.title}</Link> : post.title}
+          <Link href={postHref(post.slug)}>{post.title}</Link>
         </h1>
       </header>
       <div className="prose">

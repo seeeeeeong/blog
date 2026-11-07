@@ -21,7 +21,7 @@ export default async function Home() {
   const Content = await compileMdx(post.bodyMdx, Object.keys(POST_COMPONENTS))
   return (
     <main>
-      <PostArticle post={post} Content={Content} components={POST_COMPONENTS} linked />
+      <PostArticle post={post} Content={Content} components={POST_COMPONENTS} />
     </main>
   )
 }
