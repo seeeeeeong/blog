@@ -46,10 +46,10 @@ class PostDraftCheckTest {
 
     @Test
     fun `what the blog cannot render is named, but not inside code`() {
-        val body = "# 제목\n\n| a | b |\n\nimport x\n\n{value}\n\n<div>글</div>\n\n<Mark>표시</Mark>"
+        val body = "# 제목\n\nimport x\n\n{value}\n\n<div>글</div>\n\n<Mark>표시</Mark>"
 
         assertThat(PostDraftCheck.of("메모", body).map { it.detail })
-            .containsExactly("# 제목", "표", "import 또는 export", "중괄호", "<div>", "</div>")
+            .containsExactly("# 제목", "import 또는 export", "중괄호", "<div>", "</div>")
         assertThat(PostDraftCheck.of("메모", "`<div>` 와 `{x}`\n\n```html\n<div>{x}</div>\n```")).isEmpty()
     }
 
@@ -57,5 +57,37 @@ class PostDraftCheckTest {
     fun `a code block left open is named`() {
         assertThat(PostDraftCheck.of("메모", "```java\nsave();"))
             .containsExactly(Finding(Kind.NOT_RENDERABLE, "닫히지 않은 코드 블록"))
+    }
+
+    @Test
+    fun `a table, a colored term and a quiz are what the blog renders`() {
+        val body =
+            "| 방식 | 지연 |\n|---|---|\n| UDP | 1 |\n\n<Tone color=\"teal\">SYN</Tone>\n\n" +
+                "<Quiz answers=\"3\">\n몇 번일까요?\n\n<Explanation>\n세 번입니다.\n</Explanation>\n</Quiz>"
+
+        assertThat(PostDraftCheck.of("메모", body)).isEmpty()
+    }
+
+    @Test
+    fun `a link to the blog's own post must name a published one`() {
+        val body = "[해시](/posts/hash-table#적재율) 와 [없는 글](/posts/nope)"
+
+        assertThat(PostDraftCheck.of("메모", body, published = setOf("hash-table")))
+            .containsExactly(Finding(Kind.LINK_UNKNOWN, "/posts/nope"))
+    }
+
+    @Test
+    fun `what breaks rendering or the shape goes back to the model, and the rest stays with the admin`() {
+        assertThat(Finding(Kind.NOT_RENDERABLE, "<div>").severity).isEqualTo(PostDraftCheck.Severity.ERROR)
+        assertThat(Finding(Kind.QUIZ, "없음").severity).isEqualTo(PostDraftCheck.Severity.WARNING)
+        assertThat(Finding(Kind.MEMO_NUMBER_MISSING, "30").severity).isEqualTo(PostDraftCheck.Severity.INFO)
+        assertThat(Finding(Kind.LENGTH, "900자").severity).isEqualTo(PostDraftCheck.Severity.INFO)
+    }
+
+    @Test
+    fun `a problem told to the model says what is wrong, where, and how to fix it`() {
+        val problem = PostDraftCheck.problemOf(Finding(Kind.SECTION_COUNT, "6개"))
+
+        assertThat(problem).startsWith("`##` 섹션이").contains("(\"6개\")", "3~5개로 맞추세요")
     }
 }

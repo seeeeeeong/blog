@@ -5,12 +5,14 @@ type Props = {
   draft: PostDraft
 }
 
+const SEVERITY = ['ERROR', 'WARNING', 'INFO']
+
 /** What the review and the machine checks found in a draft, most urgent first; empty groups do not show. */
 export function DraftReview({ draft }: Props) {
   const { review, checks, revised } = draft
   return (
     <div className="mreview">
-      {revised && <p>검토에서 나온 치명적 문제를 고쳐 한 번 다시 썼습니다.</p>}
+      {revised && <p>검토와 구조 점검에서 나온 문제를 고쳐 한 번 다시 썼습니다.</p>}
       {review === null && (
         <p className="aerror" role="alert">
           검토를 받지 못했습니다. 사실을 직접 확인해 주세요.
@@ -39,7 +41,9 @@ export function DraftReview({ draft }: Props) {
       <Group title="빠진 내용" items={review?.dropped.map((item) => [item])} />
       <Group
         title="기계 점검"
-        items={checks.map((check) => [`${checkLabel(check.kind)}: ${check.detail}`])}
+        items={[...checks]
+          .sort((a, b) => SEVERITY.indexOf(a.severity) - SEVERITY.indexOf(b.severity))
+          .map((check) => [`${checkLabel(check.kind)}: ${check.detail}`])}
       />
       <Group
         title="메모에 없이 추가된 사실"

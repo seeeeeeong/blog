@@ -9,11 +9,13 @@ import blog.domain.llm.service.LlmService
 import blog.domain.post.dto.request.PostDraftRequest
 import blog.domain.post.dto.response.PostDraftResponse
 import blog.domain.post.dto.response.PostDraftReviewResponse
+import blog.domain.post.entity.Post
 import blog.domain.post.entity.PostDraftCheck
 import blog.domain.post.entity.PostDraftPrompt
 import blog.domain.post.entity.PostDraftReviewPrompt
 import blog.domain.post.entity.PostGeneration
 import blog.domain.post.entity.PostStatus
+import blog.domain.post.entity.PostStructureCheck
 import blog.domain.post.repository.JdbcPostGenerations
 import blog.domain.post.repository.PostRepository
 import org.slf4j.LoggerFactory
@@ -26,10 +28,11 @@ import java.time.Clock
 import java.util.UUID
 
 /**
- * A post from the admin's memo: written, reviewed against the memo, and rewritten at most once for
- * what the review calls critical. The post stays as it was and each generation is only kept beside
- * it; no transaction is held while the model writes. Only the writing can fail the draft; a review
- * or a rewrite that fails leaves the draft as it was, and says so.
+ * A post from the admin's memo: written, checked for its shape, reviewed against the memo, and
+ * rewritten at most once for what the review calls critical and what the checks will not let pass.
+ * The post stays as it was and each generation is only kept beside it; no transaction is held while
+ * the model writes. Only the writing can fail the draft; a review or a rewrite that fails leaves the
+ * draft as it was, and says so.
  */
 @Service
 class PostDraftService(
@@ -45,6 +48,7 @@ class PostDraftService(
     private inner class Run(
         val title: String,
         val memo: String,
+        val published: Set<String>,
         val events: EventStream,
     ) {
         var inputTokens = 0
@@ -69,21 +73,35 @@ class PostDraftService(
     ) {
         val post = postRepository.findByIdOrNull(id) ?: throw BlogException(BlogError.POST_NOT_FOUND)
         if (post.status != PostStatus.DRAFT) throw BlogException(BlogError.POST_NOT_DRAFT)
-        val prompt = PostDraftPrompt.of(title = post.title, memo = request.memo)
+        val published = postRepository.findPublishedNewestFirst()
+        val prompt =
+            PostDraftPrompt.of(
+                title = post.title,
+                memo = request.memo,
+                published = published.map(::listed),
+                next = postRepository.findPublishedAfter(post.topicId, post.position)?.let(::listed),
+            )
         llmService.check()
-        val run = Run(post.title, request.memo, events)
+        val run =
+            Run(
+                title = post.title,
+                memo = request.memo,
+                published = published.map { it.slug }.toSet(),
+                events = events,
+            )
         events.stream {
             events.stage(WRITING)
             val written = run.ask(writing(prompt), events::text)
+            val firstChecks = checks(run, written.text)
             val first = review(run, written.text)
-            val revised = first?.takeIf { it.critical.isNotEmpty() }?.let { revise(run, written.text, it) }
-            val body = revised ?: written.text
+            val problems = problemsOf(first, firstChecks)
+            val revised = problems.takeIf { it.isNotEmpty() }?.let { revise(run, written.text, it) }
             val draft =
                 PostDraftResponse(
-                    bodyMdx = body,
+                    bodyMdx = revised ?: written.text,
                     review = if (revised == null) first else review(run, revised),
                     revised = revised != null,
-                    checks = PostDraftCheck.of(request.memo, body),
+                    checks = if (revised == null) firstChecks else checks(run, revised),
                     model = written.model,
                     inputTokens = run.inputTokens,
                     outputTokens = run.outputTokens,
@@ -125,6 +143,29 @@ class PostDraftService(
         }
     }
 
+    private fun listed(post: Post) =
+        PostDraftPrompt.Listed(slug = post.slug, title = post.title, summary = post.summary)
+
+    private fun checks(
+        run: Run,
+        body: String,
+    ): List<PostDraftCheck.Finding> = PostDraftCheck.of(run.memo, body, run.published) + PostStructureCheck.of(body)
+
+    /** What the one rewrite is told: the review's critical facts, then the worst of what the checks found. */
+    private fun problemsOf(
+        review: PostDraftReviewResponse?,
+        checks: List<PostDraftCheck.Finding>,
+    ): List<String> {
+        val facts = review?.critical.orEmpty().map { "[사실] ${it.problem} (\"${it.quote}\"): ${it.fix}" }
+        val shape =
+            checks
+                .filter { it.severity != PostDraftCheck.Severity.INFO }
+                .sortedBy { it.severity }
+                .take(MAX_SHAPE_PROBLEMS)
+                .map { "[구조] ${PostDraftCheck.problemOf(it)}" }
+        return facts + shape
+    }
+
     private fun writing(prompt: PostDraftPrompt.Messages) =
         LlmRequest(
             purpose = LlmRequest.Purpose.MEMO,
@@ -161,11 +202,10 @@ class PostDraftService(
     private fun revise(
         run: Run,
         body: String,
-        review: PostDraftReviewResponse,
+        problems: List<String>,
     ): String? {
         if (run.events.readerLeft) return null
         run.events.stage(REVISING)
-        val problems = review.critical.map { "${it.problem} (\"${it.quote}\"): ${it.fix}" }
         val prompt = PostDraftPrompt.revision(title = run.title, memo = run.memo, draft = body, problems = problems)
         return tolerating("rewrite") { run.ask(writing(prompt)).text }
     }
@@ -185,6 +225,8 @@ class PostDraftService(
         }
 
     private companion object {
+        // A rewrite told everything at once rewrites everything; the rest stay on the admin's list.
+        const val MAX_SHAPE_PROBLEMS = 6
         const val WRITING = "writing"
         const val REVIEWING = "reviewing"
         const val REVISING = "revising"

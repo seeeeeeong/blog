@@ -67,19 +67,36 @@ export type PostDraftReview = {
 }
 
 export type PostDraftCheckKind =
+  | 'NOT_RENDERABLE'
+  | 'HEADING_DEPTH'
+  | 'SECTION_COUNT'
+  | 'NO_CLOSING'
+  | 'NO_OPENING_QUESTION'
+  | 'NO_FIGURE'
+  | 'TRY_STEPS'
+  | 'STEPS_WITHOUT_WIDGET'
+  | 'QUIZ'
+  | 'LINK_UNKNOWN'
   | 'MEMO_CODE_CHANGED'
   | 'MEMO_NUMBER_MISSING'
   | 'LINK_ADDED'
-  | 'NOT_RENDERABLE'
+  | 'LENGTH'
+
+/** An error or a warning went back to the model in its one rewrite; an info is for the admin alone. */
+export type PostDraftCheck = {
+  kind: PostDraftCheckKind
+  detail: string
+  severity: 'ERROR' | 'WARNING' | 'INFO'
+}
 
 /** A body the model drafted from the admin's memo; nothing is saved until the editor saves it. */
 export type PostDraft = {
   bodyMdx: string
   /** Null when the review could not be had, which is not the same as nothing to report. */
   review: PostDraftReview | null
-  /** The model rewrote the draft once for what its first review called critical. */
+  /** The model rewrote the draft once for what its review and its checks would not let pass. */
   revised: boolean
-  checks: { kind: PostDraftCheckKind; detail: string }[]
+  checks: PostDraftCheck[]
   model: string
   inputTokens: number
   outputTokens: number

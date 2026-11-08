@@ -41,8 +41,14 @@ class PostDraftServiceTest(
     @Autowired private val jsonMapper: JsonMapper,
 ) {
     private companion object {
-        const val WRITTEN = "## 초안\n\n본문입니다."
-        const val REWRITTEN = "## 고친 글\n\n본문입니다."
+        const val WRITTEN =
+            "가령 연결을 처음 열 때 무슨 일이 생길까요?\n\n" +
+                "## 세 번의 인사\n\nSYN, SYN-ACK, ACK 를 주고받습니다.\n\n<WidgetIdea note=\"주고받는 순서\" />\n\n" +
+                "## 왜 세 번인가\n\n양쪽이 서로의 번호를 확인합니다.\n\n<WidgetIdea note=\"번호 확인\" />\n\n" +
+                "## 마무리\n\n세 번이면 충분합니다.\n\n" +
+                "<Quiz answers=\"3\">\n몇 번 주고받을까요? 숫자로 답하세요.\n\n<Explanation>\n세 번입니다.\n</Explanation>\n</Quiz>"
+        val REWRITTEN = WRITTEN.replace("세 번의 인사", "고친 인사")
+        const val MISSHAPEN = "## 초안\n\n본문입니다."
         const val CLEAN =
             """{"addedFacts": [{"claim": "주장", "quote": "인용", "confidence": "LOW"}], "corrections": [],
             "invented": [], "dropped": [], "critical": []}"""
@@ -60,7 +66,7 @@ class PostDraftServiceTest(
     fun clear() {
         jdbc.sql("truncate llm_call, post_generation, post_revision, post").update()
         fakeLlmGateway.reset()
-        fakeLlmGateway.answers("## 세 번의 인사\n\nSYN, SYN-ACK, ACK 를 주고받습니다.")
+        fakeLlmGateway.answers(WRITTEN)
     }
 
     private fun request(title: String = "객체, 설계") = PostCreateRequest(title = title, topicSlug = "spring")
@@ -112,7 +118,7 @@ class PostDraftServiceTest(
         assertThat(asked.user).contains("<title>\n객체, 설계\n</title>", "<memo>\nSYN 보내고 SYN-ACK 받고 ACK\n</memo>")
         assertThat(asked.maxTokens).isEqualTo(64_000)
         assertThat(fakeLlmGateway.inTransaction).containsOnly(false)
-        assertThat(draft.bodyMdx).isEqualTo("## 세 번의 인사\n\nSYN, SYN-ACK, ACK 를 주고받습니다.")
+        assertThat(draft.bodyMdx).isEqualTo(WRITTEN)
         assertThat(draft.model).isEqualTo("deepseek-flash")
         assertThat(draft.inputTokens).isEqualTo(2_000)
         assertThat(draft.outputTokens).isEqualTo(4_000)
@@ -137,7 +143,9 @@ class PostDraftServiceTest(
 
         val events = stream(post.id, "메모")
 
-        assertThat(events.names).containsExactly("stage", "text", "text", "text", "stage", "done")
+        assertThat(events.names.first()).isEqualTo("stage")
+        assertThat(events.names.drop(1).dropLast(2)).hasSizeGreaterThan(1).containsOnly("text")
+        assertThat(events.names.takeLast(2)).containsExactly("stage", "done")
         assertThat(events.text).isEqualTo(events.single("done").get("bodyMdx").asString())
     }
 
@@ -155,7 +163,7 @@ class PostDraftServiceTest(
         assertThat(review.thinking).isTrue()
         assertThat(review.maxTokens).isEqualTo(64_000)
         assertThat(review.system).contains("You check a draft")
-        assertThat(review.user).contains("<memo>\n메모\n</memo>", "<draft>\n## 세 번의 인사")
+        assertThat(review.user).contains("<memo>\n메모\n</memo>", "<draft>\n가령 연결을")
     }
 
     @Test
@@ -182,7 +190,7 @@ class PostDraftServiceTest(
         val draft = events.done(PostDraftResponse::class)
 
         assertThat(fakeLlmGateway.asked).hasSize(4)
-        assertThat(fakeLlmGateway.asked[2].user).contains("<problems>\n- 틀렸다 (\"인용\"): 고친다\n</problems>")
+        assertThat(fakeLlmGateway.asked[2].user).contains("<problems>\n- [사실] 틀렸다 (\"인용\"): 고친다\n</problems>")
         assertThat(draft.bodyMdx).isEqualTo(REWRITTEN)
         assertThat(draft.revised).isTrue()
         assertThat(draft.review?.critical).isEmpty()
@@ -290,7 +298,9 @@ class PostDraftServiceTest(
 
         val draft = draft(post.id, "풀 10개")
 
-        assertThat(draft.checks).containsExactly(PostDraftCheck.Finding(PostDraftCheck.Kind.MEMO_NUMBER_MISSING, "10"))
+        assertThat(draft.checks).contains(PostDraftCheck.Finding(PostDraftCheck.Kind.MEMO_NUMBER_MISSING, "10"))
+        assertThat(draft.checks.map { it.severity }).containsOnly(PostDraftCheck.Severity.INFO)
+        assertThat(fakeLlmGateway.asked).hasSize(2)
     }
 
     @Test
@@ -308,5 +318,88 @@ class PostDraftServiceTest(
         val unknown = UUID.fromString("019a3000-0000-7000-8000-00000000ffff")
 
         fails(BlogError.POST_NOT_FOUND) { draft(unknown, "메모") }
+    }
+
+    @Test
+    fun `a draft out of shape is rewritten once with what the checks found`() {
+        val post = adminPostService.create(request())
+        fakeLlmGateway.answersInTurn(MISSHAPEN, CLEAN, REWRITTEN, CLEAN)
+
+        val draft = draft(post.id, "메모")
+
+        assertThat(fakeLlmGateway.asked).hasSize(4)
+        assertThat(fakeLlmGateway.asked[2].user)
+            .contains("- [구조] `##` 섹션이", "- [구조] 마지막 섹션이 `## 마무리`가 아닙니다 (\"초안\")")
+        assertThat(draft.bodyMdx).isEqualTo(REWRITTEN)
+        assertThat(draft.revised).isTrue()
+        assertThat(draft.checks.map { it.severity }).doesNotContain(PostDraftCheck.Severity.WARNING)
+    }
+
+    @Test
+    fun `facts and shape go into the one rewrite together, the facts first`() {
+        val post = adminPostService.create(request())
+        fakeLlmGateway.answersInTurn(MISSHAPEN, CRITICAL, REWRITTEN, CLEAN)
+
+        draft(post.id, "메모")
+
+        val problems =
+            fakeLlmGateway.asked[2]
+                .user
+                .substringAfter("<problems>\n")
+                .lines()
+        assertThat(problems.first()).isEqualTo("- [사실] 틀렸다 (\"인용\"): 고친다")
+        assertThat(problems[1]).startsWith("- [구조] ")
+    }
+
+    @Test
+    fun `the checks send a draft back even when its review could not be had`() {
+        val post = adminPostService.create(request())
+        fakeLlmGateway.answersInTurn(MISSHAPEN, "문제 없습니다", REWRITTEN, CLEAN)
+
+        val draft = draft(post.id, "메모")
+
+        assertThat(draft.revised).isTrue()
+        assertThat(draft.bodyMdx).isEqualTo(REWRITTEN)
+    }
+
+    @Test
+    fun `the rewrite hears at most six of the checks' problems`() {
+        val post = adminPostService.create(request())
+        val headings = (1..4).joinToString("\n\n") { "### 원인 $it" }
+        fakeLlmGateway.answersInTurn("$MISSHAPEN\n\n$headings", CLEAN, REWRITTEN, CLEAN)
+
+        draft(post.id, "메모")
+
+        assertThat(
+            fakeLlmGateway.asked[2]
+                .user
+                .lines()
+                .count { it.startsWith("- [구조] ") },
+        ).isEqualTo(6)
+    }
+
+    @Test
+    fun `a link to a post that is not published goes back to be removed`() {
+        val post = adminPostService.create(request())
+        val linked = WRITTEN.replace("양쪽이", "[없는 글](/posts/nope)처럼 양쪽이")
+        fakeLlmGateway.answersInTurn(linked, CLEAN, REWRITTEN, CLEAN)
+
+        draft(post.id, "메모")
+
+        assertThat(fakeLlmGateway.asked[2].user)
+            .contains("- [구조] 발행된 글 목록에 없는 글로 링크했습니다 (\"/posts/nope\"): 링크를 지우고 글자만 남기세요")
+    }
+
+    @Test
+    fun `the writing is told the published posts and the one that comes next in the topic`() {
+        val drafted = adminPostService.create(request("TCP"))
+        val next = publish(adminPostService.create(request("HTTP")))
+
+        draft(drafted.id, "메모")
+
+        assertThat(fakeLlmGateway.asked.first().user).contains(
+            "<posts>\n/posts/${next.slug} | HTTP | 요약\n</posts>",
+            "<next>\n/posts/${next.slug} | HTTP | 요약\n</next>",
+        )
     }
 }

@@ -12,10 +12,20 @@ export function canDraft(memo: string): boolean {
 }
 
 const CHECK_LABELS: Record<PostDraftCheckKind, string> = {
+  NOT_RENDERABLE: '렌더링되지 않을 수 있음',
+  HEADING_DEPTH: '### 이하 제목',
+  SECTION_COUNT: '섹션 수가 3~5개가 아님',
+  NO_CLOSING: '마지막이 마무리가 아님',
+  NO_OPENING_QUESTION: '도입에 질문이 없음',
+  NO_FIGURE: '그림이 없는 섹션',
+  TRY_STEPS: '해 볼 단계가 1~3개가 아님',
+  STEPS_WITHOUT_WIDGET: '보이지 않는 그림에 단계',
+  QUIZ: '도전 문제',
+  LINK_UNKNOWN: '발행되지 않은 글로 링크',
   MEMO_CODE_CHANGED: '메모의 코드가 바뀜',
   MEMO_NUMBER_MISSING: '메모의 숫자가 빠짐',
   LINK_ADDED: '메모에 없는 링크',
-  NOT_RENDERABLE: '렌더링되지 않을 수 있음',
+  LENGTH: '본문 길이',
 }
 
 export function checkLabel(kind: PostDraftCheckKind): string {

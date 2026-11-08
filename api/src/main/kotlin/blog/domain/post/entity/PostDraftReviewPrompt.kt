@@ -53,7 +53,8 @@ object PostDraftReviewPrompt {
         `confidence`: LOW when you are not sure the claim is true.
         `corrections`: where the draft replaced something the memo got wrong.
         `invented`: an incident, measurement, setting, plan or feeling of the owner that the memo does not give.
-        An illustration presented as one is not invented.
+        An illustration presented as one is not invented, nor is a link to the blog's own post (`/posts/...`), which
+        is checked against the published posts elsewhere.
         `critical`: only what must change before publishing:
         - a technical claim that is false, including one copied from the memo
         - code that does not behave as the text says
