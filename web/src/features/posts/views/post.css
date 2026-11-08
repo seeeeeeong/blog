@@ -106,7 +106,7 @@
   padding: 0.3em 0;
 }
 
-.prose :is(p, li) code {
+.prose :is(p, li, th, td) code {
   display: inline-block;
   margin: 0 0.13em;
   padding: 0 0.4em;
@@ -137,8 +137,13 @@
   box-shadow: var(--border-color) 0 0 0 3px;
 }
 
+.prose .table {
+  margin: 1em 0;
+  overflow-x: auto;
+}
+
 .prose table {
-  margin: 1em auto;
+  margin: 0 auto;
   border-collapse: collapse;
   font-size: 1.2em;
   line-height: 1.6em;
@@ -147,6 +152,78 @@
 .prose td,
 .prose th {
   padding: 0 0.5em;
+}
+
+.quiz {
+  margin: 2.3em 0 2em;
+  padding: 0 1.2em 1em;
+  border-radius: 10px;
+  background: var(--widget-background);
+  box-shadow: var(--border-color) 0 0 0 3px;
+}
+
+.quiz__title {
+  padding-top: 0.8em;
+  color: var(--gray-900);
+  font-weight: var(--weight-500);
+}
+
+.quiz__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.6em;
+}
+
+.quiz__form input {
+  flex: 1 1 10em;
+  min-width: 0;
+  padding: 0.3em 0.6em;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-1);
+  background: var(--gray-000);
+  color: inherit;
+  font: inherit;
+}
+
+.quiz__form input[aria-invalid="true"] {
+  border-color: var(--red-1000);
+}
+
+.quiz__form button {
+  padding: 0.3em 0.9em;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-1);
+  background: var(--gray-200);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.quiz__form button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.prose .quiz__feedback {
+  min-height: 1.6em;
+  padding: 0.3em 0 0;
+}
+
+.quiz__feedback--right {
+  color: var(--green-900);
+}
+
+.quiz__feedback--wrong,
+.quiz__feedback--needs-number {
+  color: var(--red-1000);
+}
+
+.quiz__solution summary {
+  color: var(--gray-900);
+  font-weight: var(--weight-500);
+  cursor: pointer;
 }
 
 .callout {

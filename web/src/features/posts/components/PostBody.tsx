@@ -2,10 +2,17 @@ import type { MDXComponents, MDXContent } from 'mdx/types'
 import { CodeBlock } from '@/features/posts/components/CodeBlock'
 import { H2, H3 } from '@/features/posts/components/Heading'
 import { ProseLink } from '@/features/posts/components/ProseLink'
+import { ProseTable } from '@/features/posts/components/ProseTable'
 import { CODE_BLOCK } from '@/features/posts/utils/highlight'
 
 // What the renderer itself puts in a body, after the registry so a post cannot replace it.
-const RENDERER: MDXComponents = { h2: H2, h3: H3, a: ProseLink, [CODE_BLOCK]: CodeBlock }
+const RENDERER: MDXComponents = {
+  h2: H2,
+  h3: H3,
+  a: ProseLink,
+  table: ProseTable,
+  [CODE_BLOCK]: CodeBlock,
+}
 
 type Props = {
   /** The compiled body; null when it did not compile. */

@@ -2,7 +2,9 @@ import type { MDXComponents } from 'mdx/types'
 import { createElement, type ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { Explanation } from '@/features/posts/components/Explanation'
 import { PostBody } from '@/features/posts/components/PostBody'
+import { Quiz } from '@/features/posts/components/Quiz'
 import { compileMdx } from '@/features/posts/utils/mdx'
 
 const REGISTRY: MDXComponents = {
@@ -95,6 +97,41 @@ describe('compileMdx', () => {
 
     expect(out).toContain('<span class="mono">brainfuck</span>')
     expect(out).toContain('<span class="line">+[-]</span>')
+  })
+
+  it('renders a table in a frame of its own, its columns aligned', async () => {
+    const out = await render('| 방식 | 지연 |\n|:--|:-:|\n| `UDP` | 1 |')
+
+    expect(out).toContain('<div class="table"><table>')
+    expect(out).toContain('<th style="text-align:center">지연</th>')
+    expect(out).toContain('<td style="text-align:left"><code>UDP</code></td>')
+  })
+
+  it('takes no strikethrough from a range written with tildes', async () => {
+    const out = await render('1~10 사이, 20~30 사이')
+
+    expect(out).toBe('<p>1~10 사이, 20~30 사이</p>')
+  })
+
+  it('drops an element no one registered inside a table cell', async () => {
+    const out = await render('| a |\n|---|\n| <script>alert(1)</script> |')
+
+    expect(out).not.toContain('script')
+    expect(out).not.toContain('alert')
+  })
+
+  it('splits a quiz into its question and its explanation', async () => {
+    const out = await render(
+      '<Quiz answers="10|열">\n`0b1010`은 십진수로 얼마일까요?\n\n<Explanation>\n8 + 2 = 10입니다.\n</Explanation>\n</Quiz>',
+      { Quiz, Explanation },
+    )
+
+    expect(out).toContain(
+      '도전 문제</div><p><code>0b1010</code>은 십진수로 얼마일까요?</p><form class="quiz__form">',
+    )
+    expect(out).toContain(
+      '<summary>정답 보기</summary><p>정답: 10</p><p>8 + 2 = 10입니다.</p></details>',
+    )
   })
 
   it('answers null for a body that does not parse, and the page says so', async () => {

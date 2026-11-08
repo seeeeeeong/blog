@@ -4,6 +4,7 @@ import * as runtime from 'react/jsx-runtime'
 import { remarkHeadingIds } from '@/features/posts/utils/headings'
 import { rehypeCodeBlocks } from '@/features/posts/utils/highlight'
 import { remarkGuard } from '@/features/posts/utils/mdx-guard'
+import { remarkTables } from '@/features/posts/utils/tables'
 
 /**
  * A post's body as a component, compiled on the server for each request. Only the [allowed]
@@ -16,7 +17,7 @@ export async function compileMdx(
   try {
     const { default: Content } = await evaluate(source, {
       ...runtime,
-      remarkPlugins: [[remarkGuard, allowed], remarkHeadingIds],
+      remarkPlugins: [remarkTables, [remarkGuard, allowed], remarkHeadingIds],
       rehypePlugins: [rehypeCodeBlocks],
     })
     return Content
