@@ -173,6 +173,11 @@ class AdminPostControllerTest(
 
     @Test
     fun `a memo streams back as a body for the draft, which stays as it was until the admin saves`() {
+        val shaped =
+            "가령 연결을 열면 무슨 일이 생길까요?\n\n## 인사\n\n주고받습니다.\n\n<WidgetIdea note=\"순서\" />\n\n" +
+                "## 번호\n\n확인합니다.\n\n<WidgetIdea note=\"번호\" />\n\n## 마무리\n\n충분합니다.\n\n" +
+                "<Quiz answers=\"3\">\n몇 번일까요?\n\n<Explanation>\n세 번입니다.\n</Explanation>\n</Quiz>"
+        fakeLlmGateway.answers(shaped)
         val draft = draft()
         val id = draft.text("id")
 
@@ -181,10 +186,11 @@ class AdminPostControllerTest(
 
         assertThat(written.status).isEqualTo(200)
         assertThat(written.contentType).startsWith("text/event-stream")
-        assertThat(written.events.names).containsExactly("stage", "text", "text", "text", "stage", "done")
-        assertThat(written.events.text).isEqualTo(FakeLlmGateway.REPLY.text)
+        assertThat(written.events.names.first()).isEqualTo("stage")
+        assertThat(written.events.names.takeLast(2)).containsExactly("stage", "done")
+        assertThat(written.events.text).isEqualTo(shaped)
         val body = written.events.single("done")
-        assertThat(body.text("bodyMdx")).isEqualTo(FakeLlmGateway.REPLY.text)
+        assertThat(body.text("bodyMdx")).isEqualTo(shaped)
         assertThat(body.text("model")).isEqualTo("deepseek-flash")
         assertThat(body.get("inputTokens").asInt()).isEqualTo(2_000)
         assertThat(body.get("outputTokens").asInt()).isEqualTo(4_000)

@@ -73,9 +73,25 @@ describe('DraftReview', () => {
   })
 
   it('names a machine check and a rewrite', () => {
-    const out = render({ revised: true, checks: [{ kind: 'LINK_ADDED', detail: 'https://a.io' }] })
+    const out = render({
+      revised: true,
+      checks: [{ kind: 'LINK_ADDED', detail: 'https://a.io', severity: 'INFO' }],
+    })
 
     expect(out).toContain('한 번 다시 썼습니다')
     expect(out).toContain('메모에 없는 링크: https://a.io')
+  })
+
+  it('puts what broke rendering or the shape before what is only for the admin', () => {
+    const out = render({
+      checks: [
+        { kind: 'LENGTH', detail: '900자', severity: 'INFO' },
+        { kind: 'QUIZ', detail: '없음', severity: 'WARNING' },
+        { kind: 'NOT_RENDERABLE', detail: '<div>', severity: 'ERROR' },
+      ],
+    })
+
+    expect(out.indexOf('렌더링되지 않을 수 있음')).toBeLessThan(out.indexOf('도전 문제: 없음'))
+    expect(out.indexOf('도전 문제: 없음')).toBeLessThan(out.indexOf('본문 길이: 900자'))
   })
 })
