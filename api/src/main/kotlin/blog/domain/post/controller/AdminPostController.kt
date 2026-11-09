@@ -11,6 +11,7 @@ import blog.domain.post.dto.response.PostGenerationResponse
 import blog.domain.post.service.AdminPostService
 import blog.domain.post.service.PostDraftService
 import blog.domain.post.service.PostGenerationService
+import blog.domain.post.service.PostQuestionService
 import blog.domain.post.service.PostRewriteService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -32,6 +33,7 @@ class AdminPostController(
     private val postDraftService: PostDraftService,
     private val postRewriteService: PostRewriteService,
     private val postGenerationService: PostGenerationService,
+    private val postQuestionService: PostQuestionService,
 ) {
     @GetMapping
     fun list(): List<AdminPostSummaryResponse> = adminPostService.list()
@@ -67,6 +69,16 @@ class AdminPostController(
         events: EventStream,
     ) {
         postDraftService.draft(id, request, events)
+    }
+
+    /** What the model would ask the admin about a memo before writing it up, streamed; nothing is saved. */
+    @PostMapping("/{id}/questions")
+    fun questions(
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: PostDraftRequest,
+        events: EventStream,
+    ) {
+        postQuestionService.ask(id, request, events)
     }
 
     /** The drafts written for the post before, newest first, to open one again. */

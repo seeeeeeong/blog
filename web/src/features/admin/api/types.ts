@@ -101,6 +101,14 @@ export type PostDraft = {
   outputTokens: number
 }
 
+/** What the model would ask about a memo before writing it up; empty when the memo gives enough. */
+export type PostQuestions = {
+  questions: string[]
+  model: string
+  inputTokens: number
+  outputTokens: number
+}
+
 /** A draft written for the post before, with the memo it came from; kept so it can be opened again. */
 export type PostGeneration = {
   id: string

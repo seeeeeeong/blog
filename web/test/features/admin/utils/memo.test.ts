@@ -10,6 +10,7 @@ import {
   memoView,
   stageLabel,
   stageStep,
+  withAnswers,
 } from '@/features/admin/utils/memo'
 
 const DRAFT = {
@@ -120,5 +121,17 @@ describe('memoShown', () => {
   it('shows a draft opened again as a finished one, until a run takes its place', () => {
     expect(memoShown({ state: 'idle' }, DRAFT)).toMatchObject({ step: 'confirm', draft: DRAFT })
     expect(memoShown({ state: 'idle' }, null)).toMatchObject({ step: 'memo', draft: null })
+  })
+})
+
+describe('withAnswers', () => {
+  it('adds each answered question after the memo, and leaves the blank ones out', () => {
+    expect(withAnswers('느렸다\n', ['몇 ms였나요?', '버전은요?'], [' 300ms ', ' '])).toBe(
+      '느렸다\n\n보충 질문과 답:\n- Q: 몇 ms였나요?\n  A: 300ms',
+    )
+  })
+
+  it('leaves the memo as it was when nothing was answered', () => {
+    expect(withAnswers('느렸다', ['몇 ms였나요?'], [])).toBe('느렸다')
   })
 })

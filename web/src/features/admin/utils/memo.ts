@@ -70,6 +70,19 @@ export function memoProblem(memo: string, failure: string | null, stale: boolean
   return failure
 }
 
+/**
+ * The memo with the questions the admin answered, as the writer is told to read them; a question
+ * left blank is left out.
+ */
+export function withAnswers(memo: string, questions: string[], answers: string[]): string {
+  const answered = questions
+    .map((question, index) => ({ question, answer: answers[index]?.trim() ?? '' }))
+    .filter(({ answer }) => answer !== '')
+  if (answered.length === 0) return memo
+  const lines = answered.map(({ question, answer }) => `- Q: ${question}\n  A: ${answer}`)
+  return `${memo.trimEnd()}\n\n보충 질문과 답:\n${lines.join('\n')}`
+}
+
 const PREVIEW = 60
 
 /** A kept draft's memo in a line: its first words, cut short. */

@@ -38,6 +38,10 @@ describe('MemoDialog', () => {
     )
   })
 
+  it('offers to ask about the memo first, once it has text', () => {
+    expect(render()).toContain('<button class="pill" type="button" disabled="">Questions</button>')
+  })
+
   it('has no title of its own beside the From memo label', () => {
     const out = render()
 

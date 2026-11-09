@@ -6,6 +6,7 @@ import type {
   PostCreateRequest,
   PostDraft,
   PostGeneration,
+  PostQuestions,
   PostRewrite,
   PostRewriteRequest,
   PostSaveRequest,
@@ -49,6 +50,15 @@ export function draftFromMemo(
   signal?: AbortSignal,
 ): AsyncGenerator<StreamEvent<PostDraft>> {
   return adminStream(`${postPath(id)}/draft`, { memo }, signal)
+}
+
+/** What the model would ask about [memo] before writing it up, streamed; the api saves nothing. */
+export function askAboutMemo(
+  id: string,
+  memo: string,
+  signal?: AbortSignal,
+): AsyncGenerator<StreamEvent<PostQuestions>> {
+  return adminStream(`${postPath(id)}/questions`, { memo }, signal)
 }
 
 /** The drafts written for the post before, newest first. */
