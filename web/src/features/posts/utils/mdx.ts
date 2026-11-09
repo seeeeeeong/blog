@@ -1,6 +1,7 @@
 import { evaluate } from '@mdx-js/mdx'
 import type { MDXContent } from 'mdx/types'
 import * as runtime from 'react/jsx-runtime'
+import remarkCjkFriendly from 'remark-cjk-friendly'
 import { remarkHeadingIds } from '@/features/posts/utils/headings'
 import { rehypeCodeBlocks } from '@/features/posts/utils/highlight'
 import { remarkGuard } from '@/features/posts/utils/mdx-guard'
@@ -17,7 +18,7 @@ export async function compileMdx(
   try {
     const { default: Content } = await evaluate(source, {
       ...runtime,
-      remarkPlugins: [remarkTables, [remarkGuard, allowed], remarkHeadingIds],
+      remarkPlugins: [remarkCjkFriendly, remarkTables, [remarkGuard, allowed], remarkHeadingIds],
       rehypePlugins: [rehypeCodeBlocks],
     })
     return Content

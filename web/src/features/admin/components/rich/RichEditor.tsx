@@ -3,6 +3,8 @@
 import '@mdxeditor/editor/style.css'
 import '@/features/admin/components/rich/rich.css'
 import {
+  addSyntaxExtension$,
+  addToMarkdownExtension$,
   type CodeBlockEditorDescriptor,
   codeBlockPlugin,
   headingsPlugin,
@@ -15,10 +17,13 @@ import {
   type MDXEditorMethods,
   markdownShortcutPlugin,
   quotePlugin,
+  realmPlugin,
   type ToMarkdownOptions,
   tablePlugin,
   thematicBreakPlugin,
 } from '@mdxeditor/editor'
+import { cjkFriendlyToMarkdown } from 'mdast-util-to-markdown-cjk-friendly'
+import { cjkFriendlyExtension } from 'micromark-extension-cjk-friendly'
 import type { ComponentType, Ref } from 'react'
 import { blockMenuPlugin } from '@/features/admin/components/rich/blockMenu'
 import { CalloutBlock } from '@/features/admin/components/rich/CalloutBlock'
@@ -71,7 +76,16 @@ const TO_MARKDOWN: ToMarkdownOptions = {
   closeAtx: false,
 }
 
+// The reader parses `**용어(term)**는` as bold, so the editor reads and writes it the same way.
+const cjkFriendlyPlugin = realmPlugin({
+  init(realm) {
+    realm.pub(addSyntaxExtension$, cjkFriendlyExtension())
+    realm.pub(addToMarkdownExtension$, cjkFriendlyToMarkdown())
+  },
+})
+
 const PLUGINS = [
+  cjkFriendlyPlugin(),
   headingsPlugin({ allowedHeadingLevels: [2, 3] }),
   listsPlugin(),
   quotePlugin(),
