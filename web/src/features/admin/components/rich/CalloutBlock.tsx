@@ -3,7 +3,7 @@
 import { type JsxEditorProps, NestedLexicalEditor, useMdastNodeUpdater } from '@mdxeditor/editor'
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx'
 import { Icon } from '@/features/admin/components/Icon'
-import { attributeOf, withAttribute } from '@/features/admin/utils/blocks'
+import { asBlocks, attributeOf, withAttribute } from '@/features/admin/utils/blocks'
 
 /** `<Callout label>` as the reader sees it, its label and text edited in place. */
 export function CalloutBlock({ mdastNode }: JsxEditorProps) {
@@ -25,7 +25,7 @@ export function CalloutBlock({ mdastNode }: JsxEditorProps) {
       <NestedLexicalEditor<MdxJsxFlowElement>
         block
         contentEditableProps={{ className: 'rnested' }}
-        getContent={(node) => node.children}
+        getContent={(node) => asBlocks(node.children)}
         getUpdatedMdastNode={(node, children) => ({
           ...node,
           children: children as MdxJsxFlowElement['children'],
