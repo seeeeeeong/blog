@@ -15,6 +15,7 @@ export const BLOCK_SPECS: readonly BlockSpec[] = [
   { name: 'Callout', kind: 'flow', children: true, props: [text('label')] },
   { name: 'WidgetIdea', kind: 'flow', children: false, props: [text('note')] },
   { name: 'HandshakeWidget', kind: 'flow', children: false, props: [] },
+  { name: 'HashTableFigure', kind: 'flow', children: false, props: [text('part')] },
   { name: 'Mark', kind: 'text', children: true, props: [] },
   { name: 'Tone', kind: 'text', children: true, props: [text('color')] },
   { name: 'Seek', kind: 'text', children: true, props: [{ name: 'to', type: 'expression' }] },

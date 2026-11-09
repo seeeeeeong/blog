@@ -1,0 +1,168 @@
+.iso.hash-figure[data-theme="light"] {
+  --anatomy-card: var(--widget-background);
+  --anatomy-paper: var(--widget-background);
+  --anatomy-face: var(--gray-000);
+  --anatomy-top: var(--gray-000);
+  --anatomy-text: var(--text-primary);
+  --anatomy-strong: var(--text-primary);
+  --anatomy-muted: var(--text-tertiary);
+  --anatomy-shade-0: var(--gray-600);
+  --anatomy-shade-1: var(--gray-500);
+  --anatomy-shade-2: var(--gray-300);
+  --anatomy-shade-3: var(--gray-100);
+  --anatomy-lit-top: var(--gray-000);
+  --anatomy-lit-shade: var(--blue-400);
+  --anatomy-hi: var(--gray-1200);
+  --anatomy-mid: var(--gray-1000);
+  --anatomy-lo: var(--gray-800);
+  --anatomy-faint: var(--gray-600);
+  --anatomy-lit: var(--accent);
+  --anatomy-halo: var(--gray-1000);
+  --anatomy-dot: var(--gray-1200);
+  --anatomy-mono: var(--font-mono);
+}
+
+.hash-figure .iso-figure {
+  margin: 2.3em 0 2em;
+}
+
+.hash-figure .iso-plate {
+  overflow: hidden;
+  padding: 48px 24px 52px;
+  border-radius: 10px;
+  box-shadow: var(--border-color) 0 0 0 3px;
+}
+
+.hash-figure .iso-plate-corner[data-corner="title"] {
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+
+.hash-figure .iso-plate-corner[data-corner="hint"] {
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+
+.hash-figure .iso-legend {
+  color: var(--text-tertiary);
+}
+
+.hash-figure .iso-caption {
+  color: var(--text-primary);
+}
+
+.hash-puck {
+  --puck-top: var(--gray-200);
+  --puck-side-0: var(--gray-800);
+  --puck-side-1: var(--gray-700);
+  --puck-side-2: var(--gray-600);
+  --puck-side-3: var(--gray-500);
+}
+
+.hash-puck .iso-top {
+  fill: var(--puck-top);
+}
+
+.hash-puck .iso-shade[data-shade="0"] {
+  fill: var(--puck-side-0);
+}
+
+.hash-puck .iso-shade[data-shade="1"] {
+  fill: var(--puck-side-1);
+}
+
+.hash-puck .iso-shade[data-shade="2"] {
+  fill: var(--puck-side-2);
+}
+
+.hash-puck .iso-shade[data-shade="3"] {
+  fill: var(--puck-side-3);
+}
+
+.hash-puck[data-lit] {
+  --puck-top: var(--gray-000);
+  --puck-side-0: var(--blue-600);
+  --puck-side-1: var(--blue-600);
+  --puck-side-2: var(--blue-400);
+  --puck-side-3: var(--blue-400);
+}
+
+.hash-puck[data-lit] .iso-edge {
+  stroke: var(--anatomy-lit);
+}
+
+.hash-puck[data-lit] .iso-line[data-tone="lo"] {
+  stroke: var(--anatomy-lit);
+  opacity: 0.55;
+}
+
+.hash-figure__pucks {
+  transition: opacity 320ms var(--anatomy-ease);
+}
+
+.hash-figure__pucks[data-fading] {
+  opacity: 0;
+}
+
+.hash-figure__needle {
+  fill: var(--anatomy-lit);
+  stroke-width: 0.4px;
+}
+
+.hash-figure__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.hash-figure__controls .slider {
+  min-width: 160px;
+}
+
+.hash-figure__step {
+  flex: none;
+  height: 30px;
+  padding: 0 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 15px;
+  background: var(--gray-000);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: var(--weight-500);
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.hash-figure__step:hover {
+  border-color: oklch(from var(--accent) l c h / 50%);
+}
+
+.hash-figure__step:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hash-figure__pucks {
+    transition: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .hash-figure .iso-plate {
+    padding: 44px 12px 64px;
+  }
+
+  .hash-figure__stage {
+    overflow: hidden;
+  }
+
+  .hash-figure__stage .iso-svg {
+    width: 132%;
+    margin: -6% -16% -5%;
+  }
+}
