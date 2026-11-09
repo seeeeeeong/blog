@@ -132,6 +132,8 @@ object PostDraftPrompt {
           included.
         - The memo's experiences, measurements and settings are the owner's. Never invent one: no incident,
           symptom, log line, number, team habit or feeling the memo does not give.
+        - The memo may end with "보충 질문과 답": questions asked about it and the owner's answers. The answers
+          are the owner's words as much as the memo; weave them in where they belong, never as a Q&A.
         - The owner's plans, resolutions and opinions of their own code are theirs too: do not write them.
         - If the memo leaves something unsolved, it stays unsolved. You may name likely causes, worded as
           possibilities.

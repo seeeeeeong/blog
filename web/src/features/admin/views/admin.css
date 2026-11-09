@@ -546,6 +546,33 @@ textarea.eprop__value {
   resize: vertical;
 }
 
+.mquestions {
+  display: grid;
+  gap: 0.8em;
+  margin: 1em 0 0;
+  padding-left: 1.4em;
+}
+
+.mquestions label {
+  display: grid;
+  gap: 0.35em;
+}
+
+.mquestions textarea {
+  padding: 0.4em 0.6em;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-1);
+  background: var(--gray-000);
+  color: inherit;
+  font: inherit;
+  resize: vertical;
+}
+
+.mquestions__none {
+  margin: 1em 0 0;
+  color: var(--gray-1000);
+}
+
 .mkept {
   margin-top: 1em;
 }

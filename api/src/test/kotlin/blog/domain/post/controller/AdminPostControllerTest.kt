@@ -198,6 +198,26 @@ class AdminPostControllerTest(
     }
 
     @Test
+    fun `a memo comes back with what the model would ask the admin, and none when it is not JSON`() {
+        val id = draft().text("id")
+        fakeLlmGateway.answers("생각해 보니\n{\"questions\": [\"몇 ms였나요?\", \" \", \"어떤 버전인가요?\"]}")
+
+        val asked = admin.post("/api/admin/posts/$id/questions", mapOf("memo" to "느렸다"))
+        fakeLlmGateway.answers("질문 없음")
+        val none = admin.post("/api/admin/posts/$id/questions", mapOf("memo" to "느렸다"))
+
+        assertThat(asked.status).isEqualTo(200)
+        val questions: List<String> =
+            asked.events
+                .single("done")
+                .get("questions")
+                .values()
+                .map { it.asString() }
+        assertThat(questions).containsExactly("몇 ms였나요?", "어떤 버전인가요?")
+        assertThat(none.events.single("done").get("questions")).isEmpty()
+    }
+
+    @Test
     fun `a draft written before can be opened again from the post's generations`() {
         val id = draft().text("id")
         admin.post("/api/admin/posts/$id/draft", mapOf("memo" to "SYN, SYN-ACK, ACK 순서"))
