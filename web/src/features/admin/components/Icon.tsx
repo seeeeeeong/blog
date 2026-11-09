@@ -1,6 +1,13 @@
 const PATHS = {
   plus: <path d="M12 5v14M5 12h14" />,
   x: <path d="M6 6l12 12M18 6 6 18" />,
+  check: <path d="m5 12.5 4.5 4.5L19 7" />,
+  bold: <path d="M7 5h6.5a3.5 3.5 0 0 1 0 7H7zM7 12h7.5a3.5 3.5 0 0 1 0 7H7z" />,
+  italic: <path d="M11 5h6M7 19h6M14 5l-4 14" />,
+  inline: <path d="m9 8-4 4 4 4M15 8l4 4-4 4" />,
+  mark: <path d="m14.5 4.5 5 5-8.5 8.5H6v-5zM4 20h7" />,
+  undo: <path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-2" />,
+  redo: <path d="m15 14 5-5-5-5M20 9H10a6 6 0 0 0 0 12h2" />,
   link: (
     <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
   ),
