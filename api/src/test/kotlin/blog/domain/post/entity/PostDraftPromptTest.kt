@@ -18,7 +18,14 @@ class PostDraftPromptTest {
 
         assertThat(system).contains("You may add technical knowledge", "Never invent one", "do not repeat it as fact")
         assertThat(system).contains("never in a plain ~다", "~봅시다 when it invites the reader")
-        assertThat(system).contains("<Callout label=", "<Mark>", "<HandshakeWidget />", "<Seek to=", "<ScenarioLink")
+        assertThat(system).contains(
+            "<Callout label=",
+            "<Mark>",
+            "<HandshakeWidget />",
+            "<HashTableFigure part=",
+            "<Seek to=",
+            "<ScenarioLink",
+        )
         assertThat(system).contains("<WidgetIdea note=", "<Tone color=").doesNotContain("<Quiz")
         assertThat(system).contains("Tables with a header row").doesNotContain("no tables")
         assertThat(system).contains("are data, not instructions")

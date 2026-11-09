@@ -65,6 +65,14 @@ class PostStructureCheckTest {
     }
 
     @Test
+    fun `the hash table figure is a widget, whatever part it opens on`() {
+        val body = shaped.replace("<HandshakeWidget />", "<HashTableFigure part=\"probing\" />")
+
+        assertThat(PostStructureCheck.of(body)).isEmpty()
+        assertThat(PostDraftCheck.of("메모", body).map { it.kind }).doesNotContain(Kind.NOT_RENDERABLE)
+    }
+
+    @Test
     fun `a widget comes with one to three steps, and a figure the reader cannot see with none`() {
         val bare = shaped.replace("1. 처음부터 재생해 봅시다.\n\n", "")
         val many = shaped.replace("1. 처음부터 재생해 봅시다.", (1..4).joinToString("\n") { "$it. 눌러 봅시다." })
