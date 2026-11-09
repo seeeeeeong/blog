@@ -112,6 +112,17 @@ describe('RichEditor', () => {
     expect(markdownOf(second.ref)).toBe(written)
   })
 
+  it('opens a callout written on one line, its words in its text', async () => {
+    const source = '<Callout label="핵심">프록시를 거쳐야 <Mark>적용</Mark>됩니다.</Callout>\n'
+    const { host, ref, onUnreadable } = await open(source)
+
+    expect(onUnreadable).not.toHaveBeenCalled()
+    expect(host.querySelector('.rcallout .rnested')?.textContent).toBe(
+      '프록시를 거쳐야 적용됩니다.',
+    )
+    expect(markdownOf(ref)).toContain('<Callout label="핵심">')
+  })
+
   it('says so for MDX it cannot read, and leaves it as it was', async () => {
     const { onUnreadable, onChange } = await open('[링크][주소]\n\n[주소]: https://example.com\n')
 

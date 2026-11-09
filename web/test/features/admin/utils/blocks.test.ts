@@ -1,6 +1,7 @@
 import type { MdastJsx } from '@mdxeditor/editor'
 import { describe, expect, it } from 'vitest'
 import {
+  asBlocks,
   attributeOf,
   BLOCK_SPECS,
   isLinkable,
@@ -129,5 +130,24 @@ describe('isLinkable', () => {
     expect(isLinkable('example.com')).toBe(false)
     expect(isLinkable('https://exa mple.com')).toBe(false)
     expect(isLinkable('')).toBe(false)
+  })
+})
+
+describe('asBlocks', () => {
+  it("puts words written on the tag's own line in a paragraph, and keeps blocks as they are", () => {
+    const word = { type: 'text' as const, value: '한 줄' }
+    const mark = {
+      type: 'mdxJsxTextElement' as const,
+      name: 'Mark',
+      attributes: [],
+      children: [{ type: 'text' as const, value: '강조' }],
+    }
+    const paragraph = { type: 'paragraph' as const, children: [word] }
+
+    expect(asBlocks([word, mark] as MdastJsx['children'])).toEqual([
+      { type: 'paragraph', children: [word, mark] },
+    ])
+    expect(asBlocks([paragraph])).toEqual([paragraph])
+    expect(asBlocks([])).toEqual([])
   })
 })

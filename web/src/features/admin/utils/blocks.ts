@@ -1,4 +1,5 @@
 import type { JsxProperties, JsxPropertyDescriptor, MdastJsx } from '@mdxeditor/editor'
+import type { BlockContent, PhrasingContent } from 'mdast'
 import type { MdxJsxAttribute } from 'mdast-util-mdx-jsx'
 
 /** A component a post may hold, as the block editor knows it: the names the reader registers. */
@@ -165,6 +166,41 @@ export function tagSource(node: MdastJsx): string {
   })
   const open = `<${[node.name ?? '', ...attributes].join(' ')}`
   return node.children.length > 0 ? `${open}>…</${node.name ?? ''}>` : `${open} />`
+}
+
+const BLOCKS = new Set([
+  'paragraph',
+  'heading',
+  'list',
+  'blockquote',
+  'code',
+  'table',
+  'thematicBreak',
+  'html',
+  'mdxJsxFlowElement',
+])
+
+/**
+ * A block's children as blocks: words written on the tag's own line, as in
+ * `<Callout>한 줄</Callout>`, come as bare text, which a block's editor cannot hold outside a paragraph.
+ */
+export function asBlocks(children: MdastJsx['children']): BlockContent[] {
+  const blocks: BlockContent[] = []
+  let words: PhrasingContent[] = []
+  const flush = () => {
+    if (words.length > 0) blocks.push({ type: 'paragraph', children: words })
+    words = []
+  }
+  for (const child of children as (BlockContent | PhrasingContent)[]) {
+    if (BLOCKS.has(child.type)) {
+      flush()
+      blocks.push(child as BlockContent)
+    } else {
+      words.push(child as PhrasingContent)
+    }
+  }
+  flush()
+  return blocks
 }
 
 /** The colors `<Tone>` takes, as the reader's Tone draws them. */
