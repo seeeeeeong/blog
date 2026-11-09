@@ -165,7 +165,8 @@
   color: var(--orange-900);
 }
 
-.rslash__tile--widget {
+.rslash__tile--widget,
+.rslash__tile--hash {
   color: var(--green-900);
 }
 
