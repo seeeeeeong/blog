@@ -60,12 +60,17 @@ class PostDraftCheckTest {
     }
 
     @Test
-    fun `a table, a colored term and a quiz are what the blog renders`() {
-        val body =
-            "| 방식 | 지연 |\n|---|---|\n| UDP | 1 |\n\n<Tone color=\"teal\">SYN</Tone>\n\n" +
-                "<Quiz answers=\"3\">\n몇 번일까요?\n\n<Explanation>\n세 번입니다.\n</Explanation>\n</Quiz>"
+    fun `a table and a colored term are what the blog renders`() {
+        val body = "| 방식 | 지연 |\n|---|---|\n| UDP | 1 |\n\n<Tone color=\"teal\">SYN</Tone>"
 
         assertThat(PostDraftCheck.of("메모", body)).isEmpty()
+    }
+
+    @Test
+    fun `a quiz is not something the blog renders`() {
+        val body = "<Quiz answers=\"3\">\n몇 번일까요?\n</Quiz>"
+
+        assertThat(PostDraftCheck.of("메모", body).map { it.kind }).contains(Kind.NOT_RENDERABLE)
     }
 
     @Test
@@ -79,7 +84,7 @@ class PostDraftCheckTest {
     @Test
     fun `what breaks rendering or the shape goes back to the model, and the rest stays with the admin`() {
         assertThat(Finding(Kind.NOT_RENDERABLE, "<div>").severity).isEqualTo(PostDraftCheck.Severity.ERROR)
-        assertThat(Finding(Kind.QUIZ, "없음").severity).isEqualTo(PostDraftCheck.Severity.WARNING)
+        assertThat(Finding(Kind.NO_FIGURE, "체이닝").severity).isEqualTo(PostDraftCheck.Severity.WARNING)
         assertThat(Finding(Kind.MEMO_NUMBER_MISSING, "30").severity).isEqualTo(PostDraftCheck.Severity.INFO)
         assertThat(Finding(Kind.LENGTH, "900자").severity).isEqualTo(PostDraftCheck.Severity.INFO)
     }

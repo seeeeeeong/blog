@@ -88,16 +88,13 @@ object PostDraftPrompt {
           without).
         - Where a widget would help the reader but none of these fits,
           `<WidgetIdea note="what it would show" />` on a line of its own.
-        - `<Quiz answers="10|열">`, the question, `<Explanation>` with the solution `</Explanation>`, then
-          `</Quiz>`: the reader types an answer, and `answers` lists every accepted form, separated by `|`,
-          the first one shown as the answer.
         - No other components, no HTML tags, no imports or exports, no other `{}` expressions.
         - Do not wrap the whole answer in a code fence.
         """.trimIndent()
 
     val STRUCTURE_RULES =
         """
-        Every post explains one concept in this shape; code counts rules 2, 4 and 6 and sends a miss back once:
+        Every post explains one concept in this shape; code counts rules 2 and 4 and sends a miss back once:
         1. Open with a concrete case in a paragraph or two with no heading, and end the opening with the one
            question this post answers, written as a question that ends in "?" ("왜 ~할까요?"), not as a
            sentence about it. A case the memo gives is told as the memo tells it, with no step, attempt or
@@ -111,15 +108,13 @@ object PostDraftPrompt {
            the reader cannot see it yet. The text around a figure reads on without it.
         5. `## 마무리` says the point in a sentence or two. When <next> names a post, one more sentence leads to
            it with a link; otherwise promise no next post, since the owner has planned none.
-        6. The body ends with one `<Quiz>` about what the post explained, answered with a number or a short
-           word; the question says which ("숫자로 답하세요"). Nothing comes after it.
-        7. Aim for 1,000 to 1,500 characters of prose, code left out. Never drop a memo point to fit: write
+        6. Aim for 1,000 to 1,500 characters of prose, code left out. Never drop a memo point to fit: write
            what the memo needs, and the owner decides whether to split the post.
         """.trimIndent()
 
     private const val CHECKLIST =
         "Before answering, check the shape: an opening that ends in a question mark; 3 to 5 `##` sections and no " +
-            "`###`; a figure in each section but the last, which is `## 마무리`; one `<Quiz>` as the very end."
+            "`###`; a figure in each section but the last, which is `## 마무리`."
 
     private val SYSTEM =
         """
@@ -170,8 +165,8 @@ object PostDraftPrompt {
         You fix the problems a review and the blog's checks found in a draft of a post for the owner's computer
         science blog, in Korean. A problem marked [사실] is about what the draft claims; one marked [구조] is
         about the post's shape, set out below. Fix each problem listed and change nothing else: keep every other
-        sentence as it is. A [구조] fix may move, split or merge sections, add a missing `## 마무리` or
-        `<Quiz>`, or turn a heading into plain text, using what the draft already says. Add no new claim beyond
+        sentence as it is. A [구조] fix may move, split or merge sections, add a missing `## 마무리`, or turn a
+        heading into plain text, using what the draft already says. Add no new claim beyond
         what a fix needs, and invent no experience of the owner's. Answer with the whole post.
 
         """.trimIndent() + "\n" + STRUCTURE_RULES + "\n\n" + MDX_RULES + "\n\n" +

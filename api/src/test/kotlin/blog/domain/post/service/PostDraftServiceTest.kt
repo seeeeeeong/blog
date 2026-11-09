@@ -45,8 +45,7 @@ class PostDraftServiceTest(
             "가령 연결을 처음 열 때 무슨 일이 생길까요?\n\n" +
                 "## 세 번의 인사\n\nSYN, SYN-ACK, ACK 를 주고받습니다.\n\n<WidgetIdea note=\"주고받는 순서\" />\n\n" +
                 "## 왜 세 번인가\n\n양쪽이 서로의 번호를 확인합니다.\n\n<WidgetIdea note=\"번호 확인\" />\n\n" +
-                "## 마무리\n\n세 번이면 충분합니다.\n\n" +
-                "<Quiz answers=\"3\">\n몇 번 주고받을까요? 숫자로 답하세요.\n\n<Explanation>\n세 번입니다.\n</Explanation>\n</Quiz>"
+                "## 마무리\n\n세 번이면 충분합니다."
         val REWRITTEN = WRITTEN.replace("세 번의 인사", "고친 인사")
         const val MISSHAPEN = "## 초안\n\n본문입니다."
         const val CLEAN =
