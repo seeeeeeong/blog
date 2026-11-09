@@ -28,6 +28,14 @@ describe('compileMdx', () => {
     expect(out).toContain('<ol>\n<li>first</li>')
   })
 
+  it('bolds a term that ends in punctuation even with a Korean particle right after it', async () => {
+    const out = await render('**가상 메모리(virtual memory)**는 **"인용"**을 씁니다.')
+
+    expect(out).toContain(
+      '<p><strong>가상 메모리(virtual memory)</strong>는 <strong>&quot;인용&quot;</strong>을 씁니다.</p>',
+    )
+  })
+
   it('gives each section heading an id and a link to itself', async () => {
     const out = await render('## 왜 세 번인가\n\ntext\n\n### Step `one`')
 

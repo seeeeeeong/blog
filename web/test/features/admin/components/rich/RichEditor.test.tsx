@@ -116,6 +116,7 @@ describe('RichEditor', () => {
 
     expect(await html(written)).toBe(await html(POST))
     expect(written).toContain('<Quiz answers="3|세 개">')
+    expect(written).toContain('**3-way 핸드셰이크(three-way handshake)**는')
     expect(written).toContain('- 하나')
 
     const second = await open(written)
