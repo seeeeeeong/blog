@@ -1,12 +1,10 @@
 'use client'
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
+import { activeEditor$, useCellValue } from '@mdxeditor/editor'
 import {
   $getSelection,
   $isRangeSelection,
-  BLUR_COMMAND,
-  COMMAND_PRIORITY_LOW,
-  FOCUS_COMMAND,
   FORMAT_TEXT_COMMAND,
   REDO_COMMAND,
   UNDO_COMMAND,
@@ -35,34 +33,35 @@ function useKeyboardHeight() {
   return height
 }
 
-/** On a phone, a row over the keyboard while writing: the slash menu, bold, italic, undo. */
+/**
+ * On a phone, a row over the keyboard while writing in the page or in a block: the slash menu,
+ * bold, italic, undo.
+ */
 export function KeyBar() {
-  const [editor] = useLexicalComposerContext()
+  const [page] = useLexicalComposerContext()
+  const editor = useCellValue(activeEditor$) ?? page
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [focused, setFocused] = useState(false)
   const keyboard = useKeyboardHeight()
 
+  useEffect(
+    () => page.registerRootListener((root) => setAnchor(root?.parentElement ?? null)),
+    [page],
+  )
+
   useEffect(() => {
-    const focus = editor.registerCommand(
-      FOCUS_COMMAND,
-      () => {
-        setFocused(true)
-        return false
-      },
-      COMMAND_PRIORITY_LOW,
-    )
-    const blur = editor.registerCommand(
-      BLUR_COMMAND,
-      () => {
-        setFocused(false)
-        return false
-      },
-      COMMAND_PRIORITY_LOW,
-    )
-    return () => {
-      focus()
-      blur()
+    if (!anchor) return
+    const follow = (event: FocusEvent) => {
+      const next = event.type === 'focusin' ? event.target : event.relatedTarget
+      setFocused(next instanceof HTMLElement && next.isContentEditable && anchor.contains(next))
     }
-  }, [editor])
+    anchor.addEventListener('focusin', follow)
+    anchor.addEventListener('focusout', follow)
+    return () => {
+      anchor.removeEventListener('focusin', follow)
+      anchor.removeEventListener('focusout', follow)
+    }
+  }, [anchor])
 
   if (!focused) return null
 

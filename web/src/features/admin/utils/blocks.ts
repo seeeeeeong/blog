@@ -91,12 +91,16 @@ export const SLASH_ITEMS: readonly SlashItem[] = [
   },
 ]
 
+// Inside a block such as a Callout, a section or another component would break the post's shape.
+const INSIDE_A_BLOCK: ReadonlySet<SlashKey> = new Set(['ol', 'ul', 'code'])
+
 /** The items whose name, hint or other words hold the query, ignoring case and spaces. */
-export function slashItems(query: string | null): SlashItem[] {
+export function slashItems(query: string | null, insideBlock = false): SlashItem[] {
   const q = (query ?? '').replace(/\s+/g, '').toLowerCase()
-  if (!q) return [...SLASH_ITEMS]
-  return SLASH_ITEMS.filter((item) =>
-    `${item.label} ${item.hint} ${item.aliases}`.replace(/\s+/g, '').toLowerCase().includes(q),
+  return SLASH_ITEMS.filter(
+    (item) =>
+      (!insideBlock || INSIDE_A_BLOCK.has(item.key)) &&
+      `${item.label} ${item.hint} ${item.aliases}`.replace(/\s+/g, '').toLowerCase().includes(q),
   )
 }
 
