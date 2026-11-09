@@ -743,8 +743,13 @@ select.ainput {
     overflow-x: auto;
   }
 
+  .ebar__bar > * {
+    flex: none;
+  }
+
   .ebar__save {
     min-width: 0;
+    white-space: nowrap;
   }
 }
 

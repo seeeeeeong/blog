@@ -1,10 +1,11 @@
 import { Icon } from '@/features/admin/components/Icon'
 import { type Busy, saveLabel } from '@/features/admin/utils/editor'
 
-export type EditorMode = 'write' | 'preview'
+export type EditorMode = 'rich' | 'mdx' | 'preview'
 
 const MODES: { mode: EditorMode; label: string }[] = [
-  { mode: 'write', label: 'Write' },
+  { mode: 'rich', label: 'Rich' },
+  { mode: 'mdx', label: 'MDX' },
   { mode: 'preview', label: 'Preview' },
 ]
 

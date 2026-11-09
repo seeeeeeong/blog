@@ -1,0 +1,211 @@
+import type { JsxProperties, JsxPropertyDescriptor, MdastJsx } from '@mdxeditor/editor'
+import type { MdxJsxAttribute } from 'mdast-util-mdx-jsx'
+
+/** A component a post may hold, as the block editor knows it: the names the reader registers. */
+export type BlockSpec = {
+  name: string
+  kind: 'flow' | 'text'
+  children: boolean
+  props: JsxPropertyDescriptor[]
+}
+
+const text = (name: string): JsxPropertyDescriptor => ({ name, type: 'string' })
+
+export const BLOCK_SPECS: readonly BlockSpec[] = [
+  { name: 'Callout', kind: 'flow', children: true, props: [text('label')] },
+  { name: 'Quiz', kind: 'flow', children: true, props: [text('answers')] },
+  { name: 'Explanation', kind: 'flow', children: true, props: [] },
+  { name: 'WidgetIdea', kind: 'flow', children: false, props: [text('note')] },
+  { name: 'HandshakeWidget', kind: 'flow', children: false, props: [] },
+  { name: 'Mark', kind: 'text', children: true, props: [] },
+  { name: 'Tone', kind: 'text', children: true, props: [text('color')] },
+  { name: 'Seek', kind: 'text', children: true, props: [{ name: 'to', type: 'expression' }] },
+  { name: 'ScenarioLink', kind: 'text', children: true, props: [text('to')] },
+]
+
+export type SlashKey =
+  | 'quiz'
+  | 'callout'
+  | 'idea'
+  | 'widget'
+  | 'h2'
+  | 'ol'
+  | 'ul'
+  | 'table'
+  | 'code'
+
+export type SlashItem = {
+  key: SlashKey
+  label: string
+  hint: string
+  group: 'component' | 'basic'
+  /** Other words it is found by, Korean and English. */
+  aliases: string
+  shortcut?: string
+}
+
+export const SLASH_ITEMS: readonly SlashItem[] = [
+  {
+    key: 'quiz',
+    label: '도전 문제',
+    hint: '정답과 풀이가 있는 문제',
+    group: 'component',
+    aliases: 'quiz 퀴즈 문제',
+  },
+  {
+    key: 'callout',
+    label: 'Callout',
+    hint: '핵심을 따로 세웁니다',
+    group: 'component',
+    aliases: 'callout 핵심 콜아웃',
+  },
+  {
+    key: 'idea',
+    label: '그림 아이디어',
+    hint: '나중에 그릴 그림의 메모',
+    group: 'component',
+    aliases: 'widgetidea 그림 위젯 아이디어',
+  },
+  {
+    key: 'widget',
+    label: 'HandshakeWidget',
+    hint: 'TCP 연결 애니메이션',
+    group: 'component',
+    aliases: 'handshake tcp 위젯 핸드셰이크',
+  },
+  {
+    key: 'h2',
+    label: '섹션 제목',
+    hint: '글의 한 섹션',
+    group: 'basic',
+    aliases: 'heading h2 제목 섹션',
+    shortcut: '##',
+  },
+  {
+    key: 'ol',
+    label: '번호 목록',
+    hint: '~해 봅시다 단계',
+    group: 'basic',
+    aliases: 'ordered list 번호 단계',
+    shortcut: '1.',
+  },
+  {
+    key: 'ul',
+    label: '목록',
+    hint: '점 목록',
+    group: 'basic',
+    aliases: 'bullet list 목록',
+    shortcut: '-',
+  },
+  { key: 'table', label: '표', hint: '머리글 행이 있는 표', group: 'basic', aliases: 'table 표' },
+  {
+    key: 'code',
+    label: '코드 블록',
+    hint: '언어와 파일 이름',
+    group: 'basic',
+    aliases: 'code 코드',
+    shortcut: '```',
+  },
+]
+
+/** The items whose name, hint or other words hold the query, ignoring case and spaces. */
+export function slashItems(query: string | null): SlashItem[] {
+  const q = (query ?? '').replace(/\s+/g, '').toLowerCase()
+  if (!q) return [...SLASH_ITEMS]
+  return SLASH_ITEMS.filter((item) =>
+    `${item.label} ${item.hint} ${item.aliases}`.replace(/\s+/g, '').toLowerCase().includes(q),
+  )
+}
+
+type Template = { name: string; props: JsxProperties; children: MdastJsx['children'] }
+
+// An empty paragraph does not survive the import, so each starts with words to write over.
+const paragraph = (value: string) => ({
+  type: 'paragraph' as const,
+  children: [{ type: 'text' as const, value }],
+})
+
+/** What each component starts as when the slash menu puts it in. */
+export const TEMPLATES: Record<'quiz' | 'callout' | 'idea' | 'widget', Template> = {
+  quiz: {
+    name: 'Quiz',
+    props: { answers: '' },
+    children: [
+      paragraph('문제'),
+      {
+        type: 'mdxJsxFlowElement',
+        name: 'Explanation',
+        attributes: [],
+        children: [paragraph('풀이')],
+      },
+    ],
+  },
+  callout: { name: 'Callout', props: { label: '핵심' }, children: [paragraph('핵심')] },
+  idea: { name: 'WidgetIdea', props: { note: '' }, children: [] },
+  widget: { name: 'HandshakeWidget', props: {}, children: [] },
+}
+
+/** A plain attribute's value; an expression or a missing one reads as undefined. */
+export function attributeOf(node: MdastJsx, name: string): string | undefined {
+  const found = node.attributes.find(
+    (attribute): attribute is MdxJsxAttribute =>
+      attribute.type === 'mdxJsxAttribute' && attribute.name === name,
+  )
+  return typeof found?.value === 'string' ? found.value : undefined
+}
+
+/** The attributes with one set to [value], every other one kept as it was and where it was. */
+export function withAttribute(node: MdastJsx, name: string, value: string): MdastJsx['attributes'] {
+  const next: MdxJsxAttribute = { type: 'mdxJsxAttribute', name, value }
+  const at = node.attributes.findIndex(
+    (attribute) => attribute.type === 'mdxJsxAttribute' && attribute.name === name,
+  )
+  if (at < 0) return [...node.attributes, next]
+  return node.attributes.map((attribute, index) => (index === at ? next : attribute))
+}
+
+/** The tag as it reads in the MDX, its content shortened to `…`. */
+export function tagSource(node: MdastJsx): string {
+  const attributes = node.attributes.map((attribute) => {
+    if (attribute.type === 'mdxJsxExpressionAttribute') return `{${attribute.value}}`
+    const { name, value } = attribute
+    if (value == null) return name
+    return typeof value === 'string' ? `${name}="${value}"` : `${name}={${value.value}}`
+  })
+  const open = `<${[node.name ?? '', ...attributes].join(' ')}`
+  return node.children.length > 0 ? `${open}>…</${node.name ?? ''}>` : `${open} />`
+}
+
+export const splitAnswers = (answers: string | undefined) =>
+  (answers ?? '')
+    .split('|')
+    .map((answer) => answer.trim())
+    .filter((answer) => answer.length > 0)
+
+export const joinAnswers = (answers: readonly string[]) => answers.join('|')
+
+const ORDERED = /^(\d+)[.)]\s/
+const ITEM = /^\s*(\d+[.)]|[-*+])\s/
+const FENCE = /^\s*(```|~~~)/
+
+/**
+ * The 1-based lines where an ordered list starts at a number other than 1. MDXEditor 4.3.3 reads
+ * such a list as starting at 1 and saves it so (fixed in 4.4.0, mdx-editor/editor#471).
+ */
+export function listsStartingPastOne(mdx: string): number[] {
+  const found: number[] = []
+  let fenced = false
+  let previous = ''
+  mdx.split('\n').forEach((line, index) => {
+    if (FENCE.test(line)) {
+      fenced = !fenced
+      previous = line
+      return
+    }
+    if (fenced || line.trim() === '') return
+    const number = line.match(ORDERED)?.[1]
+    if (number !== undefined && Number(number) !== 1 && !ITEM.test(previous)) found.push(index + 1)
+    previous = line
+  })
+  return found
+}
