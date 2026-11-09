@@ -39,19 +39,31 @@ describe('PostEditor', () => {
     expect(out).toContain('<option value="network" selected="">네트워크</option>')
     expect(out).toContain('value="1"')
     expect(out).toContain('>세 번의 교환</textarea>')
-    expect(out).toContain('aria-label="본문 MDX" spellCheck="false">## 왜 세 번인가</textarea>')
+    expect(out).toContain(
+      'aria-label="본문 MDX" spellCheck="false" hidden="">## 왜 세 번인가</textarea>',
+    )
   })
 
-  it('opens in Write, with Save draft and Publish for a draft', () => {
+  it('opens in Rich, with Save draft and Publish for a draft', () => {
     const out = render(DRAFT)
 
-    expect(out).toContain('aria-pressed="true">Write</button>')
+    expect(out).toContain('aria-pressed="true">Rich</button>')
+    expect(out).toContain('aria-pressed="false">MDX</button>')
     expect(out).toContain('aria-pressed="false">Preview</button>')
+    expect(out).toContain('<div class="rich rich--loading"></div>')
     expect(out).toContain('<span class="ebar__save" aria-live="polite">Saved</span>')
     expect(out).toContain('disabled="">Save draft</button>')
     expect(out).toMatch(
       /<button class="ebar__item ebar__item--accent" type="button">Publish<\/button>/,
     )
+  })
+
+  it('opens in MDX a body whose list starts past 1, which Rich would renumber', () => {
+    const out = render({ ...DRAFT, bodyMdx: '글입니다.\n\n3. 셋째' })
+
+    expect(out).toContain('aria-pressed="true">MDX</button>')
+    expect(out).toContain('spellCheck="false">글입니다.\n\n3. 셋째</textarea>')
+    expect(out).not.toContain('class="rich')
   })
 
   it('has no Save for a published post, which changes only by publishing again', () => {

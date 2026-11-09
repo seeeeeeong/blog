@@ -1,5 +1,6 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { type ReactNode, useRef, useState } from 'react'
 import type { AdminPost, Topic } from '@/features/admin/api/types'
 import { EditorBar, type EditorMode } from '@/features/admin/components/EditorBar'
@@ -11,6 +12,7 @@ import { RewriteDialog } from '@/features/admin/components/RewriteDialog'
 import { Toast } from '@/features/admin/components/Toast'
 import { useEditor } from '@/features/admin/hooks/useEditor'
 import { useUnsavedWarning } from '@/features/admin/hooks/useUnsavedWarning'
+import { listsStartingPastOne } from '@/features/admin/utils/blocks'
 import { editorMeta } from '@/features/admin/utils/editor'
 import { type SelectionRange, selectionIn } from '@/features/admin/utils/selection'
 
@@ -25,11 +27,26 @@ type Props = {
 
 const PREVIEW_FAILED = <p className="empty">미리보기를 만들지 못했습니다.</p>
 
+// A large download that runs only in the browser, so it comes when the editor opens.
+const RichEditor = dynamic(
+  () => import('@/features/admin/components/rich/RichEditor').then((module) => module.RichEditor),
+  { ssr: false, loading: () => <div className="rich rich--loading" /> },
+)
+
+/** Rich unless it would renumber a list; MDX keeps the body exactly as written. */
+const editModeOf = (mdx: string): EditorMode =>
+  listsStartingPastOne(mdx).length > 0 ? 'mdx' : 'rich'
+
+const pastOne = (lines: number[]) =>
+  `${lines.join(', ')}행의 번호 목록이 1이 아닌 번호로 시작해 MDX로 엽니다`
+
 export function PostEditor({ post, topics, previewAction }: Props) {
   const editor = useEditor(post)
   const { state, dirty, busy } = editor
   const published = state.post.status === 'PUBLISHED'
-  const [mode, setMode] = useState<EditorMode>('write')
+  const [mode, setMode] = useState<EditorMode>(() => editModeOf(post.bodyMdx))
+  // Rich reads the body once as it opens, so a body changed elsewhere opens it anew.
+  const [opened, setOpened] = useState(0)
   const [preview, setPreview] = useState<ReactNode>(null)
   const [confirming, setConfirming] = useState(false)
   const [drafting, setDrafting] = useState(false)
@@ -40,6 +57,14 @@ export function PostEditor({ post, topics, previewAction }: Props) {
 
   // Only the newest preview lands, should an older one answer late.
   const switchTo = (next: EditorMode) => {
+    if (next === 'rich') {
+      const lines = listsStartingPastOne(state.draft.bodyMdx)
+      if (lines.length > 0) {
+        editor.show(pastOne(lines), true)
+        return
+      }
+      setOpened((count) => count + 1)
+    }
     setMode(next)
     if (next !== 'preview') return
     const request = ++previews.current
@@ -51,7 +76,8 @@ export function PostEditor({ post, topics, previewAction }: Props) {
   // The draft goes in as an edit, so autosave keeps it like any other.
   const applyDraft = (bodyMdx: string) => {
     setDrafting(false)
-    setMode('write')
+    setMode(editModeOf(bodyMdx))
+    setOpened((count) => count + 1)
     editor.edit({ bodyMdx })
     editor.show('다듬은 글을 적용했습니다')
   }
@@ -64,8 +90,13 @@ export function PostEditor({ post, topics, previewAction }: Props) {
   const openRewrite = () => {
     const box = textarea.current
     const range = box && selectionIn(state.draft.bodyMdx, box.selectionStart, box.selectionEnd)
-    if (mode === 'write' && range) setRewriting(range)
-    else editor.show('다시 쓸 부분을 Write 에서 먼저 선택해 주세요')
+    if (mode === 'mdx' && range) setRewriting(range)
+    else editor.show('다시 쓸 부분을 MDX에서 먼저 선택해 주세요')
+  }
+
+  const unreadable = (reason: string) => {
+    setMode('mdx')
+    editor.show(`리치 모드가 읽지 못하는 MDX라 MDX로 엽니다: ${reason}`, true)
   }
 
   const confirmPublish = () => {
@@ -90,12 +121,20 @@ export function PostEditor({ post, topics, previewAction }: Props) {
           meta={editorMeta(state, topics)}
         />
         <MetaFields draft={state.draft} topics={topics} onEdit={editor.edit} />
+        {mode === 'rich' && (
+          <RichEditor
+            key={opened}
+            markdown={state.draft.bodyMdx}
+            onChange={(bodyMdx) => editor.edit({ bodyMdx })}
+            onUnreadable={unreadable}
+          />
+        )}
         <textarea
           ref={textarea}
           className="mdx ebody"
           aria-label="본문 MDX"
           spellCheck={false}
-          hidden={mode !== 'write'}
+          hidden={mode !== 'mdx'}
           value={state.draft.bodyMdx}
           onChange={(event) => editor.edit({ bodyMdx: event.target.value })}
         />
