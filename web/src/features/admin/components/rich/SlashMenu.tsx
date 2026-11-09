@@ -86,15 +86,21 @@ function SlashList({ options, selected, onPick, onHover }: ListProps) {
   )
 }
 
-/** `/` at the start of a word opens the blocks to put in, filtered by what follows it. */
-export function SlashMenu() {
+/**
+ * `/` at the start of a word opens the blocks to put in, filtered by what follows it; inside a
+ * block, only what may sit in one.
+ */
+export function SlashMenu({ insideBlock = false }: { insideBlock?: boolean }) {
   const [editor] = useLexicalComposerContext()
   const [query, setQuery] = useState<string | null>(null)
   const insertJsx = usePublisher(insertJsx$)
   const insertTable = usePublisher(insertTable$)
   const insertCodeBlock = usePublisher(insertCodeBlock$)
   const trigger = useBasicTypeaheadTriggerMatch('/', { minLength: 0 })
-  const options = useMemo(() => slashItems(query).map((item) => new SlashOption(item)), [query])
+  const options = useMemo(
+    () => slashItems(query, insideBlock).map((item) => new SlashOption(item)),
+    [query, insideBlock],
+  )
 
   const run = (key: SlashKey) => {
     if (key === 'h2') {

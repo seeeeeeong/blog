@@ -37,6 +37,12 @@ describe('slashItems', () => {
     expect(slashItems('table').map((item) => item.key)).toEqual(['table'])
     expect(slashItems('없는 것')).toEqual([])
   })
+
+  it('offers only lists and code inside a block', () => {
+    expect(slashItems(null, true).map((item) => item.key)).toEqual(['ol', 'ul', 'code'])
+    expect(slashItems('Callout', true)).toEqual([])
+    expect(slashItems('코드', true).map((item) => item.key)).toEqual(['code'])
+  })
 })
 
 describe('attributes', () => {

@@ -4,12 +4,13 @@ import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { $createHeadingNode, $isHeadingNode } from '@lexical/rich-text'
 import { $setBlocksType } from '@lexical/selection'
-import { insertJsx$, usePublisher } from '@mdxeditor/editor'
+import { insertJsx$, rootEditor$, useCellValue, usePublisher } from '@mdxeditor/editor'
 import {
   $createParagraphNode,
   $getSelection,
   $isRangeSelection,
   FORMAT_TEXT_COMMAND,
+  type LexicalEditor,
   type TextFormatType,
 } from 'lexical'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
@@ -25,9 +26,20 @@ type Place = { top: number; left: number }
 
 const keep = (event: { preventDefault: () => void }) => event.preventDefault()
 
-/** Over selected text: bold, italic, code, a link, `<Mark>`, a `<Tone>` color, a section title. */
-export function SelectionBar() {
+// A block's own editor sits inside the page's, so the page's must not take its selection.
+function selects(editor: LexicalEditor, dom: Selection) {
+  const node = dom.anchorNode
+  const element = node instanceof Element ? node : node?.parentElement
+  return element?.closest('[contenteditable="true"]') === editor.getRootElement()
+}
+
+/**
+ * Over selected text: bold, italic, code, a link, `<Mark>`, a `<Tone>` color, and a section title
+ * but inside a block.
+ */
+export function SelectionBar({ insideBlock = false }: { insideBlock?: boolean }) {
   const [editor] = useLexicalComposerContext()
+  const page = useCellValue(rootEditor$)
   const insertJsx = usePublisher(insertJsx$)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [place, setPlace] = useState<Place | null>(null)
@@ -41,8 +53,8 @@ export function SelectionBar() {
   }, [linking])
 
   useEffect(
-    () => editor.registerRootListener((root) => setAnchor(root?.parentElement ?? null)),
-    [editor],
+    () => page?.registerRootListener((root) => setAnchor(root?.parentElement ?? null)),
+    [page],
   )
 
   useEffect(
@@ -55,7 +67,8 @@ export function SelectionBar() {
             !anchor ||
             !$isRangeSelection(selection) ||
             selection.isCollapsed() ||
-            !dom?.rangeCount
+            !dom?.rangeCount ||
+            !selects(editor, dom)
           ) {
             if (!linking) setPlace(null)
             return
@@ -186,16 +199,18 @@ export function SelectionBar() {
               <span className={`rbar__dot rbar__dot--${color}`} />
             </button>
           ))}
-          <span className="rbar__sep" />
-          <button
-            type="button"
-            aria-label="섹션 제목"
-            aria-pressed={active.heading}
-            onMouseDown={keep}
-            onClick={heading}
-          >
-            H2
-          </button>
+          {!insideBlock && <span className="rbar__sep" />}
+          {!insideBlock && (
+            <button
+              type="button"
+              aria-label="섹션 제목"
+              aria-pressed={active.heading}
+              onMouseDown={keep}
+              onClick={heading}
+            >
+              H2
+            </button>
+          )}
         </>
       )}
     </div>,
