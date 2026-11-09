@@ -10,6 +10,8 @@ const MODES: { mode: EditorMode; label: string }[] = [
 ]
 
 type Props = {
+  /** Where the post stands: `Draft / 2.1 network`. */
+  meta: string
   mode: EditorMode
   onMode: (mode: EditorMode) => void
   published: boolean
@@ -23,15 +25,19 @@ type Props = {
 }
 
 /**
- * The bar held at the bottom of the editor. A draft saves in place and can be drafted from a
- * memo; a published post changes only by publishing again, so it has neither.
+ * The bar held at the top of the editor. A draft saves in place and can be drafted from a memo;
+ * a published post changes only by publishing again, so it has neither.
  */
 export function EditorBar(props: Props) {
-  const { mode, onMode, published, dirty, busy, savedAt, onSave, onPublish, onMemo, onRewrite } =
-    props
+  const { meta, mode, onMode, published, dirty, busy, savedAt } = props
+  const { onSave, onPublish, onMemo, onRewrite } = props
   return (
     <div className="ebar">
       <div className="ebar__bar">
+        <a className="ebar__back" href="/admin">
+          Posts
+        </a>
+        <span className="ebar__meta">{meta}</span>
         <span className="ebar__save" aria-live="polite">
           {saveLabel(dirty, busy, savedAt)}
         </span>

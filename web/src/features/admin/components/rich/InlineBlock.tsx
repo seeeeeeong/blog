@@ -5,9 +5,9 @@ import type { MdxJsxTextElement } from 'mdast-util-mdx-jsx'
 import { attributeOf, tagSource } from '@/features/admin/utils/blocks'
 
 function classOf(name: string | null, color: string | undefined) {
-  if (name === 'Mark') return 'mark'
-  if (name === 'Tone') return `tone--${color}`
-  return 'rlink'
+  if (name === 'Mark') return 'rinline mark'
+  if (name === 'Tone') return `rinline tone--${color}`
+  return 'rinline rlink'
 }
 
 /** `<Mark>`, `<Tone>`, `<Seek>` and `<ScenarioLink>`: their text in the look they give it. */
