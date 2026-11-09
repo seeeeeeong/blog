@@ -23,7 +23,6 @@ import { Icon } from '@/features/admin/components/Icon'
 import { type SlashItem, type SlashKey, slashItems, TEMPLATES } from '@/features/admin/utils/blocks'
 
 const ICONS: Record<SlashKey, Parameters<typeof Icon>[0]['name']> = {
-  quiz: 'quiz',
   callout: 'callout',
   idea: 'idea',
   widget: 'widget',

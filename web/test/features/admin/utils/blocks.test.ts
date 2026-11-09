@@ -4,11 +4,9 @@ import {
   attributeOf,
   BLOCK_SPECS,
   isLinkable,
-  joinAnswers,
   listsStartingPastOne,
   SLASH_ITEMS,
   slashItems,
-  splitAnswers,
   tagSource,
   withAttribute,
 } from '@/features/admin/utils/blocks'
@@ -16,7 +14,7 @@ import { PROSE_COMPONENTS } from '@/features/posts/components/registry'
 import { WIDGETS } from '@/features/widgets/components/registry'
 
 const node = (attributes: MdastJsx['attributes'], children: MdastJsx['children'] = []) =>
-  ({ type: 'mdxJsxFlowElement', name: 'Quiz', attributes, children }) as MdastJsx
+  ({ type: 'mdxJsxFlowElement', name: 'Diagram', attributes, children }) as MdastJsx
 
 describe('BLOCK_SPECS', () => {
   it('knows every component a post may name, and no other', () => {
@@ -33,9 +31,9 @@ describe('slashItems', () => {
   })
 
   it('finds an item by its name, its hint or another word, in Korean or English', () => {
-    expect(slashItems('퀴즈').map((item) => item.key)).toEqual(['quiz'])
+    expect(slashItems('콜아웃').map((item) => item.key)).toEqual(['callout'])
     expect(slashItems('Callout').map((item) => item.key)).toEqual(['callout'])
-    expect(slashItems('도전 문제').map((item) => item.key)).toEqual(['quiz'])
+    expect(slashItems('그림 아이디어').map((item) => item.key)).toEqual(['idea'])
     expect(slashItems('table').map((item) => item.key)).toEqual(['table'])
     expect(slashItems('없는 것')).toEqual([])
   })
@@ -43,8 +41,8 @@ describe('slashItems', () => {
 
 describe('attributes', () => {
   it('reads a plain attribute, and nothing from an expression', () => {
-    const quiz = node([
-      { type: 'mdxJsxAttribute', name: 'answers', value: '3|셋' },
+    const diagram = node([
+      { type: 'mdxJsxAttribute', name: 'src', value: '/b.png' },
       {
         type: 'mdxJsxAttribute',
         name: 'to',
@@ -52,37 +50,31 @@ describe('attributes', () => {
       },
     ])
 
-    expect(attributeOf(quiz, 'answers')).toBe('3|셋')
-    expect(attributeOf(quiz, 'to')).toBeUndefined()
-    expect(attributeOf(quiz, 'missing')).toBeUndefined()
+    expect(attributeOf(diagram, 'src')).toBe('/b.png')
+    expect(attributeOf(diagram, 'to')).toBeUndefined()
+    expect(attributeOf(diagram, 'missing')).toBeUndefined()
   })
 
   it('sets one attribute in its place and keeps every other', () => {
-    const quiz = node([
-      { type: 'mdxJsxAttribute', name: 'answers', value: '3' },
+    const diagram = node([
+      { type: 'mdxJsxAttribute', name: 'src', value: '/a.png' },
       { type: 'mdxJsxAttribute', name: 'id', value: 'q' },
     ])
 
-    expect(withAttribute(quiz, 'answers', '3|셋')).toEqual([
-      { type: 'mdxJsxAttribute', name: 'answers', value: '3|셋' },
+    expect(withAttribute(diagram, 'src', '/b.png')).toEqual([
+      { type: 'mdxJsxAttribute', name: 'src', value: '/b.png' },
       { type: 'mdxJsxAttribute', name: 'id', value: 'q' },
     ])
-    expect(withAttribute(quiz, 'label', '핵심').at(-1)).toEqual({
+    expect(withAttribute(diagram, 'label', '핵심').at(-1)).toEqual({
       type: 'mdxJsxAttribute',
       name: 'label',
       value: '핵심',
     })
   })
 
-  it('splits answers on |, dropping blanks, and joins them back', () => {
-    expect(splitAnswers(' 3 | 세 개 || ')).toEqual(['3', '세 개'])
-    expect(splitAnswers(undefined)).toEqual([])
-    expect(joinAnswers(['3', '세 개'])).toBe('3|세 개')
-  })
-
   it('writes a tag as it reads in the MDX, its content shortened', () => {
     expect(tagSource(node([{ type: 'mdxJsxAttribute', name: 'src', value: '/a.png' }]))).toBe(
-      '<Quiz src="/a.png" />',
+      '<Diagram src="/a.png" />',
     )
     expect(
       tagSource(
@@ -98,7 +90,7 @@ describe('attributes', () => {
           [{ type: 'paragraph', children: [] }],
         ),
       ),
-    ).toBe('<Quiz to={0.5} open>…</Quiz>')
+    ).toBe('<Diagram to={0.5} open>…</Diagram>')
   })
 })
 
@@ -122,7 +114,7 @@ describe('isLinkable', () => {
     expect(isLinkable('http://example.com')).toBe(true)
     expect(isLinkable('mailto:me@example.com')).toBe(true)
     expect(isLinkable('/posts/tcp-handshake')).toBe(true)
-    expect(isLinkable('#quiz')).toBe(true)
+    expect(isLinkable('#top')).toBe(true)
   })
 
   it('refuses a script, a bare word, or an address with spaces', () => {

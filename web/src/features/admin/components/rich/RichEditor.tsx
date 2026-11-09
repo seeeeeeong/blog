@@ -28,20 +28,16 @@ import type { ComponentType, Ref } from 'react'
 import { blockMenuPlugin } from '@/features/admin/components/rich/blockMenu'
 import { CalloutBlock } from '@/features/admin/components/rich/CalloutBlock'
 import { CodeBlockCard } from '@/features/admin/components/rich/CodeBlockCard'
-import { ExplanationBlock } from '@/features/admin/components/rich/ExplanationBlock'
 import { IdeaBlock } from '@/features/admin/components/rich/IdeaBlock'
 import { InlineBlock } from '@/features/admin/components/rich/InlineBlock'
-import { QuizBlock } from '@/features/admin/components/rich/QuizBlock'
 import { RawBlock } from '@/features/admin/components/rich/RawBlock'
 import { WidgetBlock } from '@/features/admin/components/rich/WidgetBlock'
 import { BLOCK_SPECS } from '@/features/admin/utils/blocks'
 
 const EDITORS: Record<string, ComponentType<JsxEditorProps>> = {
   Callout: CalloutBlock,
-  Explanation: ExplanationBlock,
   HandshakeWidget: WidgetBlock,
   Mark: InlineBlock,
-  Quiz: QuizBlock,
   ScenarioLink: InlineBlock,
   Seek: InlineBlock,
   Tone: InlineBlock,
