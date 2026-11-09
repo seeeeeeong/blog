@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   attributeOf,
   BLOCK_SPECS,
+  isLinkable,
   joinAnswers,
   listsStartingPastOne,
   SLASH_ITEMS,
@@ -112,5 +113,22 @@ describe('listsStartingPastOne', () => {
 
   it('reads no list inside a code fence', () => {
     expect(listsStartingPastOne('```text\n5. 코드\n```')).toEqual([])
+  })
+})
+
+describe('isLinkable', () => {
+  it('takes a web or mail address, or a path or anchor on this site', () => {
+    expect(isLinkable('https://example.com/a')).toBe(true)
+    expect(isLinkable('http://example.com')).toBe(true)
+    expect(isLinkable('mailto:me@example.com')).toBe(true)
+    expect(isLinkable('/posts/tcp-handshake')).toBe(true)
+    expect(isLinkable('#quiz')).toBe(true)
+  })
+
+  it('refuses a script, a bare word, or an address with spaces', () => {
+    expect(isLinkable('javascript:alert(1)')).toBe(false)
+    expect(isLinkable('example.com')).toBe(false)
+    expect(isLinkable('https://exa mple.com')).toBe(false)
+    expect(isLinkable('')).toBe(false)
   })
 })

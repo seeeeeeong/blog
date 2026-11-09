@@ -176,6 +176,17 @@ export function tagSource(node: MdastJsx): string {
   return node.children.length > 0 ? `${open}>…</${node.name ?? ''}>` : `${open} />`
 }
 
+/** The colors `<Tone>` takes, as the reader's Tone draws them. */
+export const TONES = [
+  { color: 'orange', label: '주황' },
+  { color: 'teal', label: '청록' },
+  { color: 'blue', label: '파랑' },
+  { color: 'pink', label: '분홍' },
+] as const
+
+/** A link the reader may follow: https, http, mail, or a path or anchor on this site. */
+export const isLinkable = (url: string) => /^(https?:\/\/\S+|mailto:\S+|\/\S*|#\S+)$/.test(url)
+
 export const splitAnswers = (answers: string | undefined) =>
   (answers ?? '')
     .split('|')
