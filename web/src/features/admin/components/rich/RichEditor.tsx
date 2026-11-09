@@ -38,6 +38,7 @@ const EDITORS: Record<string, ComponentType<JsxEditorProps>> = {
   Callout: CalloutBlock,
   HandshakeWidget: WidgetBlock,
   HashTableFigure: WidgetBlock,
+  SafepointFigure: WidgetBlock,
   Mark: InlineBlock,
   ScenarioLink: InlineBlock,
   Seek: InlineBlock,

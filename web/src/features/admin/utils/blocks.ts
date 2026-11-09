@@ -17,6 +17,7 @@ export const BLOCK_SPECS: readonly BlockSpec[] = [
   { name: 'WidgetIdea', kind: 'flow', children: false, props: [text('note')] },
   { name: 'HandshakeWidget', kind: 'flow', children: false, props: [] },
   { name: 'HashTableFigure', kind: 'flow', children: false, props: [text('part')] },
+  { name: 'SafepointFigure', kind: 'flow', children: false, props: [text('part')] },
   { name: 'Mark', kind: 'text', children: true, props: [] },
   { name: 'Tone', kind: 'text', children: true, props: [text('color')] },
   { name: 'Seek', kind: 'text', children: true, props: [{ name: 'to', type: 'expression' }] },
@@ -28,6 +29,7 @@ export type SlashKey =
   | 'idea'
   | 'widget'
   | 'hash'
+  | 'safepoint'
   | 'h2'
   | 'ol'
   | 'ul'
@@ -72,6 +74,13 @@ export const SLASH_ITEMS: readonly SlashItem[] = [
     hint: '해시 테이블 그림',
     group: 'component',
     aliases: 'hashtable hashmap 해시 체이닝 탐사 적재율',
+  },
+  {
+    key: 'safepoint',
+    label: 'SafepointFigure',
+    hint: 'JVM 세이프포인트 그림',
+    group: 'component',
+    aliases: 'safepoint jvm gc ttsp handshake 세이프포인트 폴링 핸드셰이크',
   },
   {
     key: 'h2',
@@ -130,11 +139,12 @@ const paragraph = (value: string) => ({
 })
 
 /** What each component starts as when the slash menu puts it in. */
-export const TEMPLATES: Record<'callout' | 'idea' | 'widget' | 'hash', Template> = {
+export const TEMPLATES: Record<'callout' | 'idea' | 'widget' | 'hash' | 'safepoint', Template> = {
   callout: { name: 'Callout', props: { label: '핵심' }, children: [paragraph('핵심')] },
   idea: { name: 'WidgetIdea', props: { note: '' }, children: [] },
   widget: { name: 'HandshakeWidget', props: {}, children: [] },
   hash: { name: 'HashTableFigure', props: { part: 'chaining' }, children: [] },
+  safepoint: { name: 'SafepointFigure', props: { part: 'why' }, children: [] },
 }
 
 /** A plain attribute's value; an expression or a missing one reads as undefined. */

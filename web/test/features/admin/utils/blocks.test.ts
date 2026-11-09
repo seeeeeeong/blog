@@ -37,6 +37,7 @@ describe('slashItems', () => {
     expect(slashItems('그림 아이디어').map((item) => item.key)).toEqual(['idea'])
     expect(slashItems('표').map((item) => item.key)).toEqual(['table'])
     expect(slashItems('해시').map((item) => item.key)).toEqual(['hash'])
+    expect(slashItems('세이프포인트').map((item) => item.key)).toEqual(['safepoint'])
     expect(slashItems('없는 것')).toEqual([])
   })
 
