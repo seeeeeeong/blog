@@ -22,10 +22,10 @@ class TopicControllerTest(
 
         assertThat(topics.status).isEqualTo(200)
         assertThat(topics.body.toList().map { it.get("slug").asString() })
-            .containsExactly("os", "network", "database", "algorithm", "spring")
+            .containsExactly("os", "network", "database", "algorithm", "spring", "jvm")
         assertThat(topics.body.toList().map { it.get("title").asString() })
-            .containsExactly("운영체제", "네트워크", "데이터베이스", "자료구조와 알고리즘", "Spring")
-        assertThat(topics.body.toList().map { it.get("position").asInt() }).containsExactly(1, 2, 3, 4, 5)
+            .containsExactly("운영체제", "네트워크", "데이터베이스", "자료구조와 알고리즘", "Spring", "JVM")
+        assertThat(topics.body.toList().map { it.get("position").asInt() }).containsExactly(1, 2, 3, 4, 5, 6)
     }
 
     @Test

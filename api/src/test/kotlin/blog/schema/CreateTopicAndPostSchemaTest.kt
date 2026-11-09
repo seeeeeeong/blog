@@ -72,7 +72,7 @@ class CreateTopicAndPostSchemaTest(
     }
 
     @Test
-    fun `the five topics are seeded in their order`() {
+    fun `the topics are seeded in their order`() {
         val topics =
             jdbc
                 .sql("select slug, title from topic order by position")
@@ -85,12 +85,13 @@ class CreateTopicAndPostSchemaTest(
             "database" to "데이터베이스",
             "algorithm" to "자료구조와 알고리즘",
             "spring" to "Spring",
+            "jvm" to "JVM",
         )
     }
 
     @Test
     fun `a topic's slug is its own`() {
-        refused { newTopic(slug = "network", position = 6) }
+        refused { newTopic(slug = "network", position = 7) }
     }
 
     @Test
@@ -100,7 +101,7 @@ class CreateTopicAndPostSchemaTest(
 
     @Test
     fun `a topic's slug is lowercase words joined by hyphens`() {
-        refused { newTopic(slug = "Security", position = 6) }
+        refused { newTopic(slug = "Security", position = 7) }
     }
 
     @Test
