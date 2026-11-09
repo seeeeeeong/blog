@@ -6,7 +6,6 @@ import type { AdminPost, Topic } from '@/features/admin/api/types'
 import { EditorBar, type EditorMode } from '@/features/admin/components/EditorBar'
 import { MemoDialog } from '@/features/admin/components/MemoDialog'
 import { MetaFields } from '@/features/admin/components/MetaFields'
-import { PageHead } from '@/features/admin/components/PageHead'
 import { PublishDialog } from '@/features/admin/components/PublishDialog'
 import { RewriteDialog } from '@/features/admin/components/RewriteDialog'
 import { Toast } from '@/features/admin/components/Toast'
@@ -106,19 +105,27 @@ export function PostEditor({ post, topics, previewAction }: Props) {
 
   return (
     <>
+      <EditorBar
+        meta={editorMeta(state, topics)}
+        mode={mode}
+        onMode={switchTo}
+        published={published}
+        dirty={dirty}
+        busy={busy}
+        savedAt={editor.savedAt}
+        onSave={() => void editor.save()}
+        onPublish={() => setConfirming(true)}
+        onMemo={() => setDrafting(true)}
+        onRewrite={openRewrite}
+      />
       <main className="apage apage--editor">
-        <PageHead
-          title={
-            <input
-              className="etitle"
-              aria-label="제목"
-              value={state.draft.title}
-              maxLength={200}
-              spellCheck={false}
-              onChange={(event) => editor.edit({ title: event.target.value })}
-            />
-          }
-          meta={editorMeta(state, topics)}
+        <input
+          className="etitle"
+          aria-label="제목"
+          value={state.draft.title}
+          maxLength={200}
+          spellCheck={false}
+          onChange={(event) => editor.edit({ title: event.target.value })}
         />
         <MetaFields draft={state.draft} topics={topics} onEdit={editor.edit} />
         {mode === 'rich' && (
@@ -140,18 +147,6 @@ export function PostEditor({ post, topics, previewAction }: Props) {
         />
         {mode === 'preview' && <div className="prose epreview">{preview}</div>}
       </main>
-      <EditorBar
-        mode={mode}
-        onMode={switchTo}
-        published={published}
-        dirty={dirty}
-        busy={busy}
-        savedAt={editor.savedAt}
-        onSave={() => void editor.save()}
-        onPublish={() => setConfirming(true)}
-        onMemo={() => setDrafting(true)}
-        onRewrite={openRewrite}
-      />
       {!published && (
         <MemoDialog
           open={drafting}

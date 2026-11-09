@@ -1,10 +1,9 @@
 /* The block editor wears the post's prose (post.css, loaded by the route) on a page of its own. */
+/* The page is the sheet: text lines up with the title, and the handles sit in the margin. */
 .rich {
   --rich-gutter: 64px;
   min-height: 60vh;
-  border: 2px solid var(--border-color);
-  border-radius: var(--radius-2);
-  background: var(--gray-000);
+  margin-left: calc(-1 * var(--rich-gutter));
   color: var(--text-primary);
   font-family: var(--font-body);
 }
@@ -19,7 +18,7 @@
 
 .rich .rich__doc {
   min-height: 60vh;
-  padding: 0.8em 1.6em 4em var(--rich-gutter);
+  padding: 0 0 4em var(--rich-gutter);
   outline: none;
   caret-color: var(--blue-900);
 }
@@ -31,11 +30,15 @@
   outline: none;
 }
 
-span.rnested,
-.rlink .rnested,
-.mark .rnested,
-[class^="tone--"] .rnested {
+/* an inline component's text stays in its line, at its line's size */
+.rinline .rnested,
+.rinline .rnested > p {
   display: inline;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 .rich__doc > :first-child {
