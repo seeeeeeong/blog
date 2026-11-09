@@ -22,7 +22,16 @@ export const BLOCK_SPECS: readonly BlockSpec[] = [
   { name: 'ScenarioLink', kind: 'text', children: true, props: [text('to')] },
 ]
 
-export type SlashKey = 'callout' | 'idea' | 'widget' | 'h2' | 'ol' | 'ul' | 'table' | 'code'
+export type SlashKey =
+  | 'callout'
+  | 'idea'
+  | 'widget'
+  | 'hash'
+  | 'h2'
+  | 'ol'
+  | 'ul'
+  | 'table'
+  | 'code'
 
 export type SlashItem = {
   key: SlashKey
@@ -55,6 +64,13 @@ export const SLASH_ITEMS: readonly SlashItem[] = [
     hint: 'TCP 연결 애니메이션',
     group: 'component',
     aliases: 'handshake tcp 위젯 핸드셰이크',
+  },
+  {
+    key: 'hash',
+    label: 'HashTableFigure',
+    hint: '해시 테이블 그림',
+    group: 'component',
+    aliases: 'hashtable hashmap 해시 체이닝 탐사 적재율',
   },
   {
     key: 'h2',
@@ -113,10 +129,11 @@ const paragraph = (value: string) => ({
 })
 
 /** What each component starts as when the slash menu puts it in. */
-export const TEMPLATES: Record<'callout' | 'idea' | 'widget', Template> = {
+export const TEMPLATES: Record<'callout' | 'idea' | 'widget' | 'hash', Template> = {
   callout: { name: 'Callout', props: { label: '핵심' }, children: [paragraph('핵심')] },
   idea: { name: 'WidgetIdea', props: { note: '' }, children: [] },
   widget: { name: 'HandshakeWidget', props: {}, children: [] },
+  hash: { name: 'HashTableFigure', props: { part: 'chaining' }, children: [] },
 }
 
 /** A plain attribute's value; an expression or a missing one reads as undefined. */

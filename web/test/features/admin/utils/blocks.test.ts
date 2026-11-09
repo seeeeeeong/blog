@@ -34,7 +34,8 @@ describe('slashItems', () => {
     expect(slashItems('콜아웃').map((item) => item.key)).toEqual(['callout'])
     expect(slashItems('Callout').map((item) => item.key)).toEqual(['callout'])
     expect(slashItems('그림 아이디어').map((item) => item.key)).toEqual(['idea'])
-    expect(slashItems('table').map((item) => item.key)).toEqual(['table'])
+    expect(slashItems('표').map((item) => item.key)).toEqual(['table'])
+    expect(slashItems('해시').map((item) => item.key)).toEqual(['hash'])
     expect(slashItems('없는 것')).toEqual([])
   })
 
