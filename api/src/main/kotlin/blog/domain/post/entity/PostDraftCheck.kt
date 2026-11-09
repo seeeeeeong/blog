@@ -78,7 +78,7 @@ object PostDraftCheck {
     }
 
     /** The widgets that draw a figure; `<Seek>` and `<ScenarioLink>` only steer one. */
-    val WIDGETS = listOf("HandshakeWidget", "HashTableFigure")
+    val WIDGETS = listOf("HandshakeWidget", "HashTableFigure", "SafepointFigure")
 
     /** A note for the owner where a figure would go; it renders nothing. */
     const val IDEA = "WidgetIdea"

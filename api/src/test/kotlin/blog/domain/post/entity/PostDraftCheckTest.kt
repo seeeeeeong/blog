@@ -67,6 +67,13 @@ class PostDraftCheckTest {
     }
 
     @Test
+    fun `the safepoint figure is something the blog renders`() {
+        val body = "<SafepointFigure part=\"ttsp\" />"
+
+        assertThat(PostDraftCheck.of("메모", body)).isEmpty()
+    }
+
+    @Test
     fun `a quiz is not something the blog renders`() {
         val body = "<Quiz answers=\"3\">\n몇 번일까요?\n</Quiz>"
 

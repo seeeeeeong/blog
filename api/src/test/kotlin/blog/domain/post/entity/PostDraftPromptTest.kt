@@ -23,6 +23,7 @@ class PostDraftPromptTest {
             "<Mark>",
             "<HandshakeWidget />",
             "<HashTableFigure part=",
+            "<SafepointFigure part=",
             "<Seek to=",
             "<ScenarioLink",
         )

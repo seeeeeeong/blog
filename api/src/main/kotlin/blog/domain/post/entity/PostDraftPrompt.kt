@@ -89,6 +89,10 @@ object PostDraftPrompt {
         - `<HashTableFigure part="chaining" />`, a hash table drawn as a rack of seats the reader fills key by key,
           only in a post about hash tables: `part` is `chaining`, `probing` (linear probing) or `load` (load factor
           and resize), the one that fits the section it sits in.
+        - `<SafepointFigure part="why" />`, JVM threads drawn as carriages on rails that stop only at poll posts,
+          only in a post about JVM safepoints: `part` is `why` (why a thread stops only where it polls), `poll`
+          (poll points and a counted loop that delays the stop), `ttsp` (time to safepoint against the VM operation)
+          or `handshake` (a thread-local handshake that stops one thread), the one that fits the section it sits in.
         - Where a widget would help the reader but none of these fits,
           `<WidgetIdea note="what it would show" />` on a line of its own.
         - No other components, no HTML tags, no imports or exports, no other `{}` expressions.
