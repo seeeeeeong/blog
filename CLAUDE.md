@@ -114,6 +114,19 @@ code it guards.
   is tested by `test/features/posts/utils/toc.test.ts`.
 - The browser calls `/api/*` on its own origin; Next rewrites it to the api (`BLOG_API_URL`).
 
+## Figures
+
+- A post's figures are built at dev time with the `anatomy` skill in `.claude/skills/anatomy/`;
+  its React kit is copied to `web/src/features/widgets/iso/`. Both are vendored: never edit or
+  format them. `UPSTREAM.md` says what was left out and how to update, and a test checks the
+  kit against `upstream.json`.
+- Give the skill the real numbers. Light theme only; Korean text only in the HTML around the
+  drawing (corners, legend, caption), never inside the SVG. Check it at 390 pixels wide.
+- A figure is a widget: register it in `WIDGETS`, with literal string or number props only,
+  since a post is MDX from the database and anything else is dropped.
+- The skill's scripts start Chrome against a page; point them at the dev server
+  (`http://localhost:3150`), never start one for them.
+
 ## Comments
 
 - **Few comments.** Only the "why" someone would get wrong without it: a price, a limit, a

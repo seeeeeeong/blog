@@ -7,7 +7,14 @@
     "defaultBranch": "main"
   },
   "files": {
-    "includes": ["**", "!**/node_modules", "!**/.next", "!**/*.d.ts", "!pnpm-lock.yaml"]
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/.next",
+      "!**/*.d.ts",
+      "!pnpm-lock.yaml",
+      "!src/features/widgets/iso"
+    ]
   },
   "formatter": {
     "enabled": true,

@@ -113,6 +113,10 @@ describe('imports across folders', () => {
     expect(restricts('src/features/posts/views/n.ts', './Post')).toBe(false)
   })
 
+  it('leaves the vendored figure kit as upstream wrote it', () => {
+    expect(restricts('src/features/widgets/iso/react/o.tsx', '../iso-kit')).toBe(false)
+  })
+
   it('has a rule for every feature folder', () => {
     const dir = join(WEB, 'src', 'features')
     const features = existsSync(dir)
