@@ -43,14 +43,6 @@ ss -tan state syn-sent
 세 번째 패킷이 있어야 <Mark>확인할 수 있습니다</Mark>.
 </Callout>
 
-<Quiz answers="3|세 개">
-몇 개 오갈까요? 숫자로 답하세요.
-
-<Explanation>
-SYN, SYN-ACK, ACK 세 개입니다.
-</Explanation>
-</Quiz>
-
 <Diagram src="/a.png" />
 `
 
@@ -90,9 +82,6 @@ describe('RichEditor', () => {
   it('opens each component as its block, and a tag it does not know as written', async () => {
     const { host } = await open(POST)
 
-    const chips = [...host.querySelectorAll('.rquiz .rchip')].map((chip) => chip.textContent)
-    expect(chips).toEqual(['3', '세 개'])
-    expect(host.querySelector('.rsolution__toggle')?.textContent).toBe('풀이')
     expect(host.querySelector<HTMLInputElement>('.rcallout__label')?.value).toBe('핵심')
     expect(host.querySelector<HTMLTextAreaElement>('.ridea__note')?.value).toBe(
       '잃어버릴 패킷을 고른다',
@@ -115,29 +104,12 @@ describe('RichEditor', () => {
     const written = markdownOf(first.ref)
 
     expect(await html(written)).toBe(await html(POST))
-    expect(written).toContain('<Quiz answers="3|세 개">')
+    expect(written).toContain('<Callout label="핵심">')
     expect(written).toContain('**3-way 핸드셰이크(three-way handshake)**는')
     expect(written).toContain('- 하나')
 
     const second = await open(written)
     expect(markdownOf(second.ref)).toBe(written)
-  })
-
-  it('adds an answer typed into the quiz', async () => {
-    const { host, ref, onChange } = await open(POST)
-    const input = host.querySelector<HTMLInputElement>('.rchip__input')
-    if (!input) throw new Error('no answer input')
-
-    await act(async () => {
-      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, '셋')
-      input.dispatchEvent(new Event('input', { bubbles: true }))
-    })
-    await act(async () => {
-      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
-    })
-
-    expect(markdownOf(ref)).toContain('<Quiz answers="3|세 개|셋">')
-    expect(onChange).toHaveBeenCalled()
   })
 
   it('says so for MDX it cannot read, and leaves it as it was', async () => {

@@ -75,7 +75,6 @@ export type PostDraftCheckKind =
   | 'NO_FIGURE'
   | 'TRY_STEPS'
   | 'STEPS_WITHOUT_WIDGET'
-  | 'QUIZ'
   | 'LINK_UNKNOWN'
   | 'MEMO_CODE_CHANGED'
   | 'MEMO_NUMBER_MISSING'

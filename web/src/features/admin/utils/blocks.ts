@@ -13,8 +13,6 @@ const text = (name: string): JsxPropertyDescriptor => ({ name, type: 'string' })
 
 export const BLOCK_SPECS: readonly BlockSpec[] = [
   { name: 'Callout', kind: 'flow', children: true, props: [text('label')] },
-  { name: 'Quiz', kind: 'flow', children: true, props: [text('answers')] },
-  { name: 'Explanation', kind: 'flow', children: true, props: [] },
   { name: 'WidgetIdea', kind: 'flow', children: false, props: [text('note')] },
   { name: 'HandshakeWidget', kind: 'flow', children: false, props: [] },
   { name: 'Mark', kind: 'text', children: true, props: [] },
@@ -23,16 +21,7 @@ export const BLOCK_SPECS: readonly BlockSpec[] = [
   { name: 'ScenarioLink', kind: 'text', children: true, props: [text('to')] },
 ]
 
-export type SlashKey =
-  | 'quiz'
-  | 'callout'
-  | 'idea'
-  | 'widget'
-  | 'h2'
-  | 'ol'
-  | 'ul'
-  | 'table'
-  | 'code'
+export type SlashKey = 'callout' | 'idea' | 'widget' | 'h2' | 'ol' | 'ul' | 'table' | 'code'
 
 export type SlashItem = {
   key: SlashKey
@@ -45,13 +34,6 @@ export type SlashItem = {
 }
 
 export const SLASH_ITEMS: readonly SlashItem[] = [
-  {
-    key: 'quiz',
-    label: '도전 문제',
-    hint: '정답과 풀이가 있는 문제',
-    group: 'component',
-    aliases: 'quiz 퀴즈 문제',
-  },
   {
     key: 'callout',
     label: 'Callout',
@@ -126,20 +108,7 @@ const paragraph = (value: string) => ({
 })
 
 /** What each component starts as when the slash menu puts it in. */
-export const TEMPLATES: Record<'quiz' | 'callout' | 'idea' | 'widget', Template> = {
-  quiz: {
-    name: 'Quiz',
-    props: { answers: '' },
-    children: [
-      paragraph('문제'),
-      {
-        type: 'mdxJsxFlowElement',
-        name: 'Explanation',
-        attributes: [],
-        children: [paragraph('풀이')],
-      },
-    ],
-  },
+export const TEMPLATES: Record<'callout' | 'idea' | 'widget', Template> = {
   callout: { name: 'Callout', props: { label: '핵심' }, children: [paragraph('핵심')] },
   idea: { name: 'WidgetIdea', props: { note: '' }, children: [] },
   widget: { name: 'HandshakeWidget', props: {}, children: [] },
@@ -186,14 +155,6 @@ export const TONES = [
 
 /** A link the reader may follow: https, http, mail, or a path or anchor on this site. */
 export const isLinkable = (url: string) => /^(https?:\/\/\S+|mailto:\S+|\/\S*|#\S+)$/.test(url)
-
-export const splitAnswers = (answers: string | undefined) =>
-  (answers ?? '')
-    .split('|')
-    .map((answer) => answer.trim())
-    .filter((answer) => answer.length > 0)
-
-export const joinAnswers = (answers: readonly string[]) => answers.join('|')
 
 const ORDERED = /^(\d+)[.)]\s/
 const ITEM = /^\s*(\d+[.)]|[-*+])\s/

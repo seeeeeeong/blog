@@ -161,10 +161,6 @@
   height: 18px;
 }
 
-.rslash__tile--quiz {
-  color: var(--blue-900);
-}
-
 .rslash__tile--idea {
   color: var(--orange-900);
 }
@@ -292,119 +288,6 @@
 }
 
 /* component blocks */
-.rquiz {
-  margin: 1.2em 0;
-  padding: 14px 18px 12px;
-  border-radius: var(--radius-3);
-  background: var(--gray-100);
-}
-
-.rquiz__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 8px;
-  font-size: 13px;
-}
-
-.rquiz__name {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-right: auto;
-  color: var(--blue-900);
-  font-weight: var(--weight-600);
-}
-
-.rquiz__label {
-  color: var(--gray-1000);
-}
-
-.rchip {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  height: 26px;
-  padding: 0 3px 0 9px;
-  border-radius: var(--radius-1);
-  background: var(--gray-000);
-  box-shadow: inset 0 0 0 1px var(--gray-500);
-  font-weight: var(--weight-500);
-}
-
-.rchip--main {
-  background: var(--blue-400);
-  box-shadow: none;
-  color: var(--blue-900);
-}
-
-.rchip button {
-  display: grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-0);
-  background: transparent;
-  color: inherit;
-  opacity: 0.55;
-  cursor: pointer;
-}
-
-.rchip button:hover {
-  opacity: 1;
-}
-
-.rchip button .ico svg {
-  width: 12px;
-  height: 12px;
-}
-
-.rchip__input {
-  width: 6em;
-  height: 26px;
-  padding: 0 8px;
-  border: 1.5px dashed var(--gray-700);
-  border-radius: var(--radius-1);
-  background: transparent;
-  font: inherit;
-  outline: none;
-}
-
-.rchip__input:focus {
-  border-style: solid;
-  border-color: var(--blue-600);
-  background: var(--gray-000);
-}
-
-.rsolution__toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 6px 2px 2px;
-  border: 0;
-  border-radius: var(--radius-0);
-  background: transparent;
-  color: var(--gray-1100);
-  font: var(--weight-500) 14px var(--font-body);
-  cursor: pointer;
-}
-
-.rsolution__toggle:hover {
-  background: var(--gray-200);
-}
-
-.rsolution__toggle .ico svg {
-  width: 14px;
-  height: 14px;
-  transition: transform 0.15s;
-}
-
-.rsolution__toggle[aria-expanded="true"] .ico svg {
-  transform: rotate(90deg);
-}
-
 .rcallout__label {
   min-width: 2em;
   max-width: 12em;

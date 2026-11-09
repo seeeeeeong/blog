@@ -2,9 +2,7 @@ import type { MDXComponents } from 'mdx/types'
 import { createElement, type ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Explanation } from '@/features/posts/components/Explanation'
 import { PostBody } from '@/features/posts/components/PostBody'
-import { Quiz } from '@/features/posts/components/Quiz'
 import { compileMdx } from '@/features/posts/utils/mdx'
 
 const REGISTRY: MDXComponents = {
@@ -126,20 +124,6 @@ describe('compileMdx', () => {
 
     expect(out).not.toContain('script')
     expect(out).not.toContain('alert')
-  })
-
-  it('splits a quiz into its question and its explanation', async () => {
-    const out = await render(
-      '<Quiz answers="10|열">\n`0b1010`은 십진수로 얼마일까요?\n\n<Explanation>\n8 + 2 = 10입니다.\n</Explanation>\n</Quiz>',
-      { Quiz, Explanation },
-    )
-
-    expect(out).toContain(
-      '도전 문제</div><p><code>0b1010</code>은 십진수로 얼마일까요?</p><form class="quiz__form">',
-    )
-    expect(out).toContain(
-      '<summary>정답 보기</summary><p>정답: 10</p><p>8 + 2 = 10입니다.</p></details>',
-    )
   })
 
   it('answers null for a body that does not parse, and the page says so', async () => {

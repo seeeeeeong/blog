@@ -20,7 +20,6 @@ const CHECK_LABELS: Record<PostDraftCheckKind, string> = {
   NO_FIGURE: '그림이 없는 섹션',
   TRY_STEPS: '해 볼 단계가 1~3개가 아님',
   STEPS_WITHOUT_WIDGET: '보이지 않는 그림에 단계',
-  QUIZ: '도전 문제',
   LINK_UNKNOWN: '발행되지 않은 글로 링크',
   MEMO_CODE_CHANGED: '메모의 코드가 바뀜',
   MEMO_NUMBER_MISSING: '메모의 숫자가 빠짐',
