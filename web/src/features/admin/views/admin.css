@@ -546,6 +546,64 @@ textarea.eprop__value {
   resize: vertical;
 }
 
+.mkept {
+  margin-top: 1em;
+}
+
+.mkept__title {
+  margin: 0 0 0.4em;
+  color: var(--gray-1000);
+  font-size: 13px;
+  font-weight: var(--weight-500);
+}
+
+.mkept ul {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mkept__item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8em;
+  width: 100%;
+  padding: 0.45em 0.6em;
+  border: 0;
+  border-radius: var(--radius-1);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mkept__item:hover {
+  background: var(--gray-200);
+}
+
+.mkept__item time {
+  flex: none;
+  color: var(--gray-1000);
+  font: 13px var(--font-code);
+}
+
+.mkept__memo {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mkept__tag {
+  flex: none;
+  margin-left: auto;
+  color: var(--gray-1000);
+  font-size: 13px;
+}
+
 .mgen {
   display: grid;
   gap: 1.2em;

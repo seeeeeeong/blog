@@ -3,7 +3,9 @@ import {
   canDraft,
   checkLabel,
   MEMO_MAX,
+  memoPreview,
   memoProblem,
+  memoShown,
   memoStep,
   memoView,
   stageLabel,
@@ -104,5 +106,19 @@ describe('memoStep', () => {
   it('shows the draft as it comes, then lets the admin choose what to apply', () => {
     expect(memoStep({ state: 'streaming', text: '## T' })).toBe('streaming')
     expect(memoStep({ state: 'done', text: '## TCP', result: DRAFT })).toBe('confirm')
+  })
+})
+
+describe('memoPreview', () => {
+  it('takes the first line of a memo and cuts a long one short', () => {
+    expect(memoPreview('\n  첫 줄  \n둘째 줄')).toBe('첫 줄')
+    expect(memoPreview('가'.repeat(70))).toBe(`${'가'.repeat(60)}…`)
+  })
+})
+
+describe('memoShown', () => {
+  it('shows a draft opened again as a finished one, until a run takes its place', () => {
+    expect(memoShown({ state: 'idle' }, DRAFT)).toMatchObject({ step: 'confirm', draft: DRAFT })
+    expect(memoShown({ state: 'idle' }, null)).toMatchObject({ step: 'memo', draft: null })
   })
 })

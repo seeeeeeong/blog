@@ -2,14 +2,16 @@
 
 import { type FormEvent, useState } from 'react'
 import { draftFromMemo } from '@/features/admin/api/posts'
-import type { PostDraft } from '@/features/admin/api/types'
+import type { PostDraft, PostGeneration } from '@/features/admin/api/types'
 import { DraftCompare } from '@/features/admin/components/DraftCompare'
 import { DraftReview } from '@/features/admin/components/DraftReview'
 import { Generating } from '@/features/admin/components/Generating'
+import { KeptDrafts } from '@/features/admin/components/KeptDrafts'
 import { Modal } from '@/features/admin/components/Modal'
 import { useChangeChoice } from '@/features/admin/hooks/useChangeChoice'
 import { useEventStream } from '@/features/admin/hooks/useEventStream'
-import { canDraft, MEMO_MAX, memoProblem, memoStep, memoView } from '@/features/admin/utils/memo'
+import { useGenerations } from '@/features/admin/hooks/useGenerations'
+import { canDraft, MEMO_MAX, memoProblem, memoShown } from '@/features/admin/utils/memo'
 
 type Props = {
   open: boolean
@@ -20,21 +22,33 @@ type Props = {
   onClose: () => void
 }
 
-/** A rough memo or the body so far, polished by the model, then compared with the body and reviewed. */
+/**
+ * A rough memo or the body so far, polished by the model, then compared with the body and reviewed;
+ * or a draft written before, opened again the same way.
+ */
 export function MemoDialog({ open, postId, body, onApply, onClose }: Props) {
   const [edited, setEdited] = useState<string | null>(null)
   const memo = edited ?? body
   const [base, setBase] = useState('')
+  const generations = useGenerations(open, postId)
+  const [reopened, setReopened] = useState<PostDraft | null>(null)
   const stream = useEventStream<PostDraft>()
   const { state } = stream
-  const step = memoStep(state)
-  const { generating, draft, failure } = memoView(state)
+  const { step, generating, draft, failure } = memoShown(state, reopened)
   const choice = useChangeChoice(base, draft?.bodyMdx ?? null)
   const stale = draft !== null && body !== base
 
   const reset = () => {
     choice.clear()
+    setReopened(null)
     stream.cancel()
+  }
+
+  const reopen = (generation: PostGeneration) => {
+    reset()
+    setBase(body)
+    setEdited(generation.memo)
+    setReopened(generation.draft)
   }
 
   const apply = () => {
@@ -49,6 +63,7 @@ export function MemoDialog({ open, postId, body, onApply, onClose }: Props) {
     if (!canDraft(memo)) return
     setBase(body)
     choice.clear()
+    setReopened(null)
     void stream.start((signal) => draftFromMemo(postId, memo, signal))
   }
 
@@ -70,6 +85,7 @@ export function MemoDialog({ open, postId, body, onApply, onClose }: Props) {
             onChange={(event) => setEdited(event.target.value)}
           />
         )}
+        {step === 'memo' && <KeptDrafts generations={generations} onOpen={reopen} />}
         {generating && <Generating step={generating.step} label={generating.label} />}
         {draft && (
           <div className="mresult">

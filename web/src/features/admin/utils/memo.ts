@@ -70,8 +70,23 @@ export function memoProblem(memo: string, failure: string | null, stale: boolean
   return failure
 }
 
+const PREVIEW = 60
+
+/** A kept draft's memo in a line: its first words, cut short. */
+export function memoPreview(memo: string): string {
+  const line = memo.trim().split('\n')[0]?.trim() ?? ''
+  return line.length > PREVIEW ? `${line.slice(0, PREVIEW)}…` : line
+}
+
 export function memoStep(state: StreamState<PostDraft>): MemoStep {
   if (state.state === 'streaming') return 'streaming'
   if (state.state === 'done') return 'confirm'
   return 'memo'
+}
+
+/** What the dialog shows: a draft opened again from the kept ones stands in for a finished run. */
+export function memoShown(state: StreamState<PostDraft>, reopened: PostDraft | null) {
+  const view = memoView(state)
+  if (!reopened) return { ...view, step: memoStep(state) }
+  return { ...view, draft: view.draft ?? reopened, step: 'confirm' as MemoStep }
 }
