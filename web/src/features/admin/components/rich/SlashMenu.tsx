@@ -27,6 +27,7 @@ const ICONS: Record<SlashKey, Parameters<typeof Icon>[0]['name']> = {
   idea: 'idea',
   widget: 'widget',
   hash: 'widget',
+  safepoint: 'widget',
   h2: 'heading',
   ol: 'olist',
   ul: 'list',

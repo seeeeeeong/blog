@@ -4,6 +4,7 @@ import { Icon } from '@/features/admin/components/Icon'
 const HINTS: Record<string, string> = {
   HandshakeWidget: 'TCP 연결 애니메이션',
   HashTableFigure: '해시 테이블 그림',
+  SafepointFigure: 'JVM 세이프포인트 그림',
 }
 
 /** A widget, which plays only on the post; here it is a card that says which one it is. */

@@ -166,7 +166,8 @@
 }
 
 .rslash__tile--widget,
-.rslash__tile--hash {
+.rslash__tile--hash,
+.rslash__tile--safepoint {
   color: var(--green-900);
 }
 
