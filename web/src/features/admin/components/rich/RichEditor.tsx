@@ -37,6 +37,7 @@ import { BLOCK_SPECS } from '@/features/admin/utils/blocks'
 const EDITORS: Record<string, ComponentType<JsxEditorProps>> = {
   Callout: CalloutBlock,
   HandshakeWidget: WidgetBlock,
+  HashTableFigure: WidgetBlock,
   Mark: InlineBlock,
   ScenarioLink: InlineBlock,
   Seek: InlineBlock,
