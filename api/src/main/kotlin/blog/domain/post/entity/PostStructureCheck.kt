@@ -5,9 +5,9 @@ import blog.domain.post.entity.PostDraftCheck.Kind
 
 /**
  * The shape every post keeps, read from its MDX outside code fences: an opening that ends in a
- * question, 3 to 5 `##` sections with `## 마무리` last, a figure in each of the others, and one
- * `<Quiz>` that ends the body. The prose's length is only reported. The last section is taken for
- * the closing even under another title, so a missing `## 마무리` is told once, not twice.
+ * question, 3 to 5 `##` sections with `## 마무리` last, and a figure in each of the others. The
+ * prose's length is only reported. The last section is taken for the closing even under another
+ * title, so a missing `## 마무리` is told once, not twice.
  */
 object PostStructureCheck {
     const val CLOSING = "마무리"
@@ -33,7 +33,6 @@ object PostStructureCheck {
             closing(sections) +
             opening(lines) +
             sections.dropLast(1).filter { it.title != CLOSING }.flatMap(::figure) +
-            quiz(lines) +
             length(lines)
     }
 
@@ -86,33 +85,11 @@ object PostStructureCheck {
         }
     }
 
-    private fun quiz(lines: List<String>): List<Finding> {
-        val text = lines.joinToString("\n")
-        val count = QUIZ.findAll(text).count()
-        if (count == 0) return listOf(Finding(Kind.QUIZ, "없음"))
-        val problems =
-            buildList {
-                if (count > 1) add("${count}개")
-                if (!text.trimEnd().endsWith("</Quiz>")) add("뒤에 다른 내용")
-                if (ANSWERS
-                        .find(text)
-                        ?.groupValues
-                        ?.get(1)
-                        .isNullOrBlank()
-                ) {
-                    add("answers 없음")
-                }
-                if ("<Explanation>" !in text) add("Explanation 없음")
-            }
-        return problems.map { Finding(Kind.QUIZ, it) }
-    }
-
     private fun length(lines: List<String>): List<Finding> {
         val prose =
             lines
                 .filterNot { HEADING.matches(it) }
                 .joinToString(" ")
-                .let { QUIZ_BLOCK.replace(it, " ") }
                 .let { TAG.replace(it, " ") }
                 .let { LINK_TARGET.replace(it, "]") }
                 .let { MARKS.replace(it, "") }
@@ -134,9 +111,6 @@ object PostStructureCheck {
     // A Korean question may close with a period: "왜 그럴까요."
     private val QUESTION = Regex("[?？]|(?:까요|나요|가요|는가|을까|일까)\\s*[.。]")
     private val STEP = Regex("""^\s*\d+\.\s.*봅시다[.!]?\s*$""")
-    private val QUIZ = Regex("""<Quiz\b""")
-    private val ANSWERS = Regex("""<Quiz\b[^>]*\banswers="([^"]*)"""")
-    private val QUIZ_BLOCK = Regex("""<Quiz\b.*?</Quiz>""")
     private val TAG = Regex("""</?[A-Za-z][^>]*>""")
     private val LINK_TARGET = Regex("""\]\([^)]*\)""")
     private val MARKS = Regex("""[*`|]|-{3,}""")

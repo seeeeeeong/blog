@@ -175,8 +175,7 @@ class AdminPostControllerTest(
     fun `a memo streams back as a body for the draft, which stays as it was until the admin saves`() {
         val shaped =
             "가령 연결을 열면 무슨 일이 생길까요?\n\n## 인사\n\n주고받습니다.\n\n<WidgetIdea note=\"순서\" />\n\n" +
-                "## 번호\n\n확인합니다.\n\n<WidgetIdea note=\"번호\" />\n\n## 마무리\n\n충분합니다.\n\n" +
-                "<Quiz answers=\"3\">\n몇 번일까요?\n\n<Explanation>\n세 번입니다.\n</Explanation>\n</Quiz>"
+                "## 번호\n\n확인합니다.\n\n<WidgetIdea note=\"번호\" />\n\n## 마무리\n\n충분합니다."
         fakeLlmGateway.answers(shaped)
         val draft = draft()
         val id = draft.text("id")

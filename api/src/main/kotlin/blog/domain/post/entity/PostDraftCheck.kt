@@ -59,12 +59,6 @@ object PostDraftCheck {
             "독자에게 보이지 않는 그림에 '~해 봅시다' 단계가 있습니다",
             "`<WidgetIdea>`는 화면에 나오지 않으니 단계를 지우고, 해 볼 일은 note에 쓰세요",
         ),
-        QUIZ(
-            Severity.WARNING,
-            "도전 문제가 규칙과 다릅니다",
-            "본문 맨 끝에 `<Quiz answers=\"정답|다른 표기\">` 하나를 두고 문제, `<Explanation>` 풀이 순서로 쓰세요. " +
-                "글에서 설명한 내용을 숫자나 짧은 말로 답하게 묻습니다",
-        ),
         LINK_UNKNOWN(
             Severity.WARNING,
             "발행된 글 목록에 없는 글로 링크했습니다",
@@ -182,7 +176,7 @@ object PostDraftCheck {
     private val TITLE = Regex("""^# """, RegexOption.MULTILINE)
     private val MODULE = Regex("""^(import|export)\s""", RegexOption.MULTILINE)
     private val TAGS =
-        (listOf("Callout", "Mark", "Tone", "Quiz", "Explanation", "Seek", "ScenarioLink", IDEA) + WIDGETS)
+        (listOf("Callout", "Mark", "Tone", "Seek", "ScenarioLink", IDEA) + WIDGETS)
             .joinToString("|")
     private val KNOWN_TAG = Regex("""</?(?:$TAGS)\b[^>]*>""")
     private val UNKNOWN_TAG = Regex("""<(?!/?(?:$TAGS)\b)[^\s>]+>?""")

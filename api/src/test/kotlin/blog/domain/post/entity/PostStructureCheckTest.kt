@@ -8,14 +8,11 @@ import org.junit.jupiter.api.Test
 class PostStructureCheckTest {
     private val prose = "가".repeat(400)
 
-    private val quiz =
-        "<Quiz answers=\"8|여덟\">\n크기는 얼마일까요? 숫자로 답하세요.\n\n<Explanation>\n6 ÷ 0.75 = 8입니다.\n</Explanation>\n</Quiz>"
-
     private val shaped =
         "키 여섯 개를 여덟 칸에 넣으면 충돌은 얼마나 날까요?\n\n" +
             "## 적재율\n\n$prose\n\n<WidgetIdea note=\"칸이 차오르는 모습\" />\n\n" +
             "## 체이닝\n\n$prose\n\n<HandshakeWidget />\n\n1. 처음부터 재생해 봅시다.\n\n" +
-            "## 마무리\n\n$prose\n\n$quiz"
+            "## 마무리\n\n$prose"
 
     private fun kinds(body: String) = PostStructureCheck.of(body).map { it.kind }
 
@@ -86,20 +83,7 @@ class PostStructureCheckTest {
     }
 
     @Test
-    fun `one quiz ends the body, with its answers and its explanation`() {
-        assertThat(PostStructureCheck.of(shaped.replace(quiz, "끝."))).contains(Finding(Kind.QUIZ, "없음"))
-        assertThat(PostStructureCheck.of("$shaped\n\n덧붙임"))
-            .containsExactly(Finding(Kind.QUIZ, "뒤에 다른 내용"))
-        assertThat(PostStructureCheck.of(shaped.replace("answers=\"8|여덟\"", "answers=\"\"")))
-            .containsExactly(Finding(Kind.QUIZ, "answers 없음"))
-        assertThat(PostStructureCheck.of(shaped.replace("<Explanation>", "")))
-            .containsExactly(Finding(Kind.QUIZ, "Explanation 없음"))
-        assertThat(PostStructureCheck.of(shaped.replace("## 마무리", "$quiz\n\n## 마무리")))
-            .containsExactly(Finding(Kind.QUIZ, "2개"))
-    }
-
-    @Test
-    fun `the prose's length is told, leaving out code and the quiz`() {
+    fun `the prose's length is told, leaving out code`() {
         val short = shaped.replace(prose, "짧습니다.")
         val long = shaped.replace(prose, "가".repeat(800))
         val coded = shaped.replace("## 마무리", "```kotlin\n${"val x = 1\n".repeat(200)}```\n\n## 마무리")
