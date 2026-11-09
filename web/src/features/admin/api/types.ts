@@ -101,6 +101,14 @@ export type PostDraft = {
   outputTokens: number
 }
 
+/** A draft written for the post before, with the memo it came from; kept so it can be opened again. */
+export type PostGeneration = {
+  id: string
+  memo: string
+  createdAt: string
+  draft: PostDraft
+}
+
 /** What the model wrote in place of a selected passage; nothing is saved until the editor saves it. */
 export type PostRewrite = {
   replacement: string

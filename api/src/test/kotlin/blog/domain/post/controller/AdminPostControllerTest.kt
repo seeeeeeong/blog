@@ -198,6 +198,20 @@ class AdminPostControllerTest(
     }
 
     @Test
+    fun `a draft written before can be opened again from the post's generations`() {
+        val id = draft().text("id")
+        admin.post("/api/admin/posts/$id/draft", mapOf("memo" to "SYN, SYN-ACK, ACK 순서"))
+
+        val generations = admin.get("/api/admin/posts/$id/generations")
+
+        assertThat(generations.status).isEqualTo(200)
+        val kept = checkNotNull(generations.body).single()
+        assertThat(kept.text("memo")).isEqualTo("SYN, SYN-ACK, ACK 순서")
+        assertThat(kept.get("draft").text("bodyMdx")).isEqualTo(FakeLlmGateway.REPLY.text)
+        assertThat(kept.get("draft").text("model")).isEqualTo("deepseek-flash")
+    }
+
+    @Test
     fun `a selected passage streams back rewritten, and a blank one is refused`() {
         val id = draft().text("id")
         val passage = mapOf("before" to "앞", "selected" to "문단", "after" to "뒤")

@@ -5,6 +5,7 @@ import type {
   AdminPostSummary,
   PostCreateRequest,
   PostDraft,
+  PostGeneration,
   PostRewrite,
   PostRewriteRequest,
   PostSaveRequest,
@@ -48,6 +49,11 @@ export function draftFromMemo(
   signal?: AbortSignal,
 ): AsyncGenerator<StreamEvent<PostDraft>> {
   return adminStream(`${postPath(id)}/draft`, { memo }, signal)
+}
+
+/** The drafts written for the post before, newest first. */
+export function listGenerations(id: string): Promise<PostGeneration[]> {
+  return adminGet(`${postPath(id)}/generations`)
 }
 
 /** A passage rewritten, streamed as the model writes it; the api saves nothing. */

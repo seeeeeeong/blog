@@ -7,8 +7,10 @@ import blog.domain.post.dto.request.PostRewriteRequest
 import blog.domain.post.dto.request.PostSaveRequest
 import blog.domain.post.dto.response.AdminPostResponse
 import blog.domain.post.dto.response.AdminPostSummaryResponse
+import blog.domain.post.dto.response.PostGenerationResponse
 import blog.domain.post.service.AdminPostService
 import blog.domain.post.service.PostDraftService
+import blog.domain.post.service.PostGenerationService
 import blog.domain.post.service.PostRewriteService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -29,6 +31,7 @@ class AdminPostController(
     private val adminPostService: AdminPostService,
     private val postDraftService: PostDraftService,
     private val postRewriteService: PostRewriteService,
+    private val postGenerationService: PostGenerationService,
 ) {
     @GetMapping
     fun list(): List<AdminPostSummaryResponse> = adminPostService.list()
@@ -65,6 +68,12 @@ class AdminPostController(
     ) {
         postDraftService.draft(id, request, events)
     }
+
+    /** The drafts written for the post before, newest first, to open one again. */
+    @GetMapping("/{id}/generations")
+    fun generations(
+        @PathVariable id: UUID,
+    ): List<PostGenerationResponse> = postGenerationService.list(id)
 
     /** A passage of the body rewritten, streamed; the editor puts it in, and nothing is saved here. */
     @PostMapping("/{id}/rewrite")
