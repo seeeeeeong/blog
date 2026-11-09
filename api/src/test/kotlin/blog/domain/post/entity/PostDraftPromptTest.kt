@@ -34,6 +34,14 @@ class PostDraftPromptTest {
     }
 
     @Test
+    fun `a figure's steps ask only for what its controls do`() {
+        val system = PostDraftPrompt.of(title = "Safepoint", memo = "메모").system
+
+        assertThat(system).contains("with the controls it has", "nothing it cannot do")
+        assertThat(system).contains("each part once in a post at most", "The rails, poll posts and loop are fixed")
+    }
+
+    @Test
     fun `the post's shape is set out as numbered rules, and checked once more at the end`() {
         val prompt = PostDraftPrompt.of(title = "TCP", memo = "메모")
 

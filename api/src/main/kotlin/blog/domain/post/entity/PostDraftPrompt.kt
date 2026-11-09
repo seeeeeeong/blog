@@ -92,7 +92,10 @@ object PostDraftPrompt {
         - `<SafepointFigure part="why" />`, JVM threads drawn as carriages on rails that stop only at poll posts,
           only in a post about JVM safepoints: `part` is `why` (why a thread stops only where it polls), `poll`
           (poll points and a counted loop that delays the stop), `ttsp` (time to safepoint against the VM operation)
-          or `handshake` (a thread-local handshake that stops one thread), the one that fits the section it sits in.
+          or `handshake` (a thread-local handshake that stops one thread), the one that fits the section it sits in,
+          each part once in a post at most. Its controls: `why` and `poll` have one 멈춰 button that raises the
+          request; `ttsp` has a request button and a slider for the VM operation's length; `handshake` has a button
+          per thread, 1 to 4, that stops only that thread. The rails, poll posts and loop are fixed.
         - Where a widget would help the reader but none of these fits,
           `<WidgetIdea note="what it would show" />` on a line of its own.
         - No other components, no HTML tags, no imports or exports, no other `{}` expressions.
@@ -110,7 +113,8 @@ object PostDraftPrompt {
            its own heading is a section of its own.
         3. The first time a key term appears, bold it with its English once: **가상 메모리(virtual memory)**.
         4. Each section but 마무리 has one figure. A listed widget that fits comes with 1 to 3 numbered steps
-           right under it, each a thing to try on it that ends in ~해 봅시다. When none fits, a
+           right under it, each a thing to try on it with the controls it has, that ends in ~해 봅시다; ask for
+           nothing it cannot do. When none fits, a
            `<WidgetIdea note="what it would show and what the reader would try" />` comes with no steps, since
            the reader cannot see it yet. The text around a figure reads on without it.
         5. `## 마무리` says the point in a sentence or two. When <next> names a post, one more sentence leads to
