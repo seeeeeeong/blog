@@ -86,6 +86,9 @@ object PostDraftPrompt {
           With it, `<Seek to={0.95}>text</Seek>` moves it to a moment from 0 to 1, and
           `<ScenarioLink to="loss">text</ScenarioLink>` replays it with the first SYN lost (`to="normal"`
           without).
+        - `<HashTableFigure part="chaining" />`, a hash table drawn as a rack of seats the reader fills key by key,
+          only in a post about hash tables: `part` is `chaining`, `probing` (linear probing) or `load` (load factor
+          and resize), the one that fits the section it sits in.
         - Where a widget would help the reader but none of these fits,
           `<WidgetIdea note="what it would show" />` on a line of its own.
         - No other components, no HTML tags, no imports or exports, no other `{}` expressions.
