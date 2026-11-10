@@ -29,11 +29,6 @@ object PostDraftCheck {
             "`###` 이하 제목이 있습니다",
             "제목을 지워 앞 섹션의 문단으로 합치거나, 따로 설명할 만하면 `##` 섹션으로 올리세요",
         ),
-        SECTION_COUNT(
-            Severity.WARNING,
-            "`##` 섹션이 `## 마무리`를 포함해 3~5개가 아닙니다",
-            "새 내용을 쓰지 말고 섹션을 나누거나 합쳐 3~5개로 맞추세요",
-        ),
         NO_CLOSING(
             Severity.WARNING,
             "마지막 섹션이 `## 마무리`가 아닙니다",
@@ -67,7 +62,6 @@ object PostDraftCheck {
         MEMO_CODE_CHANGED(Severity.INFO, "메모의 코드가 바뀌었습니다", "메모의 코드를 그대로 옮기세요"),
         MEMO_NUMBER_MISSING(Severity.INFO, "메모의 숫자가 빠졌습니다", "메모의 숫자를 살리세요"),
         LINK_ADDED(Severity.INFO, "메모에 없는 링크가 생겼습니다", "링크가 맞는지 확인하세요"),
-        LENGTH(Severity.INFO, "본문이 코드를 빼고 1,000~1,500자가 아닙니다", "한 글에 한 개념만 다루세요"),
     }
 
     data class Finding(

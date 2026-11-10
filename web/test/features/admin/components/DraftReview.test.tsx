@@ -85,7 +85,7 @@ describe('DraftReview', () => {
   it('puts what broke rendering or the shape before what is only for the admin', () => {
     const out = render({
       checks: [
-        { kind: 'LENGTH', detail: '900자', severity: 'INFO' },
+        { kind: 'MEMO_NUMBER_MISSING', detail: '900', severity: 'INFO' },
         { kind: 'NO_FIGURE', detail: '체이닝', severity: 'WARNING' },
         { kind: 'NOT_RENDERABLE', detail: '<div>', severity: 'ERROR' },
       ],
@@ -94,6 +94,8 @@ describe('DraftReview', () => {
     expect(out.indexOf('렌더링되지 않을 수 있음')).toBeLessThan(
       out.indexOf('그림이 없는 섹션: 체이닝'),
     )
-    expect(out.indexOf('그림이 없는 섹션: 체이닝')).toBeLessThan(out.indexOf('본문 길이: 900자'))
+    expect(out.indexOf('그림이 없는 섹션: 체이닝')).toBeLessThan(
+      out.indexOf('메모의 숫자가 빠짐: 900'),
+    )
   })
 })

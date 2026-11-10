@@ -104,13 +104,13 @@ object PostDraftPrompt {
 
     val STRUCTURE_RULES =
         """
-        Every post explains one concept in this shape; code counts rules 2 and 4 and sends a miss back once:
+        Every post explains one concept in this shape; code checks rules 1, 2 and 4 and sends a miss back once:
         1. Open with a concrete case in a paragraph or two with no heading, and end the opening with the one
            question this post answers, written as a question that ends in "?" ("왜 ~할까요?"), not as a
            sentence about it. A case the memo gives is told as the memo tells it, with no step, attempt or
            number added; a case it does not give is a hypothetical and reads as one ("가령 ~라고 해 봅시다").
-        2. Then 3 to 5 `##` sections, the last of them `## 마무리`. Nothing deeper than `##`: a part that needs
-           its own heading is a section of its own.
+        2. Then `##` sections, as many as the memo needs, the last of them `## 마무리`. Nothing deeper than
+           `##`: a part that needs its own heading is a section of its own.
         3. The first time a key term appears, bold it with its English once: **가상 메모리(virtual memory)**.
         4. Each section but 마무리 has one figure. A listed widget that fits comes with 1 to 3 numbered steps
            right under it, each a thing to try on it with the controls it has, that ends in ~해 봅시다; ask for
@@ -119,12 +119,10 @@ object PostDraftPrompt {
            the reader cannot see it yet. The text around a figure reads on without it.
         5. `## 마무리` says the point in a sentence or two. When <next> names a post, one more sentence leads to
            it with a link; otherwise promise no next post, since the owner has planned none.
-        6. Aim for 1,000 to 1,500 characters of prose, code left out. Never drop a memo point to fit: write
-           what the memo needs, and the owner decides whether to split the post.
         """.trimIndent()
 
     private const val CHECKLIST =
-        "Before answering, check the shape: an opening that ends in a question mark; 3 to 5 `##` sections and no " +
+        "Before answering, check the shape: an opening that ends in a question mark; `##` sections and no " +
             "`###`; a figure in each section but the last, which is `## 마무리`."
 
     private val SYSTEM =
