@@ -47,9 +47,9 @@ class PostDraftPromptTest {
 
         assertThat(prompt.system).contains(PostDraftPrompt.STRUCTURE_RULES)
         assertThat(PostDraftPrompt.STRUCTURE_RULES)
-            .contains("3 to 5 `##` sections, the last of them `## 마무리`", "Nothing deeper than `##`")
+            .contains("`##` sections, as many as the memo needs, the last of them `## 마무리`", "Nothing deeper than")
             .contains("ends in ~해 봅시다", "comes with no steps")
-            .contains("1,000 to 1,500 characters", "Never drop a memo point to fit")
+            .doesNotContain("3 to 5", "1,000 to 1,500 characters")
         assertThat(prompt.user).endsWith("a figure in each section but the last, which is `## 마무리`.")
     }
 

@@ -69,7 +69,6 @@ export type PostDraftReview = {
 export type PostDraftCheckKind =
   | 'NOT_RENDERABLE'
   | 'HEADING_DEPTH'
-  | 'SECTION_COUNT'
   | 'NO_CLOSING'
   | 'NO_OPENING_QUESTION'
   | 'NO_FIGURE'
@@ -79,7 +78,6 @@ export type PostDraftCheckKind =
   | 'MEMO_CODE_CHANGED'
   | 'MEMO_NUMBER_MISSING'
   | 'LINK_ADDED'
-  | 'LENGTH'
 
 /** An error or a warning went back to the model in its one rewrite; an info is for the admin alone. */
 export type PostDraftCheck = {

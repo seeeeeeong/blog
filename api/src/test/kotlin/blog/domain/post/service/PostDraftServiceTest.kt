@@ -328,7 +328,7 @@ class PostDraftServiceTest(
 
         assertThat(fakeLlmGateway.asked).hasSize(4)
         assertThat(fakeLlmGateway.asked[2].user)
-            .contains("- [구조] `##` 섹션이", "- [구조] 마지막 섹션이 `## 마무리`가 아닙니다 (\"초안\")")
+            .contains("- [구조] 첫 `##` 앞 도입에 질문이", "- [구조] 마지막 섹션이 `## 마무리`가 아닙니다 (\"초안\")")
         assertThat(draft.bodyMdx).isEqualTo(REWRITTEN)
         assertThat(draft.revised).isTrue()
         assertThat(draft.checks.map { it.severity }).doesNotContain(PostDraftCheck.Severity.WARNING)
@@ -364,7 +364,7 @@ class PostDraftServiceTest(
     @Test
     fun `the rewrite hears at most six of the checks' problems`() {
         val post = adminPostService.create(request())
-        val headings = (1..4).joinToString("\n\n") { "### 원인 $it" }
+        val headings = (1..5).joinToString("\n\n") { "### 원인 $it" }
         fakeLlmGateway.answersInTurn("$MISSHAPEN\n\n$headings", CLEAN, REWRITTEN, CLEAN)
 
         draft(post.id, "메모")

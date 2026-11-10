@@ -14,8 +14,6 @@ class PostStructureCheckTest {
             "## 체이닝\n\n$prose\n\n<HandshakeWidget />\n\n1. 처음부터 재생해 봅시다.\n\n" +
             "## 마무리\n\n$prose"
 
-    private fun kinds(body: String) = PostStructureCheck.of(body).map { it.kind }
-
     @Test
     fun `a post in the shape has no findings`() {
         assertThat(PostStructureCheck.of(shaped)).isEmpty()
@@ -29,13 +27,18 @@ class PostStructureCheckTest {
     }
 
     @Test
-    fun `three to five sections are counted, the closing among them`() {
-        val two = shaped.replace("## 체이닝\n\n$prose\n\n<HandshakeWidget />\n\n1. 처음부터 재생해 봅시다.\n\n", "")
-        val extra = "## 더\n\n글\n\n<WidgetIdea note=\"더\" />\n\n"
-        val six = shaped.replace("## 마무리", "$extra$extra$extra## 마무리")
+    fun `a post of any length, in as many sections as it needs, has no findings`() {
+        val sections = (1..5).joinToString("") { "## 갈래 $it\n\n${"나".repeat(600)}\n\n<WidgetIdea note=\"갈래\" />\n\n" }
+        val long = "키는 몇 칸에 들어갈까요?\n\n$sections## 마무리\n\n${"다".repeat(600)}"
 
-        assertThat(PostStructureCheck.of(two)).contains(Finding(Kind.SECTION_COUNT, "2개"))
-        assertThat(PostStructureCheck.of(six)).contains(Finding(Kind.SECTION_COUNT, "6개"))
+        assertThat(PostStructureCheck.of(long)).isEmpty()
+    }
+
+    @Test
+    fun `a single section is the closing, and needs no figure`() {
+        val only = "키는 몇 칸에 들어갈까요?\n\n## 마무리\n\n칸은 여덟입니다."
+
+        assertThat(PostStructureCheck.of(only)).isEmpty()
     }
 
     @Test
@@ -88,16 +91,5 @@ class PostStructureCheckTest {
         val body = shaped.replace("모습\" />", "모습\" />\n\n가령 키가 여섯 개라고 해 봅시다.")
 
         assertThat(PostStructureCheck.of(body)).isEmpty()
-    }
-
-    @Test
-    fun `the prose's length is told, leaving out code`() {
-        val short = shaped.replace(prose, "짧습니다.")
-        val long = shaped.replace(prose, "가".repeat(800))
-        val coded = shaped.replace("## 마무리", "```kotlin\n${"val x = 1\n".repeat(200)}```\n\n## 마무리")
-
-        assertThat(kinds(short)).containsExactly(Kind.LENGTH)
-        assertThat(PostStructureCheck.of(long).single().detail).endsWith("나누기를 검토하세요")
-        assertThat(PostStructureCheck.of(coded)).isEmpty()
     }
 }

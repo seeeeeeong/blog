@@ -93,13 +93,12 @@ class PostDraftCheckTest {
         assertThat(Finding(Kind.NOT_RENDERABLE, "<div>").severity).isEqualTo(PostDraftCheck.Severity.ERROR)
         assertThat(Finding(Kind.NO_FIGURE, "체이닝").severity).isEqualTo(PostDraftCheck.Severity.WARNING)
         assertThat(Finding(Kind.MEMO_NUMBER_MISSING, "30").severity).isEqualTo(PostDraftCheck.Severity.INFO)
-        assertThat(Finding(Kind.LENGTH, "900자").severity).isEqualTo(PostDraftCheck.Severity.INFO)
     }
 
     @Test
     fun `a problem told to the model says what is wrong, where, and how to fix it`() {
-        val problem = PostDraftCheck.problemOf(Finding(Kind.SECTION_COUNT, "6개"))
+        val problem = PostDraftCheck.problemOf(Finding(Kind.NO_CLOSING, "정리"))
 
-        assertThat(problem).startsWith("`##` 섹션이").contains("(\"6개\")", "3~5개로 맞추세요")
+        assertThat(problem).startsWith("마지막 섹션이").contains("(\"정리\")", "`## 마무리`를 마지막 섹션으로 두세요")
     }
 }

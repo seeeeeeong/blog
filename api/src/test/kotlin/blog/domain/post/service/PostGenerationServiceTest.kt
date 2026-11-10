@@ -72,7 +72,7 @@ class PostGenerationServiceTest(
             memo = "나중",
             at = Instant.parse("2026-11-02T00:00:00Z"),
             review = """{"addedFacts": [], "corrections": [], "invented": [], "dropped": [], "critical": []}""",
-            checks = """[{"kind": "LENGTH", "detail": "900자", "severity": "INFO"}]""",
+            checks = """[{"kind": "MEMO_NUMBER_MISSING", "detail": "900", "severity": "INFO"}]""",
         )
         kept(other, "다른 글", Instant.parse("2026-11-03T00:00:00Z"))
 
@@ -83,7 +83,7 @@ class PostGenerationServiceTest(
         assertThat(newest.draft.bodyMdx).isEqualTo("나중 본문")
         assertThat(newest.draft.review).isNotNull
         assertThat(newest.draft.revised).isTrue
-        assertThat(newest.draft.checks).containsExactly(Finding(Kind.LENGTH, "900자"))
+        assertThat(newest.draft.checks).containsExactly(Finding(Kind.MEMO_NUMBER_MISSING, "900"))
         assertThat(newest.draft.inputTokens).isEqualTo(10)
         assertThat(generations.last().draft.review).isNull()
     }
@@ -97,7 +97,9 @@ class PostGenerationServiceTest(
             at = Instant.parse("2026-11-01T00:00:00Z"),
             checks =
                 """[{"kind": "QUIZ", "detail": "없음", "severity": "WARNING"},""" +
-                    """ {"kind": "NO_FIGURE", "detail": "체이닝", "severity": "WARNING"}]""",
+                    """ {"kind": "SECTION_COUNT", "detail": "6개", "severity": "WARNING"},""" +
+                    """ {"kind": "NO_FIGURE", "detail": "체이닝", "severity": "WARNING"},""" +
+                    """ {"kind": "LENGTH", "detail": "3600자, 나누기를 검토하세요", "severity": "INFO"}]""",
         )
 
         val checks =
