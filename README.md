@@ -1,23 +1,38 @@
 # Sinseong Lee
 
-A personal blog of computer science notes: posts written in MDX, grouped by topic, with an
-editor agent for the author.
-
-`api/` is Spring Boot (Kotlin), `web/` is Next.js, PostgreSQL stores the posts.
+A personal blog of computer science notes. Each post is an MDX file in
+`web/content/posts/`, and the Next.js app in `web/` prerenders every page
+from them. The layout is [Astro Nano](https://github.com/markhorn-dev/astro-nano) by Mark Horn
+(MIT), its compiled stylesheet vendored in `web/src/app/nano/`.
 
 ## Getting started
 
 ```bash
-docker compose --profile local up -d postgres
-./gradlew check
 pnpm --dir web install
 pnpm --dir web check
+pnpm --dir web build
 ```
+
+## Writing a post
+
+Add `web/content/posts/<slug>.mdx`:
+
+```mdx
+---
+title: 프로그램 실행 흐름
+description: 명령 한 줄에서 프로세스가 끝나기까지
+date: 2026-11-11T21:00:00+09:00
+---
+
+본문
+```
+
+`draft: true` keeps a post off every page. Merging the pull request deploys it.
 
 ## Configuration
 
-[`.env.example`](.env.example) lists the settings. The web reads `NEXT_PUBLIC_SITE_URL`, the
-public origin its RSS feed links to, when it is built; it defaults to `http://localhost:3150`.
+The web reads `NEXT_PUBLIC_SITE_URL`, the public origin its RSS feed links to, when it is
+built; it defaults to `http://localhost:3150`.
 
 ## Development
 
