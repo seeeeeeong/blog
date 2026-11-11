@@ -44,11 +44,11 @@
 }
 
 .hash-figure .iso-legend {
-  color: var(--text-tertiary);
+  color: var(--tw-prose-captions);
 }
 
 .hash-figure .iso-caption {
-  color: var(--text-primary);
+  color: var(--tw-prose-body);
 }
 
 .hash-puck {
