@@ -1,68 +1,44 @@
 import { renderToStaticMarkup } from 'react-dom/server'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Home from '@/app/(site)/page'
-import type { Post, PostSummary, Topic } from '@/features/posts/api/types'
+import type { Post } from '@/features/posts/api/types'
 
-const network: Topic = { slug: 'network', title: '네트워크', position: 2 }
-const os: Topic = { slug: 'os', title: '운영체제', position: 1 }
+const posts = vi.hoisted(() => ({ list: [] as Post[] }))
 
-function summary(slug: string, topic: Topic, publishedAt: string): PostSummary {
-  return { slug, title: `${slug} title`, summary: 's', topic, number: '1.1', publishedAt }
-}
+vi.mock('@/features/posts/api/posts', () => ({ loadPosts: async () => posts.list }))
 
-/** Not newest first, so the page has to find the newest itself. */
-const POSTS: PostSummary[] = [
-  summary('virtual-memory', os, '2026-06-03T01:00:00Z'),
-  summary('tcp-handshake', network, '2026-10-21T01:00:00Z'),
-]
-
-const NEWEST: Post = {
-  ...summary('tcp-handshake', network, '2026-10-21T01:00:00Z'),
-  title: 'TCP 3-way handshake',
-  bodyMdx: '세 번 주고받습니다.',
-  previous: null,
-  next: null,
-}
-
-function answering(posts: PostSummary[]) {
-  return async (url: string) => {
-    if (url.endsWith('/api/posts/tcp-handshake')) return Response.json(NEWEST)
-    if (url.endsWith('/api/posts')) return Response.json(posts)
-    return Response.json([network, os])
+function post(slug: string): Post {
+  return {
+    slug,
+    title: `${slug} title`,
+    description: `${slug} description`,
+    date: '2026-11-11T12:00:00.000Z',
+    body: '',
+    draft: false,
   }
 }
 
-afterEach(() => vi.unstubAllGlobals())
+beforeEach(() => {
+  posts.list = []
+})
 
 describe('Home', () => {
-  it('shows the newest post in full, its title linking to its own page', async () => {
-    vi.stubGlobal('fetch', answering(POSTS))
+  it('lists the three newest posts, linking each to its page', async () => {
+    posts.list = ['d', 'c', 'b', 'a'].map(post)
 
     const out = renderToStaticMarkup(await Home())
 
-    expect(out).toContain(
-      '<h1 class="post__title"><a href="/posts/tcp-handshake">TCP 3-way handshake</a></h1>',
-    )
-    expect(out).toContain('October 21, 2026')
-    expect(out).toContain('세 번 주고받습니다.')
-    expect(out).not.toContain('virtual-memory')
+    expect(out).toContain('Latest posts')
+    expect(out).toContain('href="/blog/d"')
+    expect(out).toContain('c description')
+    expect(out).toContain('href="/blog/b"')
+    expect(out).not.toContain('href="/blog/a"')
   })
 
-  it('is an empty page before the first post', async () => {
-    vi.stubGlobal('fetch', answering([]))
-
+  it('leaves out the latest posts before the first one', async () => {
     const out = renderToStaticMarkup(await Home())
 
-    expect(out).toBe('<main class="post"></main>')
-  })
-
-  it('still opens when the api is down', async () => {
-    vi.stubGlobal('fetch', async () => {
-      throw new TypeError('fetch failed')
-    })
-
-    const out = renderToStaticMarkup(await Home())
-
-    expect(out).toContain('글을 불러오지 못했습니다.')
+    expect(out).not.toContain('Latest posts')
+    expect(out).toContain('Let&#x27;s Connect')
   })
 })

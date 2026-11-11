@@ -115,6 +115,4 @@
   --color-subtle: var(--gray-900);
   --color-muted: var(--gray-800);
   --color-widget-line: var(--gray-700);
-
-  color-scheme: light;
 }

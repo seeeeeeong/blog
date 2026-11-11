@@ -1,5 +1,5 @@
 import type { PostSummary } from '@/features/posts/api/types'
-import { newestFirst, postHref } from '@/features/posts/utils/archive'
+import { postHref } from '@/features/posts/utils/archive'
 import { FEED_PATH, SITE_DESCRIPTION, SITE_TITLE } from '@/lib/site'
 import { rfc822Date } from '@/utils/date'
 
@@ -26,13 +26,13 @@ function item(post: PostSummary, siteUrl: string): string {
     `      <title>${escapeXml(post.title)}</title>`,
     `      <link>${link}</link>`,
     `      <guid isPermaLink="true">${link}</guid>`,
-    `      <pubDate>${rfc822Date(post.publishedAt)}</pubDate>`,
-    `      <description>${escapeXml(post.summary)}</description>`,
+    `      <pubDate>${rfc822Date(post.date)}</pubDate>`,
+    `      <description>${escapeXml(post.description)}</description>`,
     '    </item>',
   ].join('\n')
 }
 
-/** An RSS 2.0 feed of [posts], newest first, each linked under [siteUrl]. */
+/** An RSS 2.0 feed of [posts], already newest first, each linked under [siteUrl]. */
 export function rssFeed(posts: readonly PostSummary[], siteUrl: string): string {
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
@@ -43,7 +43,7 @@ export function rssFeed(posts: readonly PostSummary[], siteUrl: string): string 
     `    <description>${escapeXml(SITE_DESCRIPTION)}</description>`,
     '    <language>ko</language>',
     `    <atom:link href="${escapeXml(new URL(FEED_PATH, siteUrl).href)}" rel="self" type="application/rss+xml"/>`,
-    ...newestFirst(posts).map((post) => item(post, siteUrl)),
+    ...posts.map((post) => item(post, siteUrl)),
     '  </channel>',
     '</rss>',
     '',

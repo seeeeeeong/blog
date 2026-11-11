@@ -20,21 +20,11 @@ export function tokenClass(color: string | undefined): string | undefined {
   return name === undefined ? undefined : TOKEN_CLASSES[name]
 }
 
-/** The fence's `title="Server.kt"`, if it has one. */
-export function titleOf(meta: string | null | undefined): string | undefined {
-  return meta?.match(/(?:^|\s)title="([^"]*)"/)?.[1]
-}
-
 /** The `kotlin` of a `language-kotlin` class. */
 export function languageOf(className: unknown): string | undefined {
   const classes = Array.isArray(className) ? className : []
   const language = classes.find((name) => String(name).startsWith('language-'))
   return language === undefined ? undefined : String(language).slice('language-'.length)
-}
-
-/** What the card's head says: the file's name, else its language. */
-export function codeLabel(meta: string | null | undefined, language: string | undefined): string {
-  return titleOf(meta) ?? language ?? ''
 }
 
 function tokenNode(token: Token): ElementContent {

@@ -1,26 +1,24 @@
 import type { PostSummary } from '@/features/posts/api/types'
 import { yearOf } from '@/utils/date'
 
-export type YearGroup = { year: string; posts: PostSummary[] }
+export type YearGroup<T extends PostSummary> = { year: string; posts: T[] }
 
 export function postHref(slug: string): string {
-  return `/posts/${slug}`
+  return `/blog/${slug}`
 }
 
-export function newestFirst(posts: readonly PostSummary[]): PostSummary[] {
-  return [...posts].sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
-}
-
-export function newestOf(posts: readonly PostSummary[]): PostSummary | undefined {
-  return newestFirst(posts)[0]
-}
-
-/** Posts newest first, in groups by the year they were published in Seoul. */
-export function byYear(posts: readonly PostSummary[]): YearGroup[] {
-  const years = new Map<string, PostSummary[]>()
-  for (const post of newestFirst(posts)) {
-    const year = yearOf(post.publishedAt)
+/** Posts, already newest first, in groups by the year they came out in Seoul. */
+export function byYear<T extends PostSummary>(posts: readonly T[]): YearGroup<T>[] {
+  const years = new Map<string, T[]>()
+  for (const post of posts) {
+    const year = yearOf(post.date)
     years.set(year, [...(years.get(year) ?? []), post])
   }
   return [...years].map(([year, inYear]) => ({ year, posts: inYear }))
+}
+
+/** `8 min read`, at two hundred words a minute and never less than one. */
+export function readingTime(body: string): string {
+  const words = body.split(/\s+/).filter(Boolean).length
+  return `${Math.max(1, Math.ceil(words / 200))} min read`
 }

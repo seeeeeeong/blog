@@ -1,11 +1,9 @@
-import './post.css'
 import type { MDXComponents, MDXContent } from 'mdx/types'
-import Link from 'next/link'
 import type { Post } from '@/features/posts/api/types'
-import { Pager } from '@/features/posts/components/Pager'
+import { BackToPrev } from '@/features/posts/components/BackToPrev'
 import { PostBody } from '@/features/posts/components/PostBody'
-import { postHref } from '@/features/posts/utils/archive'
-import { fullDate, isoDay } from '@/utils/date'
+import { readingTime } from '@/features/posts/utils/archive'
+import { dateTime } from '@/utils/date'
 
 type Props = {
   post: Post
@@ -15,22 +13,26 @@ type Props = {
   components: MDXComponents
 }
 
-/** One post: when it came out, its title, its body and its neighbours in the topic. */
+/** One post: the way back, when it came out and how long it takes, its title and its body. */
 export function PostArticle({ post, Content, components }: Props) {
   return (
-    <article className="post">
-      <header>
-        <time className="post__date" dateTime={isoDay(post.publishedAt)}>
-          {fullDate(post.publishedAt)}
-        </time>
-        <h1 className="post__title">
-          <Link href={postHref(post.slug)}>{post.title}</Link>
-        </h1>
-      </header>
-      <div className="prose">
-        <PostBody Content={Content} components={components} />
+    <>
+      <div className="animate">
+        <BackToPrev href="/blog">Back to blog</BackToPrev>
       </div>
-      <Pager previous={post.previous} next={post.next} />
-    </article>
+      <div className="space-y-1 my-10">
+        <div className="animate flex items-center gap-1.5">
+          <div className="font-base text-sm">
+            <time dateTime={post.date}>{dateTime(post.date)}</time>
+          </div>
+          &bull;
+          <div className="font-base text-sm">{readingTime(post.body)}</div>
+        </div>
+        <h1 className="animate text-2xl font-semibold text-black dark:text-white">{post.title}</h1>
+      </div>
+      <article className="animate">
+        <PostBody Content={Content} components={components} />
+      </article>
+    </>
   )
 }
