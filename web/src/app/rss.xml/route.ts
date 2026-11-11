@@ -1,13 +1,12 @@
-import { loadArchive } from '@/features/posts/api/archive'
+import { loadPosts } from '@/features/posts/api/posts'
 import { rssFeed } from '@/features/posts/utils/rss'
 import { SITE_URL } from '@/lib/site'
 
-/** The published posts as an RSS 2.0 feed. */
+export const dynamic = 'force-static'
+
+/** The posts as an RSS 2.0 feed. */
 export async function GET(): Promise<Response> {
-  const archive = await loadArchive()
-  // An empty feed would read as every post withdrawn; a reader retries a 503 instead.
-  if (!archive) return new Response('The feed is unavailable.', { status: 503 })
-  return new Response(rssFeed(archive.posts, SITE_URL), {
+  return new Response(rssFeed(await loadPosts(), SITE_URL), {
     headers: { 'Content-Type': 'application/rss+xml; charset=utf-8' },
   })
 }

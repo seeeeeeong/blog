@@ -1,8 +1,9 @@
 # Sinseong Lee
 
-A personal blog of computer science notes. Posts and their revisions are stored in PostgreSQL
-as MDX and grouped by topic; a draft from the admin's memo runs on DeepSeek.
-It is self-hosted on a home server behind a Cloudflare Tunnel.
+A personal blog of computer science notes. Each post is an MDX file in `web/content/posts/`,
+written with Claude in a session and published by merging its pull request; the site is
+prerendered from them. The layout is Mark Horn's Astro Nano (MIT), its compiled stylesheet
+vendored in `web/src/app/nano/`. It is self-hosted on a home server behind a Cloudflare Tunnel.
 
 `api/` is the Spring Boot app and the only Gradle module, `web/` is Next.js. The design lives in
 local, uncommitted notes under `docs/`; read the relevant note before changing a feature.
@@ -112,7 +113,11 @@ code it guards.
   gets its own override in `biome.json`, which `test/biome.test.ts` checks.
 - Tests live in `web/test/` at the path of what they test: `src/features/posts/utils/toc.ts`
   is tested by `test/features/posts/utils/toc.test.ts`.
-- The browser calls `/api/*` on its own origin; Next rewrites it to the api (`BLOG_API_URL`).
+- A post's frontmatter is `title`, `description`, `date` (ISO 8601 with its offset) and an
+  optional `draft: true`, which keeps it off every page. A field missing stops the build.
+- `src/app/nano/nano.css` is vendored: never edit or format it. Its Tailwind utilities are the
+  class names the chrome uses; a class of our own must not reuse one (`.table` is
+  `display: table` there).
 
 ## Figures
 
@@ -123,7 +128,7 @@ code it guards.
 - Give the skill the real numbers. Light theme only; Korean text only in the HTML around the
   drawing (corners, legend, caption), never inside the SVG. Check it at 390 pixels wide.
 - A figure is a widget: register it in `WIDGETS`, with literal string or number props only,
-  since a post is MDX from the database and anything else is dropped.
+  since anything else in a post's MDX is dropped.
 - The skill's scripts start Chrome against a page; point them at the dev server
   (`http://localhost:3150`), never start one for them.
 

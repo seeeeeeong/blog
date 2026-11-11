@@ -3,7 +3,7 @@ import type { MdxJsxFlowElementHast } from 'mdast-util-mdx-jsx'
 import { createCssVariablesTheme, createHighlighterCore, type HighlighterCore } from 'shiki/core'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import { SKIP, visit } from 'unist-util-visit'
-import { codeElement, codeLabel, languageOf, type Token } from '@/features/posts/utils/code'
+import { codeElement, languageOf, type Token } from '@/features/posts/utils/code'
 
 const THEME_NAME = 'site-tokens'
 const THEME = createCssVariablesTheme({ name: THEME_NAME, variablePrefix: '--shiki-' })
@@ -47,22 +47,19 @@ function textOf(node: Element): string {
   return node.children.map((child) => (child.type === 'text' ? child.value : '')).join('')
 }
 
-async function codeBlock(code: Element, meta: string | null | undefined) {
+async function codeBlock(code: Element) {
   const language = languageOf(code.properties.className)
   const source = textOf(code).replace(/\n$/, '')
   const block: MdxJsxFlowElementHast = {
     type: 'mdxJsxFlowElement',
     name: CODE_BLOCK,
-    attributes: [
-      { type: 'mdxJsxAttribute', name: 'label', value: codeLabel(meta, language) },
-      { type: 'mdxJsxAttribute', name: 'code', value: source },
-    ],
+    attributes: [],
     children: [codeElement(await tokenize(source, language))],
   }
   return block
 }
 
-/** Each fenced block, highlighted while compiling, framed by [CODE_BLOCK] with its source to copy. */
+/** Each fenced block, highlighted while compiling and framed by [CODE_BLOCK]. */
 export function rehypeCodeBlocks() {
   return async (tree: Root) => {
     const blocks: { parent: { children: unknown[] }; index: number; code: Element }[] = []
@@ -72,9 +69,7 @@ export function rehypeCodeBlocks() {
       if (code?.type === 'element' && code.tagName === 'code') blocks.push({ parent, index, code })
       return SKIP
     })
-    const framed = await Promise.all(
-      blocks.map(({ code }) => codeBlock(code, (code.data as { meta?: string } | undefined)?.meta)),
-    )
+    const framed = await Promise.all(blocks.map(({ code }) => codeBlock(code)))
     blocks.forEach(({ parent, index }, i) => {
       const block = framed[i]
       if (block) parent.children[index] = block

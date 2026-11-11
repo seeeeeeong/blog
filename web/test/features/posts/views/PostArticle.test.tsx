@@ -1,72 +1,35 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import type { Post, PostSummary } from '@/features/posts/api/types'
+import type { Post } from '@/features/posts/api/types'
 import { PostArticle } from '@/features/posts/views/PostArticle'
 
-const network = { slug: 'network', title: '네트워크', position: 2 }
-
-function summary(slug: string, place: number): PostSummary {
-  return {
-    slug,
-    title: `${slug} title`,
-    summary: `${slug} summary`,
-    topic: network,
-    number: `2.${place}`,
-    publishedAt: '2026-09-01T00:00:00Z',
-  }
-}
-
-function post(previous: PostSummary | null, next: PostSummary | null): Post {
-  return {
-    ...summary('tcp-handshake', 2),
-    title: 'TCP 3-way handshake',
-    publishedAt: '2026-10-21T00:00:00Z',
-    bodyMdx: '',
-    previous,
-    next,
-  }
+const POST: Post = {
+  slug: 'tcp-handshake',
+  title: 'TCP 3-way handshake',
+  description: '',
+  date: '2026-10-21T00:00:00.000Z',
+  body: 'word '.repeat(450),
+  draft: false,
 }
 
 const Body = () => <p>본문이다.</p>
 
 describe('PostArticle', () => {
-  it('puts the day in Seoul above the title, which links to the post, then the body', () => {
-    const out = renderToStaticMarkup(
-      <PostArticle post={post(null, null)} Content={Body} components={{}} />,
-    )
+  it('leads back to the blog, then dates the post, times its reading and titles it', () => {
+    const out = renderToStaticMarkup(<PostArticle post={POST} Content={Body} components={{}} />)
 
+    expect(out).toContain('href="/blog"')
+    expect(out).toContain('Back to blog')
+    expect(out).toContain('Oct 21, 2026, 9:00 AM GMT+9</time>')
+    expect(out).toContain('3 min read')
     expect(out).toContain(
-      '<header><time class="post__date" dateTime="2026-10-21">October 21, 2026</time><h1 class="post__title"><a href="/posts/tcp-handshake">TCP 3-way handshake</a></h1></header>',
+      '<h1 class="animate text-2xl font-semibold text-black dark:text-white">TCP 3-way handshake</h1>',
     )
-    expect(out).toContain('<div class="prose"><p>본문이다.</p></div>')
-  })
-
-  it('pages to the posts before and after it in the topic', () => {
-    const out = renderToStaticMarkup(
-      <PostArticle
-        post={post(summary('osi', 1), summary('http', 3))}
-        Content={Body}
-        components={{}}
-      />,
-    )
-
-    expect(out).toContain('<nav class="pager" aria-label="이전 글과 다음 글">')
-    expect(out).toContain('<a class="pager__prev" href="/posts/osi">← osi title</a>')
-    expect(out).toContain('<a class="pager__next" href="/posts/http">http title →</a>')
-  })
-
-  it('has no pager for a post alone in its topic', () => {
-    const out = renderToStaticMarkup(
-      <PostArticle post={post(null, null)} Content={Body} components={{}} />,
-    )
-
-    expect(out).not.toContain('pager')
+    expect(out).toContain('<article class="animate"><p>본문이다.</p></article>')
   })
 
   it('says so when the body could not be shown', () => {
-    const out = renderToStaticMarkup(
-      <PostArticle post={post(null, null)} Content={null} components={{}} />,
-    )
+    const out = renderToStaticMarkup(<PostArticle post={POST} Content={null} components={{}} />)
 
     expect(out).toContain('본문을 표시하지 못했습니다.')
   })

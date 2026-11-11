@@ -1,0 +1,94 @@
+/* What the reference never needed: Korean text and the components a post may use. */
+
+body {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+article .code pre {
+  background-color: #24292e;
+  color: #e1e4e8;
+}
+
+.tk-k {
+  color: #f97583;
+}
+
+.tk-f {
+  color: #b392f0;
+}
+
+.tk-n {
+  color: #79b8ff;
+}
+
+.tk-s {
+  color: #9ecbff;
+}
+
+.tk-p {
+  color: #e1e4e8;
+}
+
+.tk-c {
+  color: #6a737d;
+}
+
+article .table-scroll {
+  margin-top: 2em;
+  margin-bottom: 2em;
+  overflow-x: auto;
+}
+
+article .table-scroll table {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.callout {
+  margin-top: 1.6em;
+  margin-bottom: 1.6em;
+  padding-inline-start: 1em;
+  border-inline-start: 0.25rem solid var(--tw-prose-quote-borders);
+  color: var(--tw-prose-body);
+}
+
+.callout__label {
+  display: flex;
+  align-items: center;
+  gap: 0.375em;
+  color: var(--tw-prose-headings);
+  font-size: 0.875em;
+  font-weight: 600;
+}
+
+.callout__label svg {
+  width: 1em;
+  height: 1em;
+}
+
+.mark {
+  padding: 0 0.2em;
+  border-radius: 0.2em;
+  background-color: rgb(0 0 0 / 6%);
+}
+
+.dark .mark {
+  background-color: rgb(255 255 255 / 10%);
+}
+
+.tone--orange {
+  color: var(--accent-orange);
+}
+
+.tone--teal {
+  color: var(--accent-teal);
+}
+
+.tone--blue {
+  color: var(--accent-blue);
+}
+
+.tone--pink {
+  color: var(--accent-pink);
+}

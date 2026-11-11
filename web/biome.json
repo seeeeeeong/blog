@@ -13,7 +13,8 @@
       "!**/.next",
       "!**/*.d.ts",
       "!pnpm-lock.yaml",
-      "!src/features/widgets/iso"
+      "!src/features/widgets/iso",
+      "!src/app/nano"
     ]
   },
   "formatter": {

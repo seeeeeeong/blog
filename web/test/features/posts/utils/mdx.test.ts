@@ -34,13 +34,11 @@ describe('compileMdx', () => {
     )
   })
 
-  it('gives each section heading an id and a link to itself', async () => {
+  it('gives each section heading an id', async () => {
     const out = await render('## 왜 세 번인가\n\ntext\n\n### Step `one`')
 
-    expect(out).toContain(
-      '<h2 id="왜-세-번인가" class="anchor">왜 세 번인가<a href="#왜-세-번인가"><span class="sr-only">이 섹션 링크</span><svg viewBox="0 0 16 8"',
-    )
-    expect(out).toContain('<h3 id="step-one" class="anchor">Step <code>one</code>')
+    expect(out).toContain('<h2 id="왜-세-번인가">왜 세 번인가</h2>')
+    expect(out).toContain('<h3 id="step-one">Step <code>one</code></h3>')
   })
 
   it('renders a registered component with its literal attributes', async () => {
@@ -86,29 +84,25 @@ describe('compileMdx', () => {
     expect(out).toContain('target="_blank" rel="noreferrer"')
   })
 
-  it('frames a fenced block with its file name, its lines and a copy button', async () => {
+  it('frames a fenced block with its highlighted lines', async () => {
     const out = await render('```kotlin title="Server.kt"\nval a = 1\n\nhandle(a)\n```')
 
-    expect(out).toContain(
-      '<div class="code"><div class="code__head"><span class="mono">Server.kt</span>',
-    )
-    expect(out).toContain('aria-label="코드 복사"')
+    expect(out).toContain('<div class="code"><pre><code>')
     expect(out).toContain('<span class="line"><span class="tk-k">val</span>')
     expect(out).toContain('<span class="tk-n">1</span>')
     expect(out.match(/class="line"/g)).toHaveLength(3)
   })
 
-  it('names a block without a title by its language, and leaves an unknown one plain', async () => {
+  it('leaves a block in a language it does not know plain', async () => {
     const out = await render('```brainfuck\n+[-]\n```')
 
-    expect(out).toContain('<span class="mono">brainfuck</span>')
     expect(out).toContain('<span class="line">+[-]</span>')
   })
 
   it('renders a table in a frame of its own, its columns aligned', async () => {
     const out = await render('| 방식 | 지연 |\n|:--|:-:|\n| `UDP` | 1 |')
 
-    expect(out).toContain('<div class="table"><table>')
+    expect(out).toContain('<div class="table-scroll"><table>')
     expect(out).toContain('<th style="text-align:center">지연</th>')
     expect(out).toContain('<td style="text-align:left"><code>UDP</code></td>')
   })
@@ -130,6 +124,6 @@ describe('compileMdx', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
 
     await expect(compileMdx('<Box', ['Box'])).resolves.toBeNull()
-    await expect(render('<Box')).resolves.toBe('<p class="empty">본문을 표시하지 못했습니다.</p>')
+    await expect(render('<Box')).resolves.toBe('<p>본문을 표시하지 못했습니다.</p>')
   })
 })

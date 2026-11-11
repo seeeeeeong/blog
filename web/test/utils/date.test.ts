@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fullDate, isoDay, monthDay, rfc822Date, yearOf } from '@/utils/date'
+import { dateTime, rfc822Date, yearOf } from '@/utils/date'
 
 describe('yearOf', () => {
   it('reads the year in Seoul', () => {
@@ -8,41 +8,18 @@ describe('yearOf', () => {
   })
 })
 
-describe('fullDate', () => {
-  it('spells out the month and keeps the day unpadded, with the year in Seoul', () => {
-    expect(fullDate('2026-10-21T01:00:00Z')).toBe('October 21, 2026')
-    expect(fullDate('2025-12-31T15:00:00Z')).toBe('January 1, 2026')
-  })
-})
-
-describe('monthDay', () => {
-  it('shortens the month and keeps the day unpadded', () => {
-    expect(monthDay('2026-10-21T01:00:00Z')).toBe('Oct 21')
+describe('dateTime', () => {
+  it('gives the day and the time in Seoul, with its offset', () => {
+    expect(dateTime('2026-11-11T12:00:00Z')).toBe('Nov 11, 2026, 9:00 PM GMT+9')
   })
 
-  it('reads the day in Seoul, where a late UTC afternoon is already tomorrow', () => {
-    expect(monthDay('2026-10-21T14:59:59Z')).toBe('Oct 21')
-    expect(monthDay('2026-10-21T15:00:00Z')).toBe('Oct 22')
-  })
-
-  it('takes fractional seconds as the api may send them', () => {
-    expect(monthDay('2026-01-05T03:04:05.123456Z')).toBe('Jan 5')
-  })
-})
-
-describe('isoDay', () => {
-  it('writes the day in Seoul as a calendar date', () => {
-    expect(isoDay('2026-10-21T01:00:00Z')).toBe('2026-10-21')
-    expect(isoDay('2026-03-04T15:00:00Z')).toBe('2026-03-05')
+  it('moves to the next day once it is midnight in Seoul', () => {
+    expect(dateTime('2026-10-21T15:05:00Z')).toBe('Oct 22, 2026, 12:05 AM GMT+9')
   })
 })
 
 describe('rfc822Date', () => {
-  it('writes the instant in GMT with the weekday, as RSS dates are', () => {
+  it('writes the instant in GMT', () => {
     expect(rfc822Date('2026-10-21T01:00:00Z')).toBe('Wed, 21 Oct 2026 01:00:00 GMT')
-  })
-
-  it('keeps the UTC day rather than the day in Seoul', () => {
-    expect(rfc822Date('2026-03-04T15:00:00.123456Z')).toBe('Wed, 04 Mar 2026 15:00:00 GMT')
   })
 })

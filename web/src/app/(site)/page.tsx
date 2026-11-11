@@ -1,27 +1,56 @@
-import { POST_COMPONENTS } from '@/app/_components/registry'
-import { loadArchive } from '@/features/posts/api/archive'
-import { loadPost } from '@/features/posts/api/post'
-import { newestOf } from '@/features/posts/utils/archive'
-import { compileMdx } from '@/features/posts/utils/mdx'
-import { PostArticle } from '@/features/posts/views/PostArticle'
+import type { Metadata } from 'next'
+import { Container } from '@/app/_components/Container'
+import { TextLink } from '@/app/_components/TextLink'
+import { loadPosts } from '@/features/posts/api/posts'
+import { ArrowCard } from '@/features/posts/components/ArrowCard'
+import { GITHUB_URL, SITE_DESCRIPTION, SITE_TITLE } from '@/lib/site'
 
-/** The newest post in full, as the blog opens on it; the archive lists the rest. */
+export const metadata: Metadata = { title: 'Home' }
+
+const LATEST = 3
+
 export default async function Home() {
-  const archive = await loadArchive()
-  if (!archive) {
-    return (
-      <main className="post">
-        <p className="empty">글을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
-      </main>
-    )
-  }
-  const newest = newestOf(archive.posts)
-  const post = newest && (await loadPost(newest.slug))
-  if (!post) return <main className="post" />
-  const Content = await compileMdx(post.bodyMdx, Object.keys(POST_COMPONENTS))
+  const latest = (await loadPosts()).slice(0, LATEST)
   return (
-    <main>
-      <PostArticle post={post} Content={Content} components={POST_COMPONENTS} />
-    </main>
+    <Container>
+      <h1 className="animate font-semibold text-black dark:text-white">
+        Hi, I'm Sinseong{' '}
+        <span className="text-xl" aria-hidden="true">
+          👋🏻
+        </span>
+      </h1>
+      <div className="space-y-16">
+        <section>
+          <article className="space-y-4">
+            <p className="animate">{SITE_DESCRIPTION}을 올립니다.</p>
+          </article>
+        </section>
+        {latest.length > 0 && (
+          <section className="animate space-y-6">
+            <div className="flex flex-wrap gap-y-2 items-center justify-between">
+              <h2 className="font-semibold text-black dark:text-white">Latest posts</h2>
+              <TextLink href="/blog">See all posts</TextLink>
+            </div>
+            <ul className="flex flex-col gap-4">
+              {latest.map((post) => (
+                <li key={post.slug}>
+                  <ArrowCard post={post} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+        <section className="animate space-y-4">
+          <h2 className="font-semibold text-black dark:text-white">Let's Connect</h2>
+          <ul className="flex flex-wrap gap-2">
+            <li className="flex gap-x-2 text-nowrap">
+              <TextLink href={GITHUB_URL} external aria-label={`${SITE_TITLE} on github`}>
+                github
+              </TextLink>
+            </li>
+          </ul>
+        </section>
+      </div>
+    </Container>
   )
 }
