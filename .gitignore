@@ -2,14 +2,8 @@ docs/
 
 .env
 .env.*
-!.env.example
 
-.gradle/
-build/
-.kotlin/
 .idea/
-*.iml
-out/
 
 node_modules/
 .next/

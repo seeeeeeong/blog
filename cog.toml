@@ -1,10 +1,6 @@
 scopes = [
-  # Features join this list as they arrive.
-  "api",
-  "post",
-  "auth",
-  "llm",
-  "ask",
+  # A post's own file under web/content/posts.
+  "posts",
   "web",
   "arch",
   "ci",

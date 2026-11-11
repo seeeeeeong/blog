@@ -5,114 +5,39 @@ written with Claude in a session and published by merging its pull request; the 
 prerendered from them. The layout is Mark Horn's Astro Nano (MIT), its compiled stylesheet
 vendored in `web/src/app/nano/`. It is self-hosted on a home server behind a Cloudflare Tunnel.
 
-`api/` is the Spring Boot app and the only Gradle module, `web/` is Next.js. The design lives in
-local, uncommitted notes under `docs/`; read the relevant note before changing a feature.
+`web/` is the Next.js app and the only one. The design lives in local, uncommitted notes under
+`docs/`; read the relevant note before changing a feature.
 
 **Status: skeleton.** Built one pull request at a time. An architecture rule arrives with the
 code it guards.
 
 ## Never do this
 
-- **Never commit, log or print a secret**: a `.env` value, an API key, an OAuth client secret,
-  a tunnel token or a password. Not in code, tests, commits, PRs or chat. CI runs gitleaks over
+- **Never commit, log or print a secret**: a `.env` value, an API key, a tunnel token or a
+  password. Not in code, tests, commits, PRs or chat. CI runs gitleaks over
   the whole history.
 - **Never put company-internal material in this repository.** No code, data, schema,
   internal names or screenshots from work projects.
-- **Never edit a merged Flyway migration.** A change is a new migration.
-- **Never build an image on the home server.** GitHub Actions builds them; the server only
-  pulls and runs. After pushing them, CI runs the Deploy workflow of the private
+- **Never build an image on the home server.** GitHub Actions builds it; the server only
+  pulls and runs. After pushing it, CI runs the Deploy workflow of the private
   `seeeeeeong/homelab` repository, where the stack's compose file and its secrets live.
-- Never start a dev server from a shell (`pnpm dev`, `bootRun`). process-compose owns them;
+- Never start a dev server from a shell (`pnpm dev`). process-compose owns them;
   see the global instructions.
-
-## Architecture
-
-- **Layout**: two packages under `blog/`, beside the application class: `blog/common/` (config,
-  entity, exception, security, util, web) and `blog/domain/`, which holds one package per feature
-  (`domain/post`, `domain/auth`, `domain/llm`), each in these layers:
-
-  | Layer | Holds |
-  |---|---|
-  | `controller/` | controllers, and nothing else |
-  | `security/` | Spring Security's filter chain, OAuth client and handlers (`domain/auth` only) |
-  | `service/` | services, the transaction boundary |
-  | `dto/request/`, `dto/response/` | `XxxRequest`, `XxxResponse`, one per file |
-  | `repository/` | Spring Data repositories, and `JdbcXxx` on JdbcClient |
-  | `entity/` | JPA entities, their enums and converters, other domain types and rules |
-  | `gateway/` | an external system's `XxxGateway`, its client and the types it returns |
-
-  `controller → service → repository → entity`; `security/` sits beside `controller/` as the
-  web's other door and reaches only the service and dto. `dto/` sits under the feature, not under
-  `controller/`, since services take requests and return responses; controllers and services
-  use it, and it reads only entities. A controller never touches an entity or a repository.
-  `entity/` uses only the JDK, Kotlin, JPA, Spring Data, entities and `common`'s entity and
-  util. Every class of a feature sits in one of these layers. A new feature adds its scope to
-  `cog.toml`.
-- **Features keep apart**: a feature never uses another feature's `repository/` or `entity/`;
-  it calls that feature's service, whose requests and responses it may use. `ArchitectureTest`
-  checks this and the layers with ArchUnit, each rule with a fixture that breaks it.
-- **No ports**: no use-case interfaces; an interface only for an external system, named
-  `XxxGateway` (`LlmGateway` for DeepSeek) in the feature's `gateway/`, which only its service
-  calls and which reaches into no other layer.
-- **Rules** (`XxxPolicy`, `XxxDecision`, `XxxParser`, `XxxPrompt`, `XxxCheck`) sit in `entity/`
-  and depend only on Kotlin, the JDK's pure packages and other rule classes; `ArchitectureTest`
-  checks it with an allow list.
-- **Persistence**: JPA for what changes in place. A simple lookup is a Spring Data derived
-  query (`findBySlugAndStatus`); one whose name would grow long or that needs an explicit
-  order is a `@Query`; Kotlin JDSL only for a query built at run time. JdbcClient for
-  append-only tables, which are guarded by triggers and, in JPA, `@Immutable`.
-- **DTOs**: `XxxRequest` / `XxxResponse` data classes in `dto/request/` and `dto/response/`, one
-  per file. The service takes requests and returns responses (`PostResponse.from(post)`).
-  Entities never leave through a controller. Validation annotations name their target
-  (`@field:NotBlank`); a request checks its format (`@field:Pattern(regexp = SlugPolicy.PATTERN)`),
-  and the schema's checks stay the last guard.
-- **Controllers** are thin: one service call, its result returned as is. They return the
-  response type, never a `ResponseEntity`; a status other than 200 is `@ResponseStatus`. One
-  step per line with a named value, rather than calls nested inside calls.
-- **Errors**: one enum, `common/exception/BlogError`, implementing `ErrorCode`, holds them all
-  (status, `feature.snake_case` code, Korean message shown as is). The service throws
-  `BlogException(BlogError.Y)`; `GlobalExceptionHandler` answers `{code, message}`. A sealed
-  result only where the caller really branches on it.
-- **Paths**: every endpoint is under `/api/`, which the web rewrites to the api. A reader's
-  routes are GET only; only `/api/admin/*` and `/api/auth/*` write, which `BlogApplicationTest`
-  checks.
-- **Admin**: one admin, the owner, signs in with GitHub (`oauth2Login` in `domain/auth/security`);
-  only `BLOG_ADMIN_GITHUB_LOGIN` gets a session, kept in PostgreSQL by Spring Session JDBC.
-  `SecurityConfig` puts everything under `/api/admin/` behind the admin's role (401 without a
-  session, 403 without the role); a controller there needs no check of its own. Every write
-  sends the `XSRF-TOKEN` cookie back as `X-XSRF-TOKEN` (`GET /api/auth/csrf` sets it). The
-  session stores `common/security/SessionAdmin` by class name, so moving it signs the admin
-  out. GitHub's calls stay inside Spring Security's OAuth client, with no gateway.
-- **Posts**: a draft is saved in place, sending back the `version` it loaded (a stale one is
-  409). A published post changes only by publishing again, and every publish appends a
-  `post_revision`, so each version a reader saw is kept.
-- **Injected dependencies** are named after their type: `postService: PostService`.
-- **Entities** are built with their constructor and named arguments; their state changes only
-  through methods (`post.publish(content, now)`), every setter `protected set`. One is held in a
-  variable, then saved on the next line.
-- **Parameters**: a function takes four at most; a constructor keeps detekt's default, since a
-  bean's parameters are its collaborators; an entity's constructor, which mirrors its columns,
-  has no limit. A call with four or more arguments names them;
-  detekt catches one that names none. A service method that needs more takes a request or a
-  command object.
-- **Transactions** stay short: no model call and no SSE inside one.
-- **Streams**: a model's answer goes out as server-sent events through `common/web/EventStream`,
-  which a controller takes as a parameter and hands to its service, returning nothing. The
-  service checks everything it can first, so a refusal is still a status with `{code, message}`;
-  then `events.stream { }` sends `text` pieces, a `stage` as a longer step starts, and one `done`
-  with the result, and a failure inside it ends as an `error` event with `{code, message}`.
 
 ## Web
 
 - `src/app/` holds the routes and composes features; a route's own pieces sit in its
   `_components/`. `src/features/<feature>/` holds one feature in `api/`, `components/`,
-  `hooks/`, `utils/` and `views/`. `src/components/`, `src/hooks/`, `src/lib/` (talking to the
-  api, app-wide state) and `src/utils/` (pure functions) are shared.
+  `hooks/`, `utils/` and `views/`; a feature's `api/` is where its data comes from (the posts
+  read their files there). `src/components/`, `src/hooks/`, `src/lib/` (app-wide settings) and
+  `src/utils/` (pure functions) are shared.
 - A feature imports only itself and shared code; shared code imports no feature and no route.
   Another folder is imported through `@/`, never `../`. Biome enforces it: a new feature
   gets its own override in `biome.json`, which `test/biome.test.ts` checks.
 - Tests live in `web/test/` at the path of what they test: `src/features/posts/utils/toc.ts`
-  is tested by `test/features/posts/utils/toc.test.ts`.
+  is tested by `test/features/posts/utils/toc.test.ts`. A page test mocks the posts loader.
+- Every page is prerendered: a route reads posts only through `generateStaticParams` and
+  server components at build time, never on a request.
 - A post's frontmatter is `title`, `description`, `date` (ISO 8601 with its offset) and an
   optional `draft: true`, which keeps it off every page. A field missing stops the build.
 - `src/app/nano/nano.css` is vendored: never edit or format it. Its Tailwind utilities are the
@@ -138,35 +63,9 @@ code it guards.
   timeout, a cache setting, a trap. One line where possible.
 - No "what", no history, no sources, nothing the code or a config key already says.
 - No commented-out code. No `TODO`/`FIXME` without an issue link
-  (`https://github.com/seeeeeeong/blog/issues/N`); detekt rejects one without.
+  (`https://github.com/seeeeeeong/blog/issues/N`).
 - Code, identifiers, comments, commits, pull request titles and the README are English.
   Design docs and pull request descriptions are Korean.
-
-## Conventions
-
-- Time comes from an injected `java.time.Clock`; detekt forbids `now()` and
-  `currentTimeMillis`. Tests move a clock; they never sleep.
-- IDs are UUIDv7 made by the application (`blog.common.util.UuidV7`).
-- One top-level type per file, named after it: `PostStatus` has `PostStatus.kt`, not a place
-  in `Post.kt`. Nested types and functions may ride along. `ConventionsTest` checks it.
-- Every architecture rule has a fixture that breaks it.
-
-## Testing
-
-- Tests mirror production files: `PostService.kt` → `PostServiceTest.kt`, same package.
-  `ConventionsTest` finds a test named after nothing.
-- Each migration `V<n>__<name>.sql` has a `<Name>SchemaTest` against real PostgreSQL;
-  `ConventionsTest` finds a migration without one and a schema test without a migration.
-- Anything that needs Spring is a `@SpringBootTest` that imports `TestcontainersConfiguration`,
-  which gives each context a database of its own in one PostgreSQL container. A controller
-  test is `webEnvironment = RANDOM_PORT` and calls the running app over real HTTP. No
-  `@WebMvcTest` or `@MockitoBean`; an external system is replaced by a fake `XxxGateway` bean
-  from a `@TestConfiguration`.
-- An advice with no route of its own may be tested on a standalone MockMvc with a sample
-  controller, as `GlobalExceptionHandlerTest` is.
-- Time moves through `MutableClock`; a test that moves it resets it.
-- An admin test signs in end to end against `FakeGitHub` (GitHub's token and user endpoints on
-  a local port) with a `Browser`, which keeps cookies and sends the CSRF header.
 
 ## Commits and pull requests
 
@@ -178,11 +77,11 @@ code it guards.
   the last one on tests when there are any. CI checks every commit.
 
   ```
-  feat(api): add the post endpoints
+  feat(web): add the theme buttons
 
-  - Store each post with its MDX revisions under a topic
-  - Answer drafts only to the admin
-  - Add regression tests for slug clashes and revision order
+  - Keep the reader's light, dark or system choice in this browser
+  - Switch without letting every color fade across
+  - Add tests for the stored choice and its fallback
   ```
 - **Pull request titles follow the commit format**, English and checked the same way. With
   one commit, the title is its subject.
@@ -193,12 +92,11 @@ code it guards.
   |---|---|
   | Most | `## 설명` |
   | A fix | `## 문제` (one or two sentences), `## 변경 사항` |
-  | Rules about who may do what | add `## 동작`: each case and what it allows |
-  | A migration | add `## 데이터베이스`: the migration, its constraints and triggers |
+  | A post | `## 글`: its title and what it covers, in a line or two |
 
   Keep it as short as a release note: three to five bullets per section, each one line on
   what the reader can now do or what changed for them. No pixel values, colors, copy
-  strings or step-by-step UI, since the diff shows those; an API change names its endpoints.
+  strings or step-by-step UI, since the diff shows those.
   Lead with behavior a user sees, then implementation. When permissions or existing
   behavior are touched, say what stays the same (`기존 ~은 유지합니다`). No verification
   line: CI shows the checks; mention only checks CI cannot see, such as a browser pass. The
@@ -225,15 +123,10 @@ code it guards.
 ## Commands
 
 ```bash
-./gradlew check           # compile, test, ktlint, detekt, Konsist, ArchUnit
-./gradlew spotlessApply   # fix Kotlin formatting
-pnpm --dir web check      # web: Biome, type check, Vitest
-pnpm --dir web fix        # web: fix formatting and lint
-pnpm --dir web build      # web: production build
+pnpm --dir web check      # Biome, type check, Vitest
+pnpm --dir web fix        # fix formatting and lint
+pnpm --dir web build      # production build; a post with a bad frontmatter fails it
 
-docker compose --profile local up -d postgres   # the local database the api expects (port 55436)
-
-# tests need Docker running: they start PostgreSQL through Testcontainers
 # once per clone: hooks guard main, format staged files, verify commit messages
-brew install lefthook cocogitto ktlint && lefthook install
+brew install lefthook cocogitto && lefthook install
 ```
